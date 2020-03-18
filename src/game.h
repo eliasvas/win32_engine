@@ -59,8 +59,8 @@ void init()
 void update(platform* p)
 {
     f32 dt = p->dt;
-    global_counter += (f32)0.001;
-    if (p->key_down[KEY_A])
+    global_counter += 0.1f;
+    if (p->key_down[KEY_SPACE])
     {
         global_counter = 0.0f;
     }

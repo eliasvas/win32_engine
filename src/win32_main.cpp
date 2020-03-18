@@ -26,7 +26,9 @@ static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l
         }else {
             if (vkey_code == VK_F4){
                 key_input = KEY_F4;
-            } 
+            }else if (vkey_code == VK_SPACE){
+                key_input = KEY_SPACE;
+            }
             //handle more keys
         }
 
@@ -72,7 +74,6 @@ Win32OpenGLSwapBuffers(HDC device_context)
     wglSwapLayerBuffers(device_context, WGL_SWAP_MAIN_PLANE);
 }
 
-static float counter = 0.f;
 i32 CALLBACK
 WinMain(HINSTANCE Instance,
 
@@ -107,6 +108,7 @@ WinMain(HINSTANCE Instance,
         global_platform.exit = 0;
         global_platform.window_width = 800;
         global_platform.window_height = 600;
+        global_platform.target_fps = 60.f;
     }
 
     Win32InitOpenGL(&DC, Instance); 
@@ -114,10 +116,10 @@ WinMain(HINSTANCE Instance,
     ShowWindow(WND, ShowCode);
 
     MSG msg;
+    QueryPerformanceFrequency(&fr);
     init();
-    QueryPerformanceCounter(&st);
     while (!global_platform.exit){
-        QueryPerformanceFrequency(&fr);
+        QueryPerformanceCounter(&st);
         while (PeekMessage(&msg,NULL,0,0,PM_REMOVE)){
             TranslateMessage(&msg);
             DispatchMessage(&msg);
@@ -128,17 +130,28 @@ WinMain(HINSTANCE Instance,
             global_platform.window_width = client_rect.right - client_rect.left;
             global_platform.window_height = client_rect.bottom - client_rect.top;
         }
-        QueryPerformanceCounter(&ft);
         f32 dt = (ft.QuadPart - st.QuadPart) / (float)fr.QuadPart; //NOTE(ilias): check on actual simulation!!
         global_platform.dt = dt;
         update(&global_platform);
         render(&DC);
-        //glClearColor(0.2f,0.2f,0.2f, 1.0f);
-        //glClear(GL_COLOR_BUFFER_BIT);
-        //SwapBuffers(DC);
-        counter+=0.0001f;
+        QueryPerformanceCounter(&ft);
 
-        QueryPerformanceCounter(&st);
+        //NOTE(ilias): wait remaining time
+        i64 frame_count = ft.QuadPart - st.QuadPart;
+        i64 desired_frame_count = (f32)fr.QuadPart / global_platform.target_fps;
+        i64 counts_to_wait = desired_frame_count - frame_count;
+
+        LARGE_INTEGER begin_wait_time_delta;
+        LARGE_INTEGER end_wait_time_delta;
+        QueryPerformanceCounter(&begin_wait_time_delta);
+        //kills the CPU for the delta
+        while(counts_to_wait> 0)
+        {
+            QueryPerformanceCounter(&end_wait_time_delta);
+            counts_to_wait -= (end_wait_time_delta.QuadPart - begin_wait_time_delta.QuadPart);
+            begin_wait_time_delta = end_wait_time_delta;
+        }
+
     }
     return 0;
 }
