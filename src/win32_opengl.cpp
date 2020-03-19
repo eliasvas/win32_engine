@@ -45,6 +45,7 @@ static PFNGLLINKPROGRAMPROC glLinkProgram;
 static PFNGLGETPROGRAMIVPROC glGetProgramiv;
 static PFNGLUNIFORM1IPROC glUniform1i;
 static PFNGLUNIFORM1FPROC glUniform1f;
+static PFNGLACTIVETEXTUREPROC glActiveTexture;
 static PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
 static PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
 static PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
@@ -93,6 +94,7 @@ LoadAllOpenGLProcedures()
    glBufferData = (PFNGLBUFFERDATAPROC)GetAnyGLFuncAddress("glBufferData"); 
    glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)GetAnyGLFuncAddress("glBindVertexArray"); 
    glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)GetAnyGLFuncAddress("glGetProgramInfoLog"); 
+   glActiveTexture = (PFNGLACTIVETEXTUREPROC)GetAnyGLFuncAddress("glActiveTexture");
    glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)GetAnyGLFuncAddress("glVertexAttribPointer"); 
    glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)GetAnyGLFuncAddress("glEnableVertexAttribArray"); 
    //glTexParameteri = (PFNGLTEXTUREPARAMETERIPROC)GetAnyGLFuncAddress("glTextureParameteri"); 

@@ -56,9 +56,8 @@ void init()
 {
     //init_shaders():
     global_counter = 0.f;
-
-    //we load the shader
-    shader_load(&s,"../assets/shaders/basic.vert", "../assets/shaders/basic.frag");
+        //we load the shader
+    shader_load(&s,"../assets/shaders/textured_quad.vert", "../assets/shaders/textured_quad.frag");
     //we make the triangle
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -72,10 +71,10 @@ void init()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE, 5* sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, 0); 
-    glBindVertexArray(0); 
+    //glBindBuffer(GL_ARRAY_BUFFER, 0); //NOTE(ilias): maybe we need those?? 
+    //glBindVertexArray(0); 
 
-    load_texture(&tex,"../assets/tex.png");
+    load_texture(&tex,"../assets/link.png");
 }
 
 void update(platform* p)
@@ -97,6 +96,7 @@ void render(HDC *DC)
     glClear(GL_COLOR_BUFFER_BIT);
 
     glBindTexture(GL_TEXTURE_2D, tex.id);
+    //setInt(&s, "ourTexture", 0);
     glUseProgram(s.ID);
     glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

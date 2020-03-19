@@ -74,7 +74,6 @@ static GLuint load_shader_from_strings (const char * vertex_str, const char * fr
     glDeleteShader(fragment);
     return ID;
 }
-//TODO(ilias): redo in C99
 static void shader_load (shader* s, const char * vertex_path, const char * fragment_path)
 {
     s->vertex_str = vertex_path;
