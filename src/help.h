@@ -54,6 +54,23 @@ seed_random_()
     srand((u32)time(0));
 }
 
+//NOTE(ilias): maybe make a free_file because our game leaks :(
+char * read_file(const char *filename){
+    FILE *f = fopen(filename, "rb");
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+    fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
+
+    char *string = (char*)malloc(fsize + 1);
+    fread(string, 1, fsize, f);
+    fclose(f);
+
+    string[fsize] = 0; 
+
+    return (char*)string;
+}
+
+
 
 /*NOTE(ilias): BEWARE this is C++ 
  * Close your eyes or suffer! 

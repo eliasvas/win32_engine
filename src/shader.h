@@ -19,47 +19,9 @@ void use_shader(shader* shader)
     glUseProgram(shader->ID);
 }
 
-char * read_file(const char *filename){
-    FILE *f = fopen("textfile.txt", "rb");
-    fseek(f, 0, SEEK_END);
-    long fsize = ftell(f);
-    fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
-
-    char *string = (char*)malloc(fsize + 1);
-    fread(string, 1, fsize, f);
-    fclose(f);
-
-    string[fsize] = 0; 
-
-    return (char*)string;
-}
-
-//TODO(ilias): redo in C99
-i32 shader_load (shader* shader, const char * vertex_path, const char * fragment_path)
-{
-    std::string vertexCode;
-    std::string fragmentCode;
-    std::ifstream vShaderFile;
-    std::ifstream fShaderFile;
-    // open files
-    vShaderFile.open(vertex_path);
-    fShaderFile.open(fragment_path);
-    std::stringstream vShaderStream, fShaderStream;
-    // read file's buffer contents into streams
-    vShaderStream << vShaderFile.rdbuf();
-    fShaderStream << fShaderFile.rdbuf();		
-    // close file handlers
-    vShaderFile.close();
-    fShaderFile.close();
-    // convert stream into string
-    vertexCode   = vShaderStream.str();
-    fragmentCode = fShaderStream.str();		
-
-
-
-    //NOTE(ilias): fucking make them the C way!!
-    const char* vShaderCode = vertexCode.c_str();//read_file(vertex_path);
-    const char* fShaderCode = fragmentCode.c_str();//read_file(fragment_path); 
+static GLuint load_shader_from_strings (const char * vertex_str, const char * fragment_str)
+{ 
+    GLuint ID;
     // 2. compile shaders
     unsigned int vertex, fragment;
     int success;
@@ -67,7 +29,7 @@ i32 shader_load (shader* shader, const char * vertex_path, const char * fragment
        
     // vertex Shader
     vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vShaderCode, NULL);
+    glShaderSource(vertex, 1, &vertex_str, NULL);
     glCompileShader(vertex);
     // print compile errors if any
     glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
@@ -79,7 +41,7 @@ i32 shader_load (shader* shader, const char * vertex_path, const char * fragment
     };
       
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fShaderCode, NULL);
+    glShaderSource(fragment, 1, &fragment_str, NULL);
     glCompileShader(fragment);
     // print compile errors if any
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
@@ -87,33 +49,46 @@ i32 shader_load (shader* shader, const char * vertex_path, const char * fragment
     {
         glGetShaderInfoLog(fragment, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-        return 1;
+        return 666;
     };
       
     
     // shader Program
-    shader->ID = glCreateProgram();
-    glAttachShader(shader->ID, vertex);
-    glAttachShader(shader->ID, fragment);
-    glLinkProgram(shader->ID);
+    ID = glCreateProgram();
+    glAttachShader(ID, vertex);
+    glAttachShader(ID, fragment);
+    glLinkProgram(ID);
     // print linking errors if any
-    glGetProgramiv(shader->ID, GL_LINK_STATUS, &success);
+    glGetProgramiv(ID, GL_LINK_STATUS, &success);
     if(!success)
     {
-        glGetProgramInfoLog(shader->ID, 512, NULL, infoLog);
+        glGetProgramInfoLog(ID, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-        return 1;
+        return 666;
     }
       
     // delete the shaders as they're linked into our program now and no longer necessery
     glDeleteShader(vertex);
     glDeleteShader(fragment);
-    return 0;
+    return ID;
+}
+//TODO(ilias): redo in C99
+static GLuint shader_load (const char * vertex_path, const char * fragment_path)
+{
+    //NOTE(ilias): fucking make them the C way!!
+    const char* vertex_str = read_file(vertex_path);
+    const char* fragment_str = read_file(fragment_path); 
+    return load_shader_from_strings(vertex_str, fragment_str);
 }
 
-
-
-
+static void reload_shader_from_files( GLuint* program, const char* vertex_shader_filename, const char* fragment_shader_filename ) {
+  assert( program && vertex_shader_filename && fragment_shader_filename );
+  GLuint reloaded_program = shader_load(vertex_shader_filename, fragment_shader_filename );
+  if ( reloaded_program ) {
+    glDeleteProgram( *program );
+    *program = reloaded_program;
+  }
+}
 static void 
 setBool(shader* shader, const std::string &name, bool value)
 {         

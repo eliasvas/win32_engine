@@ -40,6 +40,7 @@ static PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
 static PFNGLCREATEPROGRAMPROC glCreateProgram;
 static PFNGLATTACHSHADERPROC glAttachShader;
 static PFNGLDELETESHADERPROC glDeleteShader;
+static PFNGLDELETEPROGRAMPROC glDeleteProgram;
 static PFNGLLINKPROGRAMPROC glLinkProgram;
 static PFNGLGETPROGRAMIVPROC glGetProgramiv;
 static PFNGLUNIFORM1IPROC glUniform1i;
@@ -50,6 +51,8 @@ static PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
 static PFNGLBUFFERDATAPROC glBufferData;
 static PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 static PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
+//static PFNGLTEXTUREPARAMETERIPROC glTexParameteri;
+static PFNGLGENERATEMIPMAPPROC glGenerateMipmap;
 
 void *GetAnyGLFuncAddress(const char *name)
 {
@@ -85,12 +88,15 @@ LoadAllOpenGLProcedures()
    glUniform1f = (PFNGLUNIFORM1FPROC)GetAnyGLFuncAddress("glUniform1f"); 
    glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)GetAnyGLFuncAddress("glGetUniformLocation"); 
    glDeleteShader = (PFNGLDELETESHADERPROC)GetAnyGLFuncAddress("glDeleteShader"); 
+   glDeleteProgram = (PFNGLDELETEPROGRAMPROC)GetAnyGLFuncAddress("glDeleteProgram"); 
    glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)GetAnyGLFuncAddress("glGenVertexArrays"); 
    glBufferData = (PFNGLBUFFERDATAPROC)GetAnyGLFuncAddress("glBufferData"); 
    glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)GetAnyGLFuncAddress("glBindVertexArray"); 
    glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)GetAnyGLFuncAddress("glGetProgramInfoLog"); 
    glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)GetAnyGLFuncAddress("glVertexAttribPointer"); 
    glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)GetAnyGLFuncAddress("glEnableVertexAttribArray"); 
+   //glTexParameteri = (PFNGLTEXTUREPARAMETERIPROC)GetAnyGLFuncAddress("glTextureParameteri"); 
+   glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)GetAnyGLFuncAddress("glGenerateMipmap"); 
    //and on and on and on......
 }
 

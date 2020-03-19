@@ -4,6 +4,10 @@
 #include "game.h"
 #include "help.h"
 #include "platform.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "ext/stb_image.h"
+#define HANDMADE_MATH_IMPLEMENTATION
+#include "ext/HandmadeMath.h"
 
 static LARGE_INTEGER fr,st,ft;
 static HDC global_device_context;
