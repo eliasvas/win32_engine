@@ -12,6 +12,8 @@
 struct shader
 {
     GLuint ID;   
+    const char* vertex_str;
+    const char* fragment_str;
 };
 
 void use_shader(shader* shader)
@@ -73,20 +75,23 @@ static GLuint load_shader_from_strings (const char * vertex_str, const char * fr
     return ID;
 }
 //TODO(ilias): redo in C99
-static GLuint shader_load (const char * vertex_path, const char * fragment_path)
+static void shader_load (shader* s, const char * vertex_path, const char * fragment_path)
 {
-    //NOTE(ilias): fucking make them the C way!!
-    const char* vertex_str = read_file(vertex_path);
-    const char* fragment_str = read_file(fragment_path); 
-    return load_shader_from_strings(vertex_str, fragment_str);
+    s->vertex_str = vertex_path;
+    s->fragment_str = fragment_path;
+    const char* vs = read_file(vertex_path);
+    const char* fs = read_file(fragment_path); 
+    s->ID = load_shader_from_strings(vs,fs);
+
 }
 
 static void reload_shader_from_files( GLuint* program, const char* vertex_shader_filename, const char* fragment_shader_filename ) {
   assert( program && vertex_shader_filename && fragment_shader_filename );
-  GLuint reloaded_program = shader_load(vertex_shader_filename, fragment_shader_filename );
-  if ( reloaded_program ) {
+  shader new_shader;
+  shader_load(&new_shader,vertex_shader_filename, fragment_shader_filename );
+  if ( new_shader.ID ) {
     glDeleteProgram( *program );
-    *program = reloaded_program;
+    *program = new_shader.ID;
   }
 }
 static void 

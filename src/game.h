@@ -58,7 +58,7 @@ void init()
     global_counter = 0.f;
 
     //we load the shader
-    s.ID = shader_load("../assets/shaders/basic.vert", "../assets/shaders/basic.frag");
+    shader_load(&s,"../assets/shaders/basic.vert", "../assets/shaders/basic.frag");
     //we make the triangle
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -87,7 +87,7 @@ void update(platform* p)
     }
     if (p->key_pressed[KEY_R])
     {
-        reload_shader_from_files(&s.ID, "../assets/shaders/basic.vert", "../assets/shaders/basic.frag");
+        reload_shader_from_files(&s.ID,s.vertex_str,s.fragment_str);
     }
 }
 
