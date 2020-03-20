@@ -7,6 +7,10 @@
 /*
 TODO(ilias):Things that need to be done 
 
+@Camera
+
+@Coordinate System!!
+
 @Play Music 
 	-initialize dsound
 	-load wavs
@@ -15,8 +19,6 @@ TODO(ilias):Things that need to be done
 
 @load OBJ
 
-@load Textures
-
 @Text Rendering
 	-stb_truetype?
 
@@ -24,7 +26,6 @@ TODO(ilias):Things that need to be done
 
 @Particles!
 
-@Camera
 
 
 */
@@ -48,33 +49,43 @@ static f32 tex_coords[]
    1.0f,0.0f, //bottom right corner
    0.0f,0.0f //bottom left corner 
 };
+hmm_mat4 MVP;
 static u32 VBO,VAO, EBO;
 static shader s;
 static texture tex;
 static f32 global_counter;
+void load_shaders(){
+    shader_load(&s,"../assets/shaders/basic.vert", "../assets/shaders/basic.frag");
+}
 void init()
 {
-    //init_shaders():
     global_counter = 0.f;
-        //we load the shader
-    shader_load(&s,"../assets/shaders/textured_quad.vert", "../assets/shaders/textured_quad.frag");
-    //we make the triangle
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_indices), quad_indices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE, 5* sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    //glBindBuffer(GL_ARRAY_BUFFER, 0); //NOTE(ilias): maybe we need those?? 
-    //glBindVertexArray(0); 
+    load_shaders();
+    //model_matrix = HMM_Mat4d(float Diagonal)
+    hmm_mat4 model_matrix = HMM_Mat4d(1.f);
+    //view_matrix = HMM_LookAt(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 Up);
+    hmm_mat4 view_matrix = HMM_LookAt({0.f,0.f,-1.f}, {0.f,0.f,0.f}, {0.f,1.f,0.f});
+    //projection_matrix = HMM_Perspective(float FOV, float AspectRatio, float Near, float Far); 
+    hmm_mat4 projection_matrix = HMM_Perspective(HMM_ToRadians(45.0),800.f/600.f, -1.f, 50.f); 
+    MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
+    MVP = HMM_MultiplyMat4(projection_matrix,MVP);
+    //init_shaders():
 
-    load_texture(&tex,"../assets/link.png");
+    { //NOTE(ilias) should be moved in "quad(?)" struct??
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_indices), quad_indices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE, 5* sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+        load_texture(&tex,"../assets/link.png");
+    }
 }
 
 void update(platform* p)
@@ -98,6 +109,7 @@ void render(HDC *DC)
     glBindTexture(GL_TEXTURE_2D, tex.id);
     //setInt(&s, "ourTexture", 0);
     glUseProgram(s.ID);
+    //setMat4fv(&s, "MVP", (float*)MVP.Elements);
     glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

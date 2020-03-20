@@ -49,6 +49,7 @@ static PFNGLACTIVETEXTUREPROC glActiveTexture;
 static PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
 static PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
 static PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
+static PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
 static PFNGLBUFFERDATAPROC glBufferData;
 static PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 static PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
@@ -87,6 +88,7 @@ LoadAllOpenGLProcedures()
    glGetProgramiv = (PFNGLGETPROGRAMIVPROC)GetAnyGLFuncAddress("glGetProgramiv"); 
    glUniform1i = (PFNGLUNIFORM1IPROC)GetAnyGLFuncAddress("glUniform1i"); 
    glUniform1f = (PFNGLUNIFORM1FPROC)GetAnyGLFuncAddress("glUniform1f"); 
+   glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)GetAnyGLFuncAddress("glUniformMatrix4fv");
    glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)GetAnyGLFuncAddress("glGetUniformLocation"); 
    glDeleteShader = (PFNGLDELETESHADERPROC)GetAnyGLFuncAddress("glDeleteShader"); 
    glDeleteProgram = (PFNGLDELETEPROGRAMPROC)GetAnyGLFuncAddress("glDeleteProgram"); 
