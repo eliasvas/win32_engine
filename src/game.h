@@ -3,19 +3,14 @@
 #include "shader.h"
 #include "platform.h"
 #include "texture.h"
+#include "camera.h"
 
 /*
 TODO(ilias):Things that need to be done 
 
-@Camera
-
-@Coordinate System!!
-
 @Play Music 
 	-initialize dsound
 	-load wavs
-
-@Handle Input Universally
 
 @load OBJ
 
@@ -54,6 +49,7 @@ static u32 VBO,VAO, EBO;
 static shader s;
 static texture tex;
 static f32 global_counter;
+static camera cam;
 void load_shaders(){
     shader_load(&s,"../assets/shaders/textured_quad.vert", "../assets/shaders/textured_quad.frag");
 }
@@ -61,19 +57,7 @@ void init()
 {
     global_counter = 0.f;
     load_shaders();
-    //model_matrix = HMM_Mat4d(float Diagonal)
-    hmm_mat4 model_matrix = HMM_Mat4d(1.f);
-    //model_matrix = HMM_Translate({0,0,-1});
-    //view_matrix = HMM_LookAt(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 Up);
-    //hmm_mat4 view_matrix = HMM_LookAt({0.f,0.f,-1.f}, {0.f,0.f,0.f}, {0.f,1.f,0.f});
-    hmm_mat4 view_matrix = HMM_Translate({0.f,0.f,-300.f});
-    hmm_mat4 view_rotation = HMM_Rotate(global_counter * 180, {0.f,1.f,0.f});
-    view_matrix = HMM_MultiplyMat4(view_matrix,view_rotation);
-    //projection_matrix = HMM_Perspective(float FOV, float AspectRatio, float Near, float Far); 
-    hmm_mat4 projection_matrix = HMM_Perspective(HMM_ToRadians(45.0),800.f/600.f, -1.f, 50.f); 
-    MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
-    MVP = HMM_MultiplyMat4(projection_matrix,MVP);
-    //init_shaders():
+    init_camera(&cam);
 
     { //NOTE(ilias) should be moved in "quad(?)" struct??
         glGenVertexArrays(1, &VAO);
@@ -95,6 +79,7 @@ void init()
 void update(platform* p)
 {
     global_counter += 0.1f;
+    update(&cam);
     if (p->key_down[KEY_SPACE])
     {
         global_counter = 0.0f;
@@ -106,7 +91,8 @@ void update(platform* p)
     hmm_mat4 model_matrix = HMM_Mat4d(1.f);
     hmm_mat4 view_matrix = HMM_Translate({0.f,0.f,-300.f});
     hmm_mat4 view_rotation = HMM_Rotate(global_counter * 180 / 2, {0.f,1.f,0.f});
-    view_matrix = HMM_MultiplyMat4(view_matrix,view_rotation);
+    model_matrix = HMM_MultiplyMat4(model_matrix,view_rotation);
+    view_matrix = HMM_LookAt(cam.pos,cam.dir,{0.f,1.f,0.f});
     hmm_mat4 projection_matrix = HMM_Perspective(HMM_ToRadians(45.0),800.f/600.f, -1.f, 50.f); 
     MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
     MVP = HMM_MultiplyMat4(projection_matrix,MVP);

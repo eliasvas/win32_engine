@@ -1,7 +1,22 @@
-#include "HandmadeMath.h"
+#include "ext/HandmadeMath.h"
 
 struct camera
 {
     hmm_vec3 pos;
-    hmm_vec3 look_at;
+    hmm_vec3 dir;
 };
+
+
+void init_camera (camera* cam)
+{
+    cam->pos = {0.f,0.f,300.f};
+    //hmm_vec3 target = MM_LookAt(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 Up);
+    cam->dir = HMM_SubtractVec3({0.f,0.f,0.f}, cam->pos);
+    hmm_mat4 camera = HMM_LookAt(cam->pos,cam->dir,{0.f,1.f,0.f});
+}
+//TODO(ilias): maybe put controls in camera??
+void update(camera* cam)
+{
+    if (cam->pos.Z < 1.f)cam->pos = {0.f,0.f,300.f};
+    cam->pos.Z -= 1.f;
+}
