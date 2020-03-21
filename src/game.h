@@ -55,7 +55,7 @@ static shader s;
 static texture tex;
 static f32 global_counter;
 void load_shaders(){
-    shader_load(&s,"../assets/shaders/basic.vert", "../assets/shaders/basic.frag");
+    shader_load(&s,"../assets/shaders/textured_quad.vert", "../assets/shaders/textured_quad.frag");
 }
 void init()
 {
@@ -63,8 +63,12 @@ void init()
     load_shaders();
     //model_matrix = HMM_Mat4d(float Diagonal)
     hmm_mat4 model_matrix = HMM_Mat4d(1.f);
+    //model_matrix = HMM_Translate({0,0,-1});
     //view_matrix = HMM_LookAt(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 Up);
-    hmm_mat4 view_matrix = HMM_LookAt({0.f,0.f,-1.f}, {0.f,0.f,0.f}, {0.f,1.f,0.f});
+    //hmm_mat4 view_matrix = HMM_LookAt({0.f,0.f,-1.f}, {0.f,0.f,0.f}, {0.f,1.f,0.f});
+    hmm_mat4 view_matrix = HMM_Translate({0.f,0.f,-300.f});
+    hmm_mat4 view_rotation = HMM_Rotate(global_counter * 180, {0.f,1.f,0.f});
+    view_matrix = HMM_MultiplyMat4(view_matrix,view_rotation);
     //projection_matrix = HMM_Perspective(float FOV, float AspectRatio, float Near, float Far); 
     hmm_mat4 projection_matrix = HMM_Perspective(HMM_ToRadians(45.0),800.f/600.f, -1.f, 50.f); 
     MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
@@ -99,6 +103,14 @@ void update(platform* p)
     {
         reload_shader_from_files(&s.ID,s.vertex_str,s.fragment_str);
     }
+    hmm_mat4 model_matrix = HMM_Mat4d(1.f);
+    hmm_mat4 view_matrix = HMM_Translate({0.f,0.f,-300.f});
+    hmm_mat4 view_rotation = HMM_Rotate(global_counter * 180 / 2, {0.f,1.f,0.f});
+    view_matrix = HMM_MultiplyMat4(view_matrix,view_rotation);
+    hmm_mat4 projection_matrix = HMM_Perspective(HMM_ToRadians(45.0),800.f/600.f, -1.f, 50.f); 
+    MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
+    MVP = HMM_MultiplyMat4(projection_matrix,MVP);
+
 }
 
 void render(HDC *DC)
@@ -109,7 +121,7 @@ void render(HDC *DC)
     glBindTexture(GL_TEXTURE_2D, tex.id);
     //setInt(&s, "ourTexture", 0);
     glUseProgram(s.ID);
-    //setMat4fv(&s, "MVP", (float*)MVP.Elements);
+    setMat4fv(&s, "MVP", (float*)MVP.Elements);
     glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
