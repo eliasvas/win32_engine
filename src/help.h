@@ -26,7 +26,6 @@ typedef char      b8;//NOTE(ilias): check to be sure!!
 #define clamp(x, a, b)  (maximum(a, minimum(x, b)))
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
 
-
 #define PI 3.1415926535897f
 
 static b32

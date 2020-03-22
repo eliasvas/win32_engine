@@ -126,6 +126,9 @@ WinMain(HINSTANCE Instance,
     QueryPerformanceFrequency(&fr);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
+    glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
     init();
     while (!global_platform.exit){
         QueryPerformanceCounter(&st);
@@ -141,6 +144,7 @@ WinMain(HINSTANCE Instance,
         }
         f32 dt = (ft.QuadPart - st.QuadPart) / (float)fr.QuadPart; //NOTE(ilias): check on actual simulation!!
         global_platform.dt = dt;
+        global_platform.current_time +=dt;
         update(&global_platform);
         render(&DC);
         QueryPerformanceCounter(&ft);

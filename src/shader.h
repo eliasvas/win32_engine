@@ -111,5 +111,5 @@ setFloat(shader * shader, const std::string &name, f32 value)
 static void 
 setMat4fv(shader * shader, const std::string &name, f32* value)
 { 
-    glUniformMatrix4fv(glGetUniformLocation(shader->ID, name.c_str()),1,0, value);  //NOTE(ilias): check
+    glUniformMatrix4fv(glGetUniformLocation(shader->ID, name.c_str()),1,GL_FALSE, value);  //NOTE(ilias): check
 }
