@@ -32,6 +32,9 @@ static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l
                 key_input = KEY_F4;
             }else if (vkey_code == VK_SPACE){
                 key_input = KEY_SPACE;
+            }else if (vkey_code == VK_MENU)
+            {
+                key_input= KEY_ALT;
             }
             //handle more keys
         }

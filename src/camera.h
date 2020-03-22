@@ -6,6 +6,9 @@ struct camera
     hmm_vec3 dir;
 };
 
+void turn_camera_around_center(camera* cam, f32 degrees)
+{
+}
 
 void init_camera (camera* cam)
 {
@@ -15,8 +18,34 @@ void init_camera (camera* cam)
     hmm_mat4 camera = HMM_LookAt(cam->pos,cam->dir,{0.f,1.f,0.f});
 }
 //TODO(ilias): maybe put controls in camera??
-void update(camera* cam)
+void update(platform* p, camera* cam)
 {
-    if (cam->pos.Z < 1.f)cam->pos = {0.f,0.f,300.f};
-    cam->pos.Z -= 1.f;
+    //if (cam->pos.Z < 1.f)cam->pos = {0.f,0.f,300.f};
+    //cam->pos.Z -= 1.f;
+    if (p->key_down[KEY_A])
+    {
+        cam->pos.X -= 0.1f;
+    }
+    if (p->key_down[KEY_D])
+    {
+        cam->pos.X += 0.1f;
+    }
+    if (p->key_down[KEY_W])
+    {
+        cam->pos.Y += 0.1f;
+    }
+    if (p->key_down[KEY_S])
+    {
+        cam->pos.Y -= 0.1f;
+    }
+    if (p->key_down[KEY_Q])
+    {
+        turn_camera_around_center(cam, 1.f);
+    }
+   if (p->key_down[KEY_E])
+    {
+        turn_camera_around_center(cam, -1.f);
+    }
+
+
 }

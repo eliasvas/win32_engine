@@ -5,6 +5,7 @@
 #include "texture.h"
 #include "camera.h"
 #include "quad.h"
+#include "cube.h"
 
 /*
 TODO(ilias):Things that need to be done 
@@ -27,26 +28,33 @@ TODO(ilias):Things that need to be done
 */
 hmm_mat4 MVP;
 static shader s;
+static shader basic;
 static f32 global_counter;
 static camera cam;
 static quad q;
+static quad q2;
+static cube c;
 static hmm_mat4 view_matrix;
 static hmm_mat4 projection_matrix;
 void load_shaders(){
     shader_load(&s,"../assets/shaders/textured_quad.vert", "../assets/shaders/textured_quad.frag");
+    shader_load(&basic,"../assets/shaders/basic.vert", "../assets/shaders/basic.frag");
 }
 void init()
 {
     global_counter = 0.f;
     load_shaders();
     init_camera(&cam);
-    init_quad(&q);
+    init_cube(&c);
+    init_quad(&q, "../assets/verybadguy.png");
+    init_quad(&q2, "../assets/arrow.png");
+    q2.pos = {0.f,1.f,0.f};
 }
 
 void update(platform* p)
 {
     global_counter += 0.1f;
-    update(&cam);
+    update(p,&cam);
     if (p->key_down[KEY_SPACE])
     {
         global_counter = 0.0f;
@@ -55,14 +63,9 @@ void update(platform* p)
     {
         reload_shader_from_files(&s.ID,s.vertex_str,s.fragment_str);
     }
-    hmm_mat4 model_matrix = HMM_Translate(q.pos);
-    hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 2, {0.f,1.f,0.f});
-    model_matrix = HMM_MultiplyMat4(model_matrix,model_rotation);
     view_matrix = HMM_LookAt(cam.pos,cam.dir,{0.f,1.f,0.f});
-    hmm_mat4 projection_matrix = HMM_Perspective(HMM_ToRadians(45.0),800.f/600.f, -1.f, 50.f); 
-    MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
-    MVP = HMM_MultiplyMat4(projection_matrix,MVP);
-
+    projection_matrix = HMM_Perspective(HMM_ToRadians(45.0),800.f/600.f, -1.f, 50.f); 
+    //projection_matrix =HMM_Orthographic(-300.f,300.f,-300.f,300.f,-300.f,300.f); 
 }
 
 void render(HDC *DC)
@@ -70,14 +73,44 @@ void render(HDC *DC)
     glClearColor(1.f - global_counter,0.2f,0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+
+
     texture * t = &q.t;
     glBindTexture(GL_TEXTURE_2D, t->id);
-    //setInt(&s, "ourTexture", 0);
     glUseProgram(s.ID);
+    {
+        hmm_mat4 model_matrix = HMM_Translate(q.pos);
+        //hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 2, {0.f,1.f,0.f});
+        //model_matrix = HMM_MultiplyMat4(model_matrix,model_rotation);
+        MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
+        MVP = HMM_MultiplyMat4(projection_matrix,MVP);
+    }
+    setInt(&s, "ourTexture", 0);
     setMat4fv(&s, "MVP", (float*)MVP.Elements);
     glBindVertexArray(q.VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+    t = &q2.t;
+    glBindTexture(GL_TEXTURE_2D, t->id);
+    {
+        hmm_mat4 model_matrix = HMM_Translate(q2.pos);
+        hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 2, {0.f,1.f,0.f});
+        model_matrix = HMM_MultiplyMat4(model_matrix,model_rotation);
+        MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
+        MVP = HMM_MultiplyMat4(projection_matrix,MVP);
+    }
+    setInt(&s, "ourTexture", 0);
+    setMat4fv(&s, "MVP", (float*)MVP.Elements);
+    glBindVertexArray(q2.VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+    /*
+    glUseProgram(basic.ID);
+    glBindVertexArray(c.VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 12*3);
+    */
+  
     SwapBuffers(*DC);
 
 }

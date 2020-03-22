@@ -25,24 +25,25 @@ static f32 tex_coords[]
 struct quad
 {
     hmm_vec3 pos;
-    u32 VAO,VBO,EBO;
+    u32 VAO;
     texture t;
 };
 
-void init_quad(quad* q)
+void init_quad(quad* q, const char * tex)
 {
+    GLuint VBO, EBO;
     q->pos = {0.0f,0.0f,0.0f};
     glGenVertexArrays(1, &q->VAO);
-    glGenBuffers(1, &q->VBO);
-    glGenBuffers(1, &q->EBO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
     glBindVertexArray(q->VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, q->VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, q->EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_indices), quad_indices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE, 5* sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    load_texture(&q->t,"../assets/link.png");
+    load_texture(&q->t,tex);
 }
