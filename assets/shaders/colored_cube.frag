@@ -6,6 +6,6 @@ out vec3 color;
 
 void main(){
 
-	color = fragmentColor; //NOTE(ilias): maybe shade?
+	color = vec3(1,0,0);//fragmentColor; //NOTE(ilias): maybe shade?
 
 }

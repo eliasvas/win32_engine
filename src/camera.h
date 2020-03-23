@@ -12,7 +12,7 @@ void turn_camera_around_center(camera* cam, f32 degrees)
 
 void init_camera (camera* cam)
 {
-    cam->pos = {0.f,0.f,200.f};
+    cam->pos = {0.f,0.f,-200.f};
     //hmm_vec3 target = MM_LookAt(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 Up);
     cam->dir = HMM_SubtractVec3({0.0f,0.0f,0.0f}, cam->pos); //NOTE(ilias): maybe orientation is messed up?
     hmm_mat4 camera = HMM_LookAt(cam->pos,cam->dir,{0.f,1.f,0.f});
@@ -24,11 +24,11 @@ void update(platform* p, camera* cam)
     //cam->pos.Z -= 1.f;
     if (p->key_down[KEY_A])
     {
-        cam->pos.X -= 0.1f;
+        cam->pos.X += 0.1f;
     }
     if (p->key_down[KEY_D])
     {
-        cam->pos.X += 0.1f;
+        cam->pos.X -= 0.1f;
     }
     if (p->key_down[KEY_W])
     {
