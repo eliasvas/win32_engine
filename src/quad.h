@@ -11,13 +11,13 @@ static f32 quad_vertices[] = {
 
 
 static u32 quad_indices[] = {  // note that we start from 0!
-    0, 1, 3,  // first Triangle
-    1, 2, 3   // second Triangle
+    0, 3, 2,  // first Triangle
+    2, 1, 0   // second Triangle
 };
 static f32 tex_coords[]
 {
    1.0f,1.0f, //top right corner
-   0.0f,1.0f, //top left corner
+   0.0f,1.0f, //top left corner    //tr,tl,bl ---- bl,br,tr
    1.0f,0.0f, //bottom right corner
    0.0f,0.0f //bottom left corner 
 };

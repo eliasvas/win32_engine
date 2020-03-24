@@ -66,14 +66,14 @@ void update(platform* p)
     {
         reload_shader_from_files(&s.ID,s.vertex_str,s.fragment_str);
     }
-    view_matrix = HMM_LookAt(cam.pos,cam.dir,{0.f,1.f,0.f});
+    view_matrix = get_view_mat(&cam);
     projection_matrix = HMM_Perspective(HMM_ToRadians(45.f),800.f/600.f, 0.f,100.f); 
 }
 
 void render(HDC *DC)
 {
     glClearColor(1.f - global_counter,0.1f,0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 //drawing quad
     texture * t = &q.t;
@@ -81,8 +81,8 @@ void render(HDC *DC)
     glUseProgram(s.ID);
     {
         hmm_mat4 model_matrix = HMM_Translate(q.pos);
-        hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 2, {0.f,1.f,0.f});
-        model_matrix = HMM_MultiplyMat4(model_matrix,model_rotation);
+        //hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 2, {0.f,1.f,0.f});
+        //model_matrix = HMM_MultiplyMat4(model_matrix,model_rotation);
         MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
         MVP = HMM_MultiplyMat4(projection_matrix,MVP);
     }
@@ -96,9 +96,9 @@ void render(HDC *DC)
     glBindTexture(GL_TEXTURE_2D, t->id);
     glUseProgram(s.ID);
     {
-        hmm_mat4 model_matrix = HMM_Translate(q.pos);
-        hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 2, {0.f,1.f,0.f});
-        model_matrix = HMM_MultiplyMat4(model_matrix,model_rotation);
+        hmm_mat4 model_matrix = HMM_Translate(q2.pos);
+        //hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 2, {0.f,1.f,0.f});
+        //model_matrix = HMM_MultiplyMat4(model_matrix,model_rotation);
         MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
         MVP = HMM_MultiplyMat4(projection_matrix,MVP);
     }
@@ -112,7 +112,7 @@ void render(HDC *DC)
     glUseProgram(cube_shader.ID);
     {
         hmm_mat4 model_matrix = HMM_Translate(c.center);
-        hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 8, {0.4f,1.f,0.f});
+        hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 108, {0.4f,1.f,0.f});
         model_matrix = HMM_MultiplyMat4(model_matrix,model_rotation);
         MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
         MVP = HMM_MultiplyMat4(projection_matrix,MVP);
