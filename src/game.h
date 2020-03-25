@@ -51,7 +51,7 @@ void init()
     init_quad(&q, "../assets/verybadguy.png");
     //init_quad(&q2, "../assets/arrow.png");
     q2.pos = {0.f,1.f,0.f};
-    c.center = {0,-1,0};
+    c.center = {0,0,0};
 }
 
 void update(platform* p)
@@ -67,7 +67,9 @@ void update(platform* p)
         reload_shader_from_files(&s.ID,s.vertex_str,s.fragment_str);
     }
     view_matrix = get_view_mat(&cam);
+    //projection_matrix =HMM_Orthographic(-10, 10, -10, 10, 90,300);
     projection_matrix = HMM_Perspective(HMM_ToRadians(45.f),800.f/600.f, 0.1f,200.f); 
+
 }
 
 void render(HDC *DC)
@@ -85,10 +87,11 @@ void render(HDC *DC)
     glBindVertexArray(q.VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-//drawing cube
+    //drawing cube
     glUseProgram(cube_shader.ID);
     {
         hmm_mat4 model_matrix = HMM_Translate(c.center);
+        //hmm_mat4 scale_matrix = HMM_Scale({0.5,0.5,0.5});
         hmm_mat4 scale_matrix = HMM_Scale({0.5,0.5,0.5});
         model_matrix = HMM_MultiplyMat4(model_matrix, scale_matrix);
         hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 108, {0.4f,1.f,0.f});
