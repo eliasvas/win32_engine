@@ -1,3 +1,4 @@
+#pragma once
 #include "help.h"
 #include "ext/stb_image.h"
 

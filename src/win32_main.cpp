@@ -4,6 +4,7 @@
 #include "game.h"
 #include "help.h"
 #include "platform.h"
+#include "text.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "ext/stb_image.h"
 #define HANDMADE_MATH_IMPLEMENTATION

@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "quad.h"
 #include "cube.h"
+#include "text.h"
 
 /*
 TODO(ilias):Things that need to be done 
@@ -15,9 +16,6 @@ TODO(ilias):Things that need to be done
 	-load wavs
 
 @load OBJ
-
-@Text Rendering
-	-stb_truetype?
 
 @Make the ECS
 
@@ -32,6 +30,7 @@ static shader basic;
 static shader cube_shader;
 static f32 global_counter;
 static camera cam;
+static bitmap_font bmf;
 static quad q;
 static quad q2;
 static cube c;
@@ -44,6 +43,8 @@ void load_shaders(){
 }
 void init()
 {
+
+    init_text(&bmf,"../assets/ASCII_512.png"); 
     global_counter = 0.f;
     load_shaders();
     init_camera(&cam);
@@ -85,7 +86,7 @@ void render(HDC *DC)
     }
     setMat4fv(&s, "MVP", (float*) MVP.Elements);
     glBindVertexArray(q.VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
     //drawing cube
     glUseProgram(cube_shader.ID);
@@ -94,7 +95,7 @@ void render(HDC *DC)
         //hmm_mat4 scale_matrix = HMM_Scale({0.5,0.5,0.5});
         hmm_mat4 scale_matrix = HMM_Scale({0.5,0.5,0.5});
         model_matrix = HMM_MultiplyMat4(model_matrix, scale_matrix);
-        hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 108, {0.4f,1.f,0.f});
+        hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 78, {0.4f,1.f,0.f});
         model_matrix = HMM_MultiplyMat4(model_matrix,model_rotation);
         MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
         MVP = HMM_MultiplyMat4(projection_matrix,MVP);
@@ -103,6 +104,8 @@ void render(HDC *DC)
     glBindVertexArray(c.VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
+
+    print_text(&bmf,"Ferguson", 300,100, 32); //NOTE(ilias): nothing fucking happens!
 //  */
     SwapBuffers(*DC);
 

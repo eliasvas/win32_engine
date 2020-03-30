@@ -1,3 +1,4 @@
+#pragma once
 #include "help.h"
 #include <stdlib.h>
 #include <stdio.h>
