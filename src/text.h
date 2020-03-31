@@ -60,7 +60,7 @@ print_text(bitmap_font *f,const char*text, i32 x,i32 y, i32 size)
         */
         char letter = text[i]; //NOTE(ilias): getting the last byte, which is its ASCII encoding value
         f32 uv_x = (letter % 16) / 16.f;
-        f32 uv_y = (letter / 16) / 16.f;
+        f32 uv_y = 1 - (letter / 16) / 16.f - 1/16.f; //NOTE(ilias): but why????
         hmm_vec2 uv_down_left = {uv_x, uv_y};
         hmm_vec2 uv_down_right = {uv_x+1.0f/16.0f, uv_y};
         hmm_vec2 uv_up_right = {uv_x+1.0f/16.0f, (uv_y + 1.0f/16.0f)};
@@ -85,7 +85,7 @@ print_text(bitmap_font *f,const char*text, i32 x,i32 y, i32 size)
    
     use_shader(&f->s);
 
-    setFloat(&f->s, "time", ((float)rand()) / (float)FLT_MAX);
+    setFloat(&f->s, "time", ((float)time(NULL)) / (float)FLT_MAX);
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, f->tex.id); 

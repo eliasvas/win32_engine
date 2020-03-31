@@ -117,6 +117,7 @@ WinMain(HINSTANCE Instance,
         global_platform.window_width = 800;
         global_platform.window_height = 600;
         global_platform.target_fps = 60.f;
+        global_platform.current_time = 0.f;
     }
 
     Win32InitOpenGL(&DC, Instance); 
@@ -147,9 +148,9 @@ WinMain(HINSTANCE Instance,
         }
         f32 dt = (ft.QuadPart - st.QuadPart) / (float)fr.QuadPart; //NOTE(ilias): check on actual simulation!!
         global_platform.dt = dt;
-        global_platform.current_time +=dt;
+        global_platform.current_time +=1.f/60;//dt;
         update(&global_platform);
-        render(&DC);
+        render(&DC, &global_platform);
         QueryPerformanceCounter(&ft);
 
         //NOTE(ilias): wait remaining time
