@@ -11,6 +11,7 @@ uniform float time;
 void main(){
 
 	color = texture( myTextureSampler, UV );
+	if (color.a > 0.01)color.a = 0.5;
 	//color = vec4(1,1,1,1);
 	
 }

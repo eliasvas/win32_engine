@@ -1,7 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "win32_opengl.cpp"
-#include "game.h"
+#include "game.c"
 #include "help.h"
 #include "platform.h"
 #include "text.h"
@@ -36,7 +36,10 @@ static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l
             }else if (vkey_code == VK_MENU)
             {
                 key_input= KEY_ALT;
-            }
+            }else if (vkey_code == VK_TAB)
+             {
+                 key_input = KEY_TAB;
+             }
             //handle more keys
         }
 

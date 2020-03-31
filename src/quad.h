@@ -1,4 +1,6 @@
+#pragma once
 #include "help.h"
+#include "shader.h"
 
 
 static f32 quad_vertices[] = {
@@ -27,12 +29,14 @@ struct quad
     hmm_vec3 pos;
     u32 VAO;
     texture t;
+    shader s;
 };
 
 void init_quad(quad* q, const char * tex)
 {
     GLuint VBO, EBO;
     q->pos = {0.0f,0.0f,0.0f};
+    shader_load(&q->s,"../assets/shaders/textured_quad.vert", "../assets/shaders/textured_quad.frag");
     glGenVertexArrays(1, &q->VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -46,5 +50,15 @@ void init_quad(quad* q, const char * tex)
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE, 5* sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
     load_texture(&q->t,tex);
+    glBindVertexArray(0);
+}
+
+void render_quad(quad* q, float* m)
+{
+    use_shader(&q->s);
+    glBindTexture(GL_TEXTURE_2D, q->t.id);
+    setMat4fv(&q->s, "MVP", m);
+    glBindVertexArray(q->VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
