@@ -16,8 +16,12 @@ static platform global_platform;
 
 static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l_param) {
     LRESULT result = {0};
-
-    if (message == WM_CLOSE || message == WM_DESTROY || message == WM_QUIT){
+    if (message == WM_SIZE)
+        {
+           RECT rect;
+           GetClientRect(hWnd, &rect);
+           glViewport(0, 0, (GLsizei)rect.right, (GLsizei)rect.bottom); 
+    }else if (message == WM_CLOSE || message == WM_DESTROY || message == WM_QUIT){
         global_platform.exit = 1;
     }else if (message == WM_SYSKEYDOWN || message == WM_SYSKEYUP || message == WM_KEYDOWN || message == WM_KEYUP){
         u64 vkey_code = w_param;
@@ -42,7 +46,6 @@ static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l
              }
             //handle more keys
         }
-
         if (is_down){
            if (!global_platform.key_down[key_input])
            {
