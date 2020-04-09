@@ -1,4 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
+char infoLog[512]; //errors are written in here!
 #include <windows.h>
 #include "win32_opengl.cpp"
 #include "game.c"
@@ -21,6 +22,8 @@ static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l
            RECT rect;
            GetClientRect(hWnd, &rect);
            glViewport(0, 0, (GLsizei)rect.right, (GLsizei)rect.bottom); 
+           global_platform.window_width = rect.right;
+           global_platform.window_height = rect.bottom;
     }else if (message == WM_CLOSE || message == WM_DESTROY || message == WM_QUIT){
         global_platform.exit = 1;
     }else if (message == WM_SYSKEYDOWN || message == WM_SYSKEYUP || message == WM_KEYDOWN || message == WM_KEYUP){
@@ -173,6 +176,10 @@ WinMain(HINSTANCE Instance,
             QueryPerformanceCounter(&end_wait_time_delta);
             counts_to_wait -= (end_wait_time_delta.QuadPart - begin_wait_time_delta.QuadPart);
             begin_wait_time_delta = end_wait_time_delta;
+        }
+        if (strlen(infoLog) != 0){
+            MessageBox(WND, infoLog, "FATAL ERROR", MB_OK);
+            exit(1);
         }
 
     }

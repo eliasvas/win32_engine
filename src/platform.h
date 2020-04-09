@@ -9,7 +9,7 @@ struct platform
     i32 window_height;
     b32 exit;
     b32 vsync;
-    b32 fullsccreen;
+    b32 fullscreen;
     b32 initialized;
     f32 target_fps;
     f32 current_time;

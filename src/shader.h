@@ -10,6 +10,7 @@
 
 #pragma once
 
+//char infoLog[512];
 struct shader
 {
     GLuint ID;   
@@ -28,7 +29,6 @@ static GLuint load_shader_from_strings (const char * vertex_str, const char * fr
     // 2. compile shaders
     unsigned int vertex, fragment;
     int success;
-    char infoLog[512];
        
     // vertex Shader
     vertex = glCreateShader(GL_VERTEX_SHADER);
@@ -40,7 +40,7 @@ static GLuint load_shader_from_strings (const char * vertex_str, const char * fr
     {
         glGetShaderInfoLog(vertex, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-        return 1;
+        return 356;
     };
       
     fragment = glCreateShader(GL_FRAGMENT_SHADER);

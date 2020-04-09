@@ -56,6 +56,7 @@ void init_quad(quad* q, const char * tex)
 void render_quad(quad* q, float* m)
 {
     use_shader(&q->s);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, q->t.id);
     setMat4fv(&q->s, "MVP", m);
     glBindVertexArray(q->VAO);
