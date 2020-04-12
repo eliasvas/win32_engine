@@ -28,6 +28,21 @@ typedef char      b8;//NOTE(ilias): check to be sure!!
 
 #define PI 3.1415926535897f
 
+struct v2
+{
+    f32 x,y;
+};
+
+struct v3
+{
+    f32 x,y,z;
+};
+
+struct v4
+{
+    f32 x,y,z,w;
+};
+
 static b32
 char_is_alpha(i32 c)
 {

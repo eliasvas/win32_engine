@@ -6,62 +6,43 @@
 #include "quad.h"
 #include "ext/HandmadeMath.h"
 #define SHADER_MAX 32
-#define TEXTURE_MAX 32
 #define RECT_MAX 32
-#define BYTES_PER_RECT (sizeof(GLfloat) * 1) 
+#define SPRITE_MAX 32
 #define DIAMOND_SIZE sizeof(float)
 
-/* //NOTE(ilias): OLD RENDERER
-struct rect
+struct rect 
 {
-    hmm_vec2 pos;
-    hmm_vec2 scale;
-};
-
-struct renderer
-{
-    i32 render_width, render_height;
-    hmm_mat4 projection_matrix;
-    u32 VAO;
-
-    GLuint rect_buffer;
-    GLuint rect_instance_buffer;
-
-    i32 rect_alloc_pos;
-    rect rects[RECT_MAX];
-    shader shaders[SHADER_MAX];
-    shader s;
-
-};
-
-static void 
-init_renderer(renderer* r);
-
-static void
-renderer_begin(renderer* rend, f32 w, f32 h);
-
-static void 
-renderer_push_rect(renderer* rend, hmm_vec2 pos, hmm_vec2 scale);
-
-static void 
-renderer_render(renderer* rend);
-
-#
-*/
-struct sprite
-{
-    hmm_vec2 pos;
-    hmm_vec2 scale;
+    v2 pos;
+    v2 scale;
     f32 color;
 };
+#define RECT_SIZE sizeof(rect)
+
+struct sprite 
+{
+    v2 pos;
+    v2 scale;
+    i32 texture_unit;
+    //..
+};
+#define SPRITE_SIZE sizeof(sprite)
+
 struct renderer
 {
-    GLuint meshVAO, vertexVBO, instanceVBO;
-    GLfloat translations[RECT_MAX];
-    u32 render_width, render_height;
+    GLuint rect_vao, vertex_vbo, rect_instance_vbo;
+
+    GLuint sprite_vao, sprite_instance_vbo;//..
+
+    rect rect_instance_data[RECT_MAX];
     i32 rect_alloc_pos;
+
+    sprite sprite_instance_data[SPRITE_MAX];
+    i32 sprite_alloc_pos;
+     
+
     hmm_mat4 projection_matrix;
-    shader s;
+    u32 render_width, render_height;
+    shader shaders[SHADER_MAX];
 };
 static void 
 init_renderer(renderer* r);

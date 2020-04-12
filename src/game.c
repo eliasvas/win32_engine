@@ -89,8 +89,8 @@ void update(platform* p)
     hmm_vec2 rect_scale = {1,1};
     hmm_vec2 rect_pos2 = {0.6,0.6};
     //renderer_update(&rend);
-    renderer_push(&rend, rand()/(float)RAND_MAX);
-    renderer_push(&rend, (-1)*rand()/(float)RAND_MAX);
+    renderer_push(&rend,-0.5);
+    renderer_push(&rend, 0.5);
     //renderer_push_rect(&rend, rect_pos, rect_scale);
 }
 
