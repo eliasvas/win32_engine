@@ -7,6 +7,7 @@
 #include "ext/HandmadeMath.h"
 #define SHADER_MAX 32
 #define RECT_MAX 32
+#define TEXTURE_MAX 32
 #define SPRITE_MAX 32
 #define DIAMOND_SIZE sizeof(float)
 
@@ -22,7 +23,7 @@ struct sprite
 {
     v2 pos;
     v2 scale;
-    i32 texture_unit;
+    GLuint texture_unit;
     //..
 };
 #define SPRITE_SIZE sizeof(sprite)
@@ -43,6 +44,8 @@ struct renderer
     hmm_mat4 projection_matrix;
     u32 render_width, render_height;
     shader shaders[SHADER_MAX];
+    texture tex[TEXTURE_MAX];
+    i32 tex_count;
 };
 static void 
 init_renderer(renderer* r);
@@ -52,9 +55,6 @@ renderer_begin(renderer* rend, f32 w, f32 h);
 
 static void 
 renderer_render(renderer* rend);
-
-static void
-renderer_update(renderer* rend);
 
 #include "renderer.c"
 

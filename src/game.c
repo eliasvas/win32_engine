@@ -89,8 +89,15 @@ void update(platform* p)
     hmm_vec2 rect_scale = {1,1};
     hmm_vec2 rect_pos2 = {0.6,0.6};
     //renderer_update(&rend);
-    renderer_push(&rend,-0.5);
-    renderer_push(&rend, 0.5);
+    //renderer_push(&rend,{-0.5,0.0}, (GLuint)0);
+    //renderer_push(&rend, {0.5,0.0}, (GLuint)1);
+    for (GLfloat i = -1.0f; i < 1.0f;i+=0.5)
+    {
+        for (GLfloat j = -1.0f; j < 1.0f; j+=0.5)
+        {
+            renderer_push(&rend, {(GLfloat)i,(GLfloat)j}, (GLuint)0);
+        }
+    }
     //renderer_push_rect(&rend, rect_pos, rect_scale);
 }
 
@@ -98,66 +105,6 @@ void render(HDC *DC, platform* p)
 {
     //renderer_render(&rend);
     renderer_render(&rend);
-    if (debug_menu){ 
-        //TODO(ilias): do this with homemade C impl
-        print_text(&bmf,"#console#",0,570, 20);
-        std::string g_t = std::to_string(p->current_time);
-        g_t.resize(5);
-        std::string t("time: " +g_t) ;
-        print_text(&bmf,t.c_str(),0,540, 20);
-        std::string w = std::to_string(p->window_width);
-        std::string h = std::to_string(p->window_height);
-        std::string t2("wsize: " + w + "x"+ h) ;
-        print_text(&bmf,t2.c_str(),0,510, 20); 
-
-    }
-
-    SwapBuffers(*DC);
-    return;
-    glClearColor(1.f - global_counter,0.1f,0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-//drawing quad
-    glUseProgram(s.ID);
-    {
-        hmm_mat4 model_matrix = HMM_Translate(q.pos);
-        MVP = HMM_MultiplyMat4(projection_matrix,HMM_MultiplyMat4(view_matrix, model_matrix));
-    }
-    setMat4fv(&s, "MVP", (float*) MVP.Elements);
-    glBindVertexArray(q.VAO);
-    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-    {
-        hmm_mat4 model_matrix = HMM_Translate(c.center);
-        hmm_mat4 scale_matrix = HMM_Scale({0.5f,0.5f,0.5f});
-        model_matrix = HMM_MultiplyMat4(model_matrix,scale_matrix);
-        MVP = HMM_MultiplyMat4(view_matrix, model_matrix);
-        MVP = HMM_MultiplyMat4(projection_matrix,MVP);
-        //use_shader(&q.s);
-        //glActiveTexture(GL_TEXTURE1);
-        //glBindTexture(GL_TEXTURE_2D, q2.t.id);
-        //setInt(&q.s, "ourTexture",1);
-
-        render_quad(&q, (float*)MVP.Elements);
-    }
-
-    glUseProgram(cube_shader.ID);
-    {
-        hmm_mat4 model_matrix = HMM_Translate(c.center);
-        //hmm_mat4 scale_matrix = HMM_Scale({0.5,0.5,0.5});
-        //hmm_mat4 scale_matrix = HMM_Scale({0.5,0.5,0.5});
-        //model_matrix = HMM_MultiplyMat4(model_matrix, scale_matrix);
-        hmm_mat4 model_rotation = HMM_Rotate(global_counter * 180 / 78, {0.f,1.f,0.f});
-        model_matrix = HMM_MultiplyMat4(model_matrix,model_rotation);
-        MVP = HMM_MultiplyMat4(view_matrix, model_matrix); //NOTE(ilias):maybe change the direction of multiplication
-        MVP = HMM_MultiplyMat4(projection_matrix,MVP);
-    }
-    setMat4fv(&cube_shader, "MVP", (float*)MVP.Elements);
-    glBindVertexArray(c.VAO);
-    //glDrawArrays(GL_TRIANGLES, 0, 36); //NOTE(ilias): uncomment to draw cube
-    glBindVertexArray(0);
-
-
     if (debug_menu){ 
         //TODO(ilias): do this with homemade C impl
         print_text(&bmf,"#console#",0,570, 20);

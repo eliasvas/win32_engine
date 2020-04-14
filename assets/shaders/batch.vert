@@ -1,15 +1,17 @@
 #version 330 core
-layout (location = 0) in vec2 vertex_pos;
-layout (location = 1) in vec2 pos; // the position variable has attribute position 0
-layout (location = 2) in vec2 size; 
+layout(location = 0) in vec2 position;
+layout(location = 1) in vec2 tex_coords;
+layout(location = 2) in vec2 wps;
+layout(location = 3) in vec2 scale;
+layout(location = 4) in uint unit;
 
-out vec4 vertexColor; // specify a color output to the fragment shader
-
-//uniform mat4 projection_matrix; //maybe delete for now
+out float red;
+out vec2 f_tex_coords;
+flat out uint tex_unit;
 
 void main()
 {
-    gl_Position = vec4(vertex_pos,0.0, 1.0); //do scaling meh
-	//gl_Position = vec4(vertex_pos + gl_InstanceID /3.0,0.0, 1.0); //do scaling meh
-	vertexColor = vec4(1.0, 0.1, 0.1, 1.0);
+	gl_Position = vec4(position.x + wps.x, position.y + wps.y, 0.0, 1.0);
+	tex_unit = unit;
+	f_tex_coords = tex_coords;
 }
