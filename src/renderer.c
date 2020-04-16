@@ -9,11 +9,11 @@ static void
 init_renderer(renderer* rend)
 {
     rend->tex_count = 0;
-    GLfloat vertices[16] = {
-                            -0.05f,-0.05f,0.0f,0.0f,
-                            -0.05f,0.05f,1.0f,0.0f,
-                            0.05f,-0.05f,0.0f,1.0f,
-                            0.05f,0.05f,1.0f,1.0f
+    GLfloat vertices[8] = {
+                            0.0f,0.0f,
+                            1.0f,0.0f,
+                            0.0f,1.0f,
+                            1.0f,1.0f,
                             };
 
 
@@ -26,13 +26,13 @@ init_renderer(renderer* rend)
 
         //binding per-vertex vbo
         glBindBuffer(GL_ARRAY_BUFFER, rend->vertex_vbo);
-        glBufferData(GL_ARRAY_BUFFER, 16*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 8*sizeof(GLfloat), vertices, GL_STATIC_DRAW);
         //vertex positions (per-vertex)
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat), (GLvoid*)0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2* sizeof(GLfloat), (GLvoid*)0);
         //vertex texture-coordinates (per-vertex)
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT,GL_FALSE, 4*sizeof(GLfloat), (GLvoid*)(2*sizeof(GLfloat)));
+        glVertexAttribPointer(1, 2, GL_FLOAT,GL_FALSE, 2*sizeof(GLfloat), (GLvoid*)(0));
 
 
 
@@ -51,6 +51,12 @@ init_renderer(renderer* rend)
         glEnableVertexAttribArray(4);
         glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT, sizeof(sprite), (GLvoid*)(4 * sizeof(GLfloat)));
         glVertexAttribDivisor(4, 1);
+        //opacity (per-instance)
+        glEnableVertexAttribArray(5);
+        glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(sprite), (GLvoid*)(5 * sizeof(GLfloat)));
+        glVertexAttribDivisor(5, 1);
+
+
 
         glBindVertexArray(0);
     }
@@ -66,31 +72,35 @@ init_renderer(renderer* rend)
 }
 
 static void
-renderer_render(renderer* rend)
+renderer_render(renderer* rend,float* proj)
 {
+    v2 texture_sizes[TEXTURE_MAX];
+
     glBindVertexArray(rend->sprite_vao);
     //update the isntanced array
     glBindBuffer(GL_ARRAY_BUFFER, rend->sprite_instance_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(rend->sprite_instance_data), rend->sprite_instance_data, GL_STATIC_DRAW);
 
 
-    //GLubyte* ptr = (GLubyte*)get_array_buffer_ptr();
-    //sprite arr[32];
-    //memcpy(arr, ptr, sizeof(sprite));
-    
     for (i32 i = 0; i< rend->tex_count;++i)
     {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, rend->tex[i].id);
+        texture_sizes[i] = {(GLfloat)rend->tex[i].width, (GLfloat)rend->tex[i].height};
     }
 
-    //render the damn thing
     use_shader(&rend->shaders[0]);
+    setMat4fv(&rend->shaders[0],"projection_matrix",proj);
 
-    GLuint loc = glGetUniformLocation(rend->shaders[0].ID, "slots[0]");
-    glUniform1i(loc, 0);
-    loc = glGetUniformLocation(rend->shaders[0].ID, "slots[1]");
-    glUniform1i(loc,1);
+    //passing the available tex_units as uniform
+    GLuint loc = glGetUniformLocation(rend->shaders[0].ID, "slots");
+    GLint arr[2] = {0,1};
+    glUniform1iv(loc, 2,arr);
+
+    //passing the dimensions of the available tex_units as uniform
+    loc = glGetUniformLocation(rend->shaders[0].ID, "tex_sizes");
+    glUniform2fv(loc, TEXTURE_MAX, (GLfloat*)texture_sizes); 
+
 
     //glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->sprite_alloc_pos); // 10 diamonds, 4 vertices per instance
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->sprite_alloc_pos); // 10 diamonds, 4 vertices per instance
@@ -111,11 +121,12 @@ renderer_begin(renderer* rend, i32 w, i32 h)
     //NOTE(ilias): projection matrix should be provided at initialization..
     rend->projection_matrix = HMM_Perspective(HMM_ToRadians(45.f),800.f/600.f, 0.1f,200.f); //TODO(ilias): change to HMM_Orthographic!! 
 }
+
 static void
 renderer_push(renderer* rend, v2 offset, GLuint unit)
 {
 
-    sprite to_add = {offset,{1,1}, unit};
+    sprite to_add = {offset,{1,1}, unit,1.0f};
     //rend->sprite_instance_data[rend->sprite_alloc_pos/sizeof(sprite)] = to_add; //NOTE(ilias): maybe memcpy
     rend->sprite_instance_data[rend->sprite_alloc_pos] = to_add; //NOTE(ilias): maybe memcpy
     rend->sprite_alloc_pos++; 

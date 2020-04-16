@@ -47,6 +47,7 @@ static PFNGLLINKPROGRAMPROC glLinkProgram;
 static PFNGLGETPROGRAMIVPROC glGetProgramiv;
 static PFNGLUNIFORM1IPROC glUniform1i;
 static PFNGLUNIFORM1IVPROC glUniform1iv;
+static PFNGLUNIFORM2FVPROC glUniform2fv;
 static PFNGLUNIFORM1FPROC glUniform1f;
 static PFNGLACTIVETEXTUREPROC glActiveTexture;
 static PFNGLVERTEXATTRIBDIVISORPROC glVertexAttribDivisor;
@@ -98,6 +99,7 @@ LoadAllOpenGLProcedures()
    glUniform1i = (PFNGLUNIFORM1IPROC)GetAnyGLFuncAddress("glUniform1i"); 
    glUniform1iv = (PFNGLUNIFORM1IVPROC)GetAnyGLFuncAddress("glUniform1iv"); 
    glUniform1f = (PFNGLUNIFORM1FPROC)GetAnyGLFuncAddress("glUniform1f"); 
+   glUniform2fv = (PFNGLUNIFORM2FVPROC)GetAnyGLFuncAddress("glUniform2fv"); 
    glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)GetAnyGLFuncAddress("glUniformMatrix4fv");
    glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)GetAnyGLFuncAddress("glGetUniformLocation"); 
    glDeleteShader = (PFNGLDELETESHADERPROC)GetAnyGLFuncAddress("glDeleteShader"); 

@@ -66,6 +66,7 @@ void init()
 
 void update(platform* p)
 {
+    p->vsync = 1;
     renderer_begin(&rend, p->window_width, p->window_height);
     global_counter += 0.1f;
     update(p,&cam);
@@ -103,8 +104,8 @@ void update(platform* p)
 
 void render(HDC *DC, platform* p)
 {
-    //renderer_render(&rend);
-    renderer_render(&rend);
+    hmm_mat4 mat = HMM_Translate({0.0,0.0,0.0});
+    renderer_render(&rend, (float*)mat.Elements);
     if (debug_menu){ 
         //TODO(ilias): do this with homemade C impl
         print_text(&bmf,"#console#",0,570, 20);
@@ -116,6 +117,9 @@ void render(HDC *DC, platform* p)
         std::string h = std::to_string(p->window_height);
         std::string t2("wsize: " + w + "x"+ h) ;
         print_text(&bmf,t2.c_str(),0,510, 20); 
+        std::string t3("ms: " + std::to_string(p->dt));
+        print_text(&bmf,t3.c_str(),0,490, 20);
+
 
     }
     SwapBuffers(*DC);

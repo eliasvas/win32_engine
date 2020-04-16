@@ -13,7 +13,7 @@ void turn_camera_around_center(camera* cam, f32 degrees)
 
 void init_camera (camera* cam)
 {
-    cam->pos = {0.f,0.f,100.f};
+    cam->pos = {0.f,0.f,10.f};
     //hmm_vec3 target = MM_LookAt(hmm_vec3 Eye, hmm_vec3 Center, hmm_vec3 Up);
     cam->front = {0.0f,0.0f,-1.0f};
 }

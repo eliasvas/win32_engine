@@ -4,14 +4,20 @@ layout(location = 1) in vec2 tex_coords;
 layout(location = 2) in vec2 wps;
 layout(location = 3) in vec2 scale;
 layout(location = 4) in uint unit;
+layout(location = 5) in float opacity;
 
-out float red;
+out float f_opacity;
 out vec2 f_tex_coords;
 flat out uint tex_unit;
 
+uniform mat4 projection_matrix;
+
 void main()
 {
-	gl_Position = vec4(position.x + wps.x, position.y + wps.y, 0.0, 1.0);
+	vec2 real_position = position / vec2(20.0);
+	gl_Position = vec4(real_position.x + wps.x, real_position.y + wps.y, 0.0, 1.0);
+	gl_Position = projection_matrix * gl_Position;
 	tex_unit = unit;
 	f_tex_coords = tex_coords;
+	f_opacity = opacity;
 }

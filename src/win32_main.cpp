@@ -139,8 +139,8 @@ WinMain(HINSTANCE Instance,
     glDepthFunc(GL_ALWAYS);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
-    //glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
     init();
     while (!global_platform.exit){
@@ -155,27 +155,29 @@ WinMain(HINSTANCE Instance,
             global_platform.window_width = client_rect.right - client_rect.left;
             global_platform.window_height = client_rect.bottom - client_rect.top;
         }
-        f32 dt = (ft.QuadPart - st.QuadPart) / (float)fr.QuadPart; //NOTE(ilias): check on actual simulation!!
+        f32 dt = (st.QuadPart - ft.QuadPart)/ (float)fr.QuadPart; //NOTE(ilias): check on actual simulation!!
         global_platform.dt = dt;
         global_platform.current_time +=1.f/60;//dt;
         update(&global_platform);
         render(&DC, &global_platform);
         QueryPerformanceCounter(&ft);
 
-        //NOTE(ilias): wait remaining time
-        i64 frame_count = ft.QuadPart - st.QuadPart;
-        i64 desired_frame_count = (f32)fr.QuadPart / global_platform.target_fps;
-        i64 counts_to_wait = desired_frame_count - frame_count;
+        if (global_platform.vsync){
+            //NOTE(ilias): wait remaining time
+            i64 frame_count = ft.QuadPart - st.QuadPart;
+            i64 desired_frame_count = (f32)fr.QuadPart / global_platform.target_fps;
+            i64 counts_to_wait = desired_frame_count - frame_count;
 
-        LARGE_INTEGER begin_wait_time_delta;
-        LARGE_INTEGER end_wait_time_delta;
-        QueryPerformanceCounter(&begin_wait_time_delta);
-        //kills the CPU for the delta
-        while(counts_to_wait> 0)
-        {
-            QueryPerformanceCounter(&end_wait_time_delta);
-            counts_to_wait -= (end_wait_time_delta.QuadPart - begin_wait_time_delta.QuadPart);
-            begin_wait_time_delta = end_wait_time_delta;
+            LARGE_INTEGER begin_wait_time_delta;
+            LARGE_INTEGER end_wait_time_delta;
+            QueryPerformanceCounter(&begin_wait_time_delta);
+            //kills the CPU for the delta
+            while(counts_to_wait> 0)
+            {
+                QueryPerformanceCounter(&end_wait_time_delta);
+                counts_to_wait -= (end_wait_time_delta.QuadPart - begin_wait_time_delta.QuadPart);
+                begin_wait_time_delta = end_wait_time_delta;
+            }
         }
         if (strlen(infoLog) != 0){
             MessageBox(WND, infoLog, "FATAL ERROR", MB_OK);

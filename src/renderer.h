@@ -24,6 +24,7 @@ struct sprite
     v2 pos;
     v2 scale;
     GLuint texture_unit;
+    GLfloat opacity;
     //..
 };
 #define SPRITE_SIZE sizeof(sprite)
@@ -54,7 +55,7 @@ static void
 renderer_begin(renderer* rend, f32 w, f32 h);
 
 static void 
-renderer_render(renderer* rend);
+renderer_render(renderer* rend,float* proj);
 
 #include "renderer.c"
 
