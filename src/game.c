@@ -32,35 +32,29 @@ TODO(ilias):Things that need to be done
 
 */
 hmm_mat4 MVP;
-static shader s;
 static shader basic;
-static shader cube_shader;
 static f32 global_counter;
 static camera cam;
 static bitmap_font bmf;
-static quad q;
-static quad q2;
 static cube c;
 static hmm_mat4 view_matrix;
 static hmm_mat4 projection_matrix;
 static renderer rend;
 b32 debug_menu = 1;
 void load_shaders(){
-    shader_load(&s,"../assets/shaders/textured_quad.vert", "../assets/shaders/textured_quad.frag");
     shader_load(&basic,"../assets/shaders/basic.vert", "../assets/shaders/basic.frag");
-    shader_load(&cube_shader,"../assets/shaders/colored_cube.vert", "../assets/shaders/colored_cube.frag");
 }
 void init()
 {
-    init_text(&bmf,"../assets/ASCII_512.png"); 
     global_counter = 0.f;
+
+    init_text(&bmf,"../assets/ASCII_512.png"); 
     load_shaders();
     init_camera(&cam);
+
     init_cube(&c);
-    init_quad(&q, "../assets/verybadguy.png");
-    init_quad(&q2, "../assets/arrow.png");
-    q2.pos = {0.f,1.f,0.f};
     c.center = {0,0,0};
+
     init_renderer(&rend);
 }
 
@@ -76,7 +70,7 @@ void update(platform* p)
     }
     if (p->key_pressed[KEY_R])
     {
-        reload_shader_from_files(&s.ID,s.vertex_str,s.fragment_str);
+        reload_shader_from_files(&basic.ID,basic.vertex_str,basic.fragment_str);
     }
     if (p->key_pressed[KEY_TAB] != debug_menu)
     {
@@ -84,19 +78,16 @@ void update(platform* p)
     }
     view_matrix = get_view_mat(&cam);
     //projection_matrix =HMM_Orthographic(-10, 10, -10, 10, 90,300);
-    projection_matrix = HMM_Perspective(HMM_ToRadians(45.f),800.f/600.f, 0.1f,200.f); 
+    projection_matrix = HMM_Perspective(HMM_ToRadians(45.f),p->window_width / p->window_height, 0.1f,2000.f); 
 
     hmm_vec2 rect_pos = {1,0.5};
     hmm_vec2 rect_scale = {1,1};
     hmm_vec2 rect_pos2 = {0.6,0.6};
-    //renderer_update(&rend);
-    //renderer_push(&rend,{-0.5,0.0}, (GLuint)0);
-    //renderer_push(&rend, {0.5,0.0}, (GLuint)1);
     for (GLfloat i = -1.0f; i < 1.0f;i+=0.5)
     {
         for (GLfloat j = -1.0f; j < 1.0f; j+=0.5)
         {
-            renderer_push(&rend, {(GLfloat)i,(GLfloat)j}, (GLuint)0);
+            renderer_push(&rend, {(GLfloat)i,(GLfloat)j}, (GLuint)(0));
         }
     }
     //renderer_push_rect(&rend, rect_pos, rect_scale);
@@ -104,14 +95,14 @@ void update(platform* p)
 
 void render(HDC *DC, platform* p)
 {
-    hmm_mat4 mat = HMM_Translate({0.0,0.0,0.0});
-    renderer_render(&rend, (float*)mat.Elements);
+    hmm_mat4 mat = HMM_Multiply(projection_matrix, view_matrix);//HMM_Translate({0.0,0.0,0.0});
+    renderer_render(&rend, (float*)mat.Elements, p->current_time);
     if (debug_menu){ 
         //TODO(ilias): do this with homemade C impl
-        print_text(&bmf,"#console#",0,570, 20);
+        print_text(&bmf,"|console|",0,570, 20);
         std::string g_t = std::to_string(p->current_time);
         g_t.resize(5);
-        std::string t("time: " +g_t) ;
+        std::string t("time: " +g_t);
         print_text(&bmf,t.c_str(),0,540, 20);
         std::string w = std::to_string(p->window_width);
         std::string h = std::to_string(p->window_height);
@@ -119,9 +110,8 @@ void render(HDC *DC, platform* p)
         print_text(&bmf,t2.c_str(),0,510, 20); 
         std::string t3("ms: " + std::to_string(p->dt));
         print_text(&bmf,t3.c_str(),0,490, 20);
-
-
     }
+    //render_cube(&c, mat);
     SwapBuffers(*DC);
 
 }

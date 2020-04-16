@@ -72,7 +72,7 @@ init_renderer(renderer* rend)
 }
 
 static void
-renderer_render(renderer* rend,float* proj)
+renderer_render(renderer* rend,float* proj, GLfloat time)
 {
     v2 texture_sizes[TEXTURE_MAX];
 
@@ -100,6 +100,9 @@ renderer_render(renderer* rend,float* proj)
     //passing the dimensions of the available tex_units as uniform
     loc = glGetUniformLocation(rend->shaders[0].ID, "tex_sizes");
     glUniform2fv(loc, TEXTURE_MAX, (GLfloat*)texture_sizes); 
+
+    loc = glGetUniformLocation(rend->shaders[0].ID, "iTime");
+    glUniform1f(loc, time);
 
 
     //glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->sprite_alloc_pos); // 10 diamonds, 4 vertices per instance

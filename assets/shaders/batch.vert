@@ -9,13 +9,15 @@ layout(location = 5) in float opacity;
 out float f_opacity;
 out vec2 f_tex_coords;
 flat out uint tex_unit;
+uniform float iTime;
 
 uniform mat4 projection_matrix;
 
 void main()
 {
-	vec2 real_position = position / vec2(20.0);
-	gl_Position = vec4(real_position.x + wps.x, real_position.y + wps.y, 0.0, 1.0);
+	vec2 real_position = position;
+	//gl_Position = vec4(real_position.x + wps.x, real_position.y + wps.y, cos(iTime) * (-1800.0), 1.0);
+	gl_Position = vec4(real_position.x + wps.x, real_position.y + wps.y,0.0, 1.0);
 	gl_Position = projection_matrix * gl_Position;
 	tex_unit = unit;
 	f_tex_coords = tex_coords;

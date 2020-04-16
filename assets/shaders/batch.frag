@@ -12,7 +12,7 @@ uniform vec2 tex_sizes[32];
 
 void main(){
 	FragColor = texture(slots[tex_unit], f_tex_coords);
-	if (FragColor.a < 0.01)
+	if (FragColor.a < 0.001)
 	{
 		discard;
 	}else
