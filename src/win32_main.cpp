@@ -21,7 +21,7 @@ static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l
         {
            RECT rect;
            GetClientRect(hWnd, &rect);
-           glViewport(0, 0, (GLsizei)rect.right, (GLsizei)rect.bottom); 
+           glViewport(0, 0, (GLsizei)rect.right, (GLsizei)rect.bottom); //for some reason this is useless 
            global_platform.window_width = rect.right;
            global_platform.window_height = rect.bottom;
     }else if (message == WM_CLOSE || message == WM_DESTROY || message == WM_QUIT){
@@ -136,11 +136,11 @@ WinMain(HINSTANCE Instance,
     MSG msg;
     QueryPerformanceFrequency(&fr);
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_ALWAYS);
+    glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
-    glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+    //glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
 
     init();
     while (!global_platform.exit){
