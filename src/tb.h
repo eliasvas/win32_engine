@@ -119,6 +119,14 @@ typedef union vec4
     f32 elements[4];
 }vec4;
 
+typedef union mat4
+{
+    struct{
+        f32 elements[4][4];//{x.x,x.y,x.z,0,y.x,y.y,y.z,0,z.x,z.y,z.z,0,p.x,p.y,p.z,1} 
+    };
+    f32 elements_raw[16]; //{x.x,x.y,x.z,0,y.x,y.y,y.z,0,z.x,z.y,z.z,0,p.x,p.y,p.z,1} 
+}mat4;
+
 INLINE f32 to_radians(float degrees)
 {
     f32 res = degrees * (PI / 180.0f);
@@ -308,6 +316,15 @@ INLINE vec3 normalize_vec3(vec3 v)
     return res;
 }
 
+INLINE vec3 cross_vec3(vec3 l,vec3 r)
+{
+    vec3 res;
+    res.x = (l.y*r.z) - (l.z*r.y);
+    res.y = (l.z * r.x) - (l.x*r.z);
+    res.z = (l.x * r.y) - (l.y * r.x);
+    return (res);
+}
+
 INLINE vec4 add_vec4(vec4 l, vec4 r)
 {
     vec4 res;
@@ -394,3 +411,106 @@ INLINE vec4 normalize_vec4(vec4 v)
 }
 
 
+INLINE mat4 m4(void)
+{
+    mat4 res = {0};
+    return res;
+}
+
+INLINE mat4 m4d(f32 d)
+{
+    mat4 res = m4();
+    res.elements[0][0] = d;
+    res.elements[1][1] = d;
+    res.elements[2][2] = d;
+    res.elements[3][3] = d;
+    return res;
+}
+
+INLINE mat4 mul_mat4f(mat4 m, f32 s)
+{
+    mat4 res;
+    for (u32 i = 0; i < 4; ++i)
+    {
+        for (u32 j = 0; j < 4; ++j)
+        {
+            res.elements[i][j] = m.elements[i][j] * s;
+        }
+    }
+    return res;
+}
+
+INLINE mat4 div_mat4f(mat4 m, f32 s)
+{
+    mat4 res = {0};
+    
+    if (s != 0.0f)
+    {
+        for (u32 i = 0; i < 4; ++i)
+        {
+            for (u32 j = 0; j < 4; ++j)
+            {
+                res.elements[i][j] = m.elements[i][j] / s;
+            }
+        }
+    }
+    return res;
+}
+
+INLINE mat4 add_mat4(mat4 l, mat4 r)
+{
+    mat4 res;
+    for (u32 i = 0; i < 4; ++i)
+    {
+        for (u32 j = 0; j < 4; ++j)
+        {
+            res.elements[i][j] = l.elements[i][j] + r.elements[i][j];
+        }
+    }
+    return res;
+}
+
+
+INLINE mat4 sub_mat4(mat4 l, mat4 r)
+{
+    mat4 res;
+    for (u32 i = 0; i < 4; ++i)
+    {
+        for (u32 j = 0; j < 4; ++j)
+        {
+            res.elements[i][j] = l.elements[i][j] - r.elements[i][j];
+        }
+    }
+    return res;
+}
+INLINE mat4 mul_mat4(mat4 l, mat4 r)
+{
+    mat4 res;
+    //TBA
+    return res;
+}
+
+INLINE mat4 translate_mat4(vec3 t)
+{
+    mat4 res = m4d(1.0f);
+    res.elements[3][0] = t.x;
+    res.elements[3][1] = t.y;
+    res.elements[3][2] = t.z;
+    return res;
+}
+
+INLINE mat4 rotate_mat4(f32 angle, vec3 axis)
+{
+    mat4 res = m4d(1.0f);
+    //TBA
+    return res;
+}
+
+INLINE mat4 scale_mat4(vec3 s)
+{
+    mat4 res = {0};
+    res.elements[0][0] = s.x;
+    res.elements[1][1] = s.y;
+    res.elements[2][2] = s.z;
+    return res;
+}
