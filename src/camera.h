@@ -54,7 +54,8 @@ void update(platform* p, camera* cam)
 
 hmm_mat4 get_view_mat(camera* cam)
 {
-    hmm_mat4 camera = HMM_LookAt(cam->pos,HMM_AddVec3(cam->pos, cam->front),{0.f,1.f,0.f});
+    hmm_mat4 camera = HMM_LookAt(cam->pos,HMM_AddVec3(cam->pos, {0.0,0.0,-1.0}),{0.f,1.f,0.f});
+    //hmm_mat4 camera = HMM_LookAt(cam->pos, HMM_SubtractVec3({0.0,0.0,0.0}, cam->pos),{0.f,1.f,0.f});
     return camera;
 }
 

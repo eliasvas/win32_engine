@@ -5,7 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <assert.h>
-#include "help.h"
+#include "tb.h"
 
 #pragma comment (lib, "opengl32.lib")
 

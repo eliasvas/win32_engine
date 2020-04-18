@@ -74,7 +74,7 @@ init_renderer(renderer* rend)
 static void
 renderer_render(renderer* rend,float* proj, GLfloat time)
 {
-    v2 texture_sizes[TEXTURE_MAX];
+    vec2 texture_sizes[TEXTURE_MAX];
 
     glBindVertexArray(rend->sprite_vao);
     //update the isntanced array
@@ -126,7 +126,7 @@ renderer_begin(renderer* rend, i32 w, i32 h)
 }
 
 static void
-renderer_push(renderer* rend, v2 offset, GLuint unit)
+renderer_push(renderer* rend, vec2 offset, GLuint unit)
 {
 
     sprite to_add = {offset,{1,1}, unit,1.0f};

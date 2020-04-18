@@ -1,5 +1,5 @@
 #include "ext/HandmadeMath.h"
-#include "help.h"
+#include "tb.h"
 
 #include "shader.h"
 #include "platform.h"
@@ -17,8 +17,6 @@ TODO(ilias):Things that need to be done
 @Play Music 
 	-initialize dsound
 	-load wavs
-
-@Dedicated 2D renderer
 
 @Make the ECS (+Sprites)
 

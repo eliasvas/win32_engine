@@ -3,7 +3,7 @@ char infoLog[512]; //errors are written in here!
 #include <windows.h>
 #include "win32_opengl.cpp"
 #include "game.c"
-#include "help.h"
+#include "tb.h"
 #include "platform.h"
 #include "text.h"
 #define STB_IMAGE_IMPLEMENTATION

@@ -1,6 +1,6 @@
 #pragma once
 #include "string.h" //for memcpy
-#include "help.h"
+#include "tb.h"
 #include "shader.h"
 #include "texture.h"
 #include "quad.h"
@@ -13,16 +13,16 @@
 
 struct rect 
 {
-    v2 pos;
-    v2 scale;
+    vec2 pos;
+    vec2 scale;
     f32 color;
 };
 #define RECT_SIZE sizeof(rect)
 
 struct sprite 
 {
-    v2 pos;
-    v2 scale;
+    vec2 pos;
+    vec2 scale;
     GLuint texture_unit;
     GLfloat opacity;
     //..

@@ -1,0 +1,396 @@
+#pragma once
+#if defined(_WIN32)
+#include "windows.h"
+#endif
+#include <stdint.h>
+#include <time.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+typedef uint8_t   u8;
+typedef int8_t    i8;
+typedef uint16_t  u16;
+typedef int16_t   i16;
+typedef uint32_t  u32;
+typedef int32_t   i32;
+typedef uint64_t  u64;
+typedef int64_t   i64;
+typedef float     f32;
+typedef double    f64;
+typedef int32_t   b32;
+typedef char      b8;
+
+//#define global         static
+//#define internal       static
+//#define local_persist  static
+#define INLINE static inline
+
+#define equalf(a, b, epsilon) (fabs(b - a) <= epsilon)
+#define maximum(a, b) ((a) > (b) ? (a) : (b))
+#define minimum(a, b) ((a) < (b) ? (a) : (b))
+#define clamp(x, a, b)  (maximum(a, minimum(x, b)))
+#define array_count(a) (sizeof(a) / sizeof((a)[0]))
+
+#define PI 3.1415926535897f
+
+static b32
+char_is_alpha(i32 c)
+{
+    return ((c >='A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
+}
+static b32 char_is_digit(i32 c)
+{
+    return c >= '0'&& c <= '9';
+}
+
+static i32 char_to_lower(i32 c)
+{
+    if (c >= 'A' && c <= 'Z')
+    {
+        c += 32;
+    }
+    return c;
+}
+
+static void
+seed_random_()
+{
+    srand((u32)time(0));
+}
+
+//NOTE(ilias): maybe make a free_file because our game leaks :(
+char * read_file(const char *filename){
+    FILE *f = fopen(filename, "rb");
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+    fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
+
+    char *string = (char*)malloc(fsize + 1);
+    fread(string, 1, fsize, f);
+    fclose(f);
+
+    string[fsize] = 0; 
+
+    return (char*)string;
+}
+
+//MATH LIB
+typedef union vec2
+{
+    struct
+    {
+        f32 x,y;
+    };
+    struct 
+    {
+        f32 u,v;
+    };
+    struct
+    {
+        f32 r,g;
+    };
+    f32 elements[2];
+}vec2;
+
+
+typedef union vec3
+{
+    struct
+    {
+        f32 x,y,z;
+    };
+    struct
+    {
+        f32 r,g,b;
+    };
+    f32 elements[3];
+}vec3;
+
+typedef union vec4
+{
+    struct
+    {
+        f32 x,y,z,w;
+    };
+    struct
+    {
+        f32 r,g,b,a;
+    };
+    f32 elements[4];
+}vec4;
+
+INLINE f32 to_radians(float degrees)
+{
+    f32 res = degrees * (PI / 180.0f);
+    return(res);
+}
+
+INLINE f32 lerp(f32 A, f32 B, f32 time)
+{
+    f32 res = (1.0f - time)*A + time*B;
+    return res;
+}
+
+
+INLINE vec2 v2(f32 x, f32 y)
+{
+    vec2 res;
+    res.x = x;
+    res.y = y;
+    return res;
+}
+
+INLINE vec3 v3(f32 x, f32 y, f32 z)
+{
+    vec3 res;
+    res.x = x;
+    res.y = y;
+    res.z = z;
+    return res;
+}
+
+INLINE vec4 v4(f32 x, f32 y, f32 z, f32 w)
+{
+    vec4 res;
+    res.x = x;
+    res.y = y;
+    res.z = z;
+    res.w = w;
+    return res;
+}
+
+INLINE vec2 add_vec2(vec2 l, vec2 r)
+{
+    vec2 res;
+    res.x = l.x + r.x;
+    res.y = l.y + r.y;
+    return res;
+}
+
+INLINE vec2 sub_vec2(vec2 l, vec2 r)
+{
+    vec2 res;
+    res.x = l.x - r.x;
+    res.y = l.y - r.y;
+    return res;
+}
+
+INLINE vec2 mul_vec2(vec2 l, vec2 r)
+{
+    vec2 res;
+    res.x = l.x * r.x;
+    res.y = l.y * r.y;
+    return res;
+}
+
+INLINE vec2 mul_vec2f(vec2 l, f32 r)
+{
+    vec2 res;
+    res.x = l.x * r;
+    res.y = l.y * r;
+    return res;
+}
+
+INLINE vec2 div_vec2(vec2 l, vec2 r)
+{
+    vec2 res;
+    res.x = l.x / r.x;
+    res.y = l.y / r.y;
+    return res;
+}
+
+INLINE vec2 div_vec2f(vec2 l, f32 r)
+{
+    vec2 res;
+    res.x = l.x / r;
+    res.y = l.y / r;
+    return res;
+}
+
+INLINE f32 dot_vec2(vec2 l, vec2 r)
+{
+    f32 res = (l.x + r.x)+(l.y + r.y); // Σ(Ai*Bi)
+    return res;
+}
+
+INLINE f32 length_vec2(vec2 v)
+{
+    f32 res = sqrt(dot_vec2(v,v)); // (x^2 + y^2)^(1/2)
+}
+   
+INLINE vec2 normalize_vec2(vec2 v)
+{
+    vec2 res = {0}; //in case length is zero we return zero vector
+    f32 vec_length = length_vec2(v);
+    if (vec_length != 0)
+    {
+        res.x = v.x * (1.0f/vec_length);
+        res.y = v.y * (1.0f/vec_length);
+    }
+    return res;
+}
+
+INLINE vec3 add_vec3(vec3 l, vec3 r)
+{
+    vec3 res;
+    res.x = l.x + r.x;
+    res.y = l.y + r.y;
+    res.z = l.z + r.z;
+    return res;
+}
+
+INLINE vec3 sub_vec3(vec3 l, vec3 r)
+{
+    vec3 res;
+    res.x = l.x - r.x;
+    res.y = l.y - r.y;
+    res.z = l.z - r.z;
+    return res;
+}
+
+INLINE vec3 mul_vec3(vec3 l, vec3 r)
+{
+    vec3 res;
+    res.x = l.x * r.x;
+    res.y = l.y * r.y;
+    res.z = l.z * r.z;
+    return res;
+}
+
+INLINE vec3 mul_vec3f(vec3 l, f32 r)
+{
+    vec3 res;
+    res.x = l.x * r;
+    res.y = l.y * r;
+    res.z = l.z * r;
+    return res;
+}
+
+INLINE vec3 div_vec3(vec3 l, vec3 r)
+{
+    vec3 res;
+    res.x = l.x / r.x;
+    res.y = l.y / r.y;
+    res.z = l.z / r.z;
+    return res;
+}
+
+INLINE vec3 div_vec3f(vec3 l, f32 r)
+{
+    vec3 res;
+    res.x = l.x / r;
+    res.y = l.y / r;
+    res.z = l.z / r;
+    return res;
+}
+
+INLINE f32 dot_vec3(vec3 l, vec3 r)
+{
+    f32 res = (l.x + r.x)+(l.y + r.y)+(l.z + r.z); // Σ(Ai*Bi)
+    return res;
+}
+
+INLINE f32 length_vec3(vec3 v)
+{
+    f32 res = sqrt(dot_vec3(v,v)); // (x^2 + y^2)^(1/2)
+}
+   
+INLINE vec3 normalize_vec3(vec3 v)
+{
+    vec3 res = {0}; //in case length is zero we return zero vector
+    f32 vec_length = length_vec3(v);
+    if (vec_length != 0)
+    {
+        res.x = v.x * (1.0f/vec_length);
+        res.y = v.y * (1.0f/vec_length);
+        res.z = v.z * (1.0f/vec_length);
+    }
+    return res;
+}
+
+INLINE vec4 add_vec4(vec4 l, vec4 r)
+{
+    vec4 res;
+    res.x = l.x + r.x;
+    res.y = l.y + r.y;
+    res.z = l.z + r.z;
+    res.w = l.w + r.w;
+    return res;
+}
+
+INLINE vec4 sub_vec4(vec4 l, vec4 r)
+{
+    vec4 res;
+    res.x = l.x - r.x;
+    res.y = l.y - r.y;
+    res.z = l.z - r.z;
+    res.w = l.w - r.w;
+    return res;
+}
+
+INLINE vec4 mul_vec4(vec4 l, vec4 r)
+{
+    vec4 res;
+    res.x = l.x * r.x;
+    res.y = l.y * r.y;
+    res.z = l.z * r.z;
+    res.w = l.w * r.w;
+    return res;
+}
+
+INLINE vec4 mul_vec4f(vec4 l, f32 r)
+{
+    vec4 res;
+    res.x = l.x * r;
+    res.y = l.y * r;
+    res.z = l.z * r;
+    res.w = l.w * r;
+    return res;
+}
+
+INLINE vec4 div_vec4(vec4 l, vec4 r)
+{
+    vec4 res;
+    res.x = l.x / r.x;
+    res.y = l.y / r.y;
+    res.z = l.z / r.z;
+    res.w = l.w / r.w;
+    return res;
+}
+
+INLINE vec4 div_vec4f(vec4 l, f32 r)
+{
+    vec4 res;
+    res.x = l.x / r;
+    res.y = l.y / r;
+    res.z = l.z / r;
+    res.w = l.w / r;
+    return res;
+}
+
+INLINE f32 dot_vec4(vec4 l, vec4 r)
+{
+    f32 res = (l.x + r.x)+(l.y + r.y)+(l.z + r.z)+(l.w + r.w); // Σ(Ai*Bi)
+    return res;
+}
+
+INLINE f32 length_vec4(vec4 v)
+{
+    f32 res = sqrt(dot_vec4(v,v)); // (x^2 + y^2)^(1/2)
+}
+   
+INLINE vec4 normalize_vec4(vec4 v)
+{
+    vec4 res = {0}; //in case length is zero we return zero vector
+    f32 vec_length = length_vec4(v);
+    if (vec_length != 0)
+    {
+        res.x = v.x * (1.0f/vec_length);
+        res.y = v.y * (1.0f/vec_length);
+        res.z = v.z * (1.0f/vec_length);
+        res.w = v.w * (1.0f/vec_length);
+    }
+    return res;
+}
+
+
