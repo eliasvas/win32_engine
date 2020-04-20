@@ -80,7 +80,7 @@ void update(platform* p)
     }
     view_matrix = get_view_mat(&cam);
     //projection_matrix =HMM_Orthographic(-10, 10, -10, 10, 90,300);
-    projection_matrix = HMM_Perspective(HMM_ToRadians(45.f),p->window_width / (float)p->window_height, 0.1f,500.f); 
+    projection_matrix = HMM_Perspective(HMM_ToRadians(45.f),p->window_width / (float)p->window_height, 0.1f,1000.f); 
 
     hmm_vec2 rect_pos = {1,0.5};
     hmm_vec2 rect_scale = {1,1};
@@ -98,15 +98,13 @@ void update(platform* p)
 
 void render(HDC *DC, platform* p)
 {
-    hmm_mat4 mat = HMM_Multiply(projection_matrix, view_matrix);//HMM_Translate({0.0,0.0,0.0});
+    hmm_mat4 mat = projection_matrix;//HMM_Multiply(projection_matrix, view_matrix);//HMM_Translate({0.0,0.0,0.0});
     renderer_render(&rend, (float*)mat.Elements, p->current_time);
     //rendering the cube
     {
-        hmm_vec3 rotation_axis = {p->dt*100,p->current_time};
-        rotation_axis = HMM_Normalize(rotation_axis);
-        hmm_mat4 rotation = HMM_Rotate(sin(p->current_time)*20, rotation_axis);
-        hmm_mat4 cm = HMM_Multiply(mat,rotation);
-        render_cube(&c, cm);
+        hmm_mat4 trans = HMM_Translate({0,0,-600*abs(sin(p->current_time))});
+        mat = HMM_MultiplyMat4(mat, trans);
+        render_cube(&c, mat);
     }
     {
         hmm_vec3 rotation_axis = {p->dt*100,p->current_time};

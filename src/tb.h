@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #if defined(_WIN32)
 #include "windows.h"
 #endif
@@ -6,6 +6,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 typedef uint8_t   u8;
 typedef int8_t    i8;
@@ -224,6 +225,7 @@ INLINE f32 dot_vec2(vec2 l, vec2 r)
 INLINE f32 length_vec2(vec2 v)
 {
     f32 res = sqrt(dot_vec2(v,v)); // (x^2 + y^2)^(1/2)
+    return res;
 }
    
 INLINE vec2 normalize_vec2(vec2 v)
@@ -301,6 +303,7 @@ INLINE f32 dot_vec3(vec3 l, vec3 r)
 INLINE f32 length_vec3(vec3 v)
 {
     f32 res = sqrt(dot_vec3(v,v)); // (x^2 + y^2)^(1/2)
+    return res;
 }
    
 INLINE vec3 normalize_vec3(vec3 v)
@@ -394,6 +397,7 @@ INLINE f32 dot_vec4(vec4 l, vec4 r)
 INLINE f32 length_vec4(vec4 v)
 {
     f32 res = sqrt(dot_vec4(v,v)); // (x^2 + y^2)^(1/2)
+    return res;
 }
    
 INLINE vec4 normalize_vec4(vec4 v)
@@ -427,6 +431,18 @@ INLINE mat4 m4d(f32 d)
     return res;
 }
 
+INLINE mat4 transpose_mat4(mat4 m)
+{
+    mat4 res;
+    for (u32 i = 0; i < 4;++i)
+    {
+        for (u32 j = 0; j< 4;++j)
+        {
+            res.elements[i][j] = m.elements[j][i];
+        }
+    }
+    return res;
+}
 INLINE mat4 mul_mat4f(mat4 m, f32 s)
 {
     mat4 res;
@@ -483,14 +499,27 @@ INLINE mat4 sub_mat4(mat4 l, mat4 r)
     }
     return res;
 }
+
 INLINE mat4 mul_mat4(mat4 l, mat4 r)
 {
     mat4 res;
-    //TBA
+    for (u32 col = 0; col < 4; ++col)
+    {
+        for (u32 row = 0; row < 4; ++row)
+        {
+            f32 sum = 0;
+            for (u32 current_index = 0; current_index < 4; ++current_index)
+            {
+                sum += l.elements[current_index][row] * r.elements[col][current_index];
+            }
+            res.elements[col][row] = sum;
+        }
+    }
     return res;
 }
 
-INLINE mat4 translate_mat4(vec3 t)
+
+INLINE mat4 translate_mat4(vec3 t) //TODO(ilias): check handedness
 {
     mat4 res = m4d(1.0f);
     res.elements[3][0] = t.x;
@@ -514,3 +543,5 @@ INLINE mat4 scale_mat4(vec3 s)
     res.elements[2][2] = s.z;
     return res;
 }
+
+
