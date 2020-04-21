@@ -75,6 +75,20 @@ char * read_file(const char *filename){
     return (char*)string;
 }
 
+static b32 file_exists(const char* filename) {
+  bool ret;
+  FILE* fp = fopen(filename, "rb");
+  if (fp) {
+    ret = 1;
+    fclose(fp);
+  } else {
+    ret = 0;
+  }
+
+  return ret;
+}
+
+
 //MATH LIB
 typedef union vec2
 {

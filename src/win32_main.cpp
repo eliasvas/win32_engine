@@ -10,6 +10,8 @@ char infoLog[512]; //errors are written in here!
 #include "ext/stb_image.h"
 #define HANDMADE_MATH_IMPLEMENTATION
 #include "ext/HandmadeMath.h"
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "ext/tiny_obj_loader.h"
 
 static LARGE_INTEGER fr,st,ft;
 static HDC global_device_context;

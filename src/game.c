@@ -9,6 +9,7 @@
 #include "cube.h"
 #include "text.h"
 #include "renderer.h"
+#include "model.h"
 #include <string>  //just for to_string
 
 /*
@@ -36,6 +37,7 @@ static camera cam;
 static bitmap_font bmf;
 static cube c;
 static cube c2;
+static model m;
 static hmm_mat4 view_matrix;
 static hmm_mat4 projection_matrix;
 static renderer rend;
@@ -56,6 +58,11 @@ void init()
 
     init_cube(&c2);
     c2.center = {1.0,1.0,0.0};
+
+    {
+        load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/utah_teapot.mtl");
+        init_model(&m, m.vertices);
+    }
 
     init_renderer(&rend);
 }
@@ -104,7 +111,7 @@ void render(HDC *DC, platform* p)
     {
         hmm_mat4 trans = HMM_Translate({0,0,-600*abs(sin(p->current_time))});
         mat = HMM_MultiplyMat4(mat, trans);
-        render_cube(&c, mat);
+        //render_cube(&c, mat);
     }
     {
         hmm_vec3 rotation_axis = {p->dt*100,p->current_time};
@@ -112,7 +119,7 @@ void render(HDC *DC, platform* p)
         hmm_mat4 rotation = HMM_Rotate(sin(p->current_time)*20, rotation_axis);
         hmm_mat4 trans = HMM_Translate(c2.center);
         hmm_mat4 cm = HMM_Multiply(mat,HMM_Multiply(trans, rotation));
-        render_cube(&c2, cm);
+        //render_cube(&c2, cm);
     }
 
     if (debug_menu){ 
@@ -128,6 +135,16 @@ void render(HDC *DC, platform* p)
         std::string t3("ms: " + std::to_string(p->dt));
         print_text(&bmf,t3.c_str(),0,490, 20);
     }
+    {
+        glDisable(GL_DEPTH_TEST);
+        hmm_vec3 rotation_axis = {0,1,0};
+        rotation_axis = HMM_Normalize(rotation_axis);
+        hmm_mat4 rotation = HMM_Rotate(abs(sin(p->current_time)*180), rotation_axis);
+        hmm_mat4 model_mat = HMM_Translate({0,-1.5,-300}); //changing translate changes color???!
+        model_mat = HMM_MultiplyMat4(projection_matrix,HMM_MultiplyMat4(model_mat, rotation));
+        render_model(&m, model_mat);
+    }
+    glEnable(GL_DEPTH_TEST);
     SwapBuffers(*DC);
 
 }
