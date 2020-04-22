@@ -87,7 +87,7 @@ void update(platform* p)
     }
     view_matrix = get_view_mat(&cam);
     //projection_matrix =HMM_Orthographic(-10, 10, -10, 10, 90,300);
-    projection_matrix = HMM_Perspective(HMM_ToRadians(45.f),p->window_width / (float)p->window_height, 0.1f,1000.f); 
+    projection_matrix = HMM_Perspective(45.f,p->window_width / (float)p->window_height, 0.1f,100.f); 
 
     hmm_vec2 rect_pos = {1,0.5};
     hmm_vec2 rect_scale = {1,1};
@@ -140,7 +140,7 @@ void render(HDC *DC, platform* p)
         hmm_vec3 rotation_axis = {0,1,0};
         rotation_axis = HMM_Normalize(rotation_axis);
         hmm_mat4 rotation = HMM_Rotate(abs(sin(p->current_time)*180), rotation_axis);
-        hmm_mat4 model_mat = HMM_Translate({0,-1.5,-300}); //changing translate changes color???!
+        hmm_mat4 model_mat = HMM_Translate({0,-1.5,-30}); //changing translate changes color???!
         model_mat = HMM_MultiplyMat4(projection_matrix,HMM_MultiplyMat4(model_mat, rotation));
         render_model(&m, model_mat);
     }

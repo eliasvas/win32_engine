@@ -2,7 +2,7 @@
 #include "ext/tiny_obj_loader.h"
 #include "ext/HandmadeMath.h"
 #include "vector"
-//TODO(ilias): make my own obj loader... 
+#include "objloader.h"
 
 struct vertex
 {
@@ -15,7 +15,9 @@ struct model{
     GLuint vao;
     shader s;
     std::vector<vertex> vertices;
-    hmm_vec4 position; //??
+    hmm_vec4 position;
+    hmm_vec3 scale;
+    //quaternion rotation
 };
 
 static void

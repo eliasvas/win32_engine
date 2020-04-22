@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 typedef uint8_t   u8;
 typedef int8_t    i8;
