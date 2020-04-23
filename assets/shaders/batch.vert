@@ -17,7 +17,7 @@ void main()
 {
 	vec2 real_position = position;
 	//gl_Position = vec4(real_position.x + wps.x, real_position.y + wps.y, cos(iTime) * (-1800.0), 1.0);
-	gl_Position = vec4(real_position.x + wps.x, real_position.y + wps.y,0.0, 1.0);
+	gl_Position = vec4(real_position.x + wps.x, real_position.y + wps.y,-5.0, 1.0);
 	gl_Position = projection_matrix * gl_Position;
 	tex_unit = unit;
 	f_tex_coords = tex_coords;

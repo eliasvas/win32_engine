@@ -18,33 +18,33 @@ void init_camera (camera* cam)
     cam->front = {0.0f,0.0f,-1.0f};
 }
 //TODO(ilias): maybe put controls in camera??
-void update(platform* p, camera* cam)
+void update(camera* cam)
 {
     //a+= 0.01;
     //if (cam->pos.Z < 1.f)cam->pos = {0.f,0.f,300.f};
     //cam->pos.Z -= 1.f;
     //cam->pos.Z++;
-    if (p->key_down[KEY_A])
+    if (global_platform.key_down[KEY_A])
     {
         cam->pos.X -= 0.1f;
     }
-    if (p->key_down[KEY_D])
+    if (global_platform.key_down[KEY_D])
     {
         cam->pos.X += 0.1f;
     }
-    if (p->key_down[KEY_W])
+    if (global_platform.key_down[KEY_W])
     {
         cam->pos.Y += 0.1f;
     }
-    if (p->key_down[KEY_S])
+    if (global_platform.key_down[KEY_S])
     {
         cam->pos.Y -= 0.1f;
     }
-    if (p->key_down[KEY_Q])
+    if (global_platform.key_down[KEY_Q])
     {
         turn_camera_around_center(cam, 1.f);
     }
-   if (p->key_down[KEY_E])
+   if (global_platform.key_down[KEY_E])
     {
         turn_camera_around_center(cam, -1.f);
     }

@@ -55,7 +55,7 @@ static void
 renderer_begin(renderer* rend, f32 w, f32 h);
 
 static void 
-renderer_render(renderer* rend,float* proj, GLfloat time = 0.f);
+renderer_render(renderer* rend,float* proj);
 
 #include "renderer.c"
 

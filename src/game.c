@@ -45,7 +45,7 @@ b32 debug_menu = 1;
 void load_shaders(){
     shader_load(&basic,"../assets/shaders/basic.vert", "../assets/shaders/basic.frag");
 }
-void init()
+void init(void)
 {
     global_counter = 0.f;
 
@@ -67,27 +67,27 @@ void init()
     init_renderer(&rend);
 }
 
-void update(platform* p)
+void update(void)
 {
-    p->vsync = 1;
-    renderer_begin(&rend, p->window_width, p->window_height);
+    global_platform.vsync = 1;
+    renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
     global_counter += 0.1f;
-    update(p,&cam);
-    if (p->key_down[KEY_SPACE])
+    update(&cam);
+    if (global_platform.key_down[KEY_SPACE])
     {
         global_counter = 0.0f;
     }
-    if (p->key_pressed[KEY_R])
+    if (global_platform.key_pressed[KEY_R])
     {
         reload_shader_from_files(&basic.ID,basic.vertex_str,basic.fragment_str);
     }
-    if (p->key_pressed[KEY_TAB] != debug_menu)
+    if (global_platform.key_pressed[KEY_TAB] != debug_menu)
     {
        debug_menu = !debug_menu; 
     }
     view_matrix = get_view_mat(&cam);
     //projection_matrix =HMM_Orthographic(-10, 10, -10, 10, 90,300);
-    projection_matrix = HMM_Perspective(45.f,p->window_width / (float)p->window_height, 0.1f,100.f); 
+    projection_matrix = HMM_Perspective(45.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
 
     hmm_vec2 rect_pos = {1,0.5};
     hmm_vec2 rect_scale = {1,1};
@@ -99,24 +99,24 @@ void update(platform* p)
             //renderer_push(&rend, {(GLfloat)i,(GLfloat)j}, (GLuint)(0));
         }
     }
-    //renderer_push_rect(&rend, rect_pos, rect_scale);
-    //c.center.Z = 100* abs(sin(p->current_time));
+    renderer_push(&rend, {(GLfloat)-3.f,(GLfloat)0.0f},(GLuint)0);
+    renderer_push(&rend, {(GLfloat)2.f,(GLfloat)0.0f},(GLuint)1);
 }
 
-void render(HDC *DC, platform* p)
+void render(HDC *DC)
 {
     hmm_mat4 mat = projection_matrix;//HMM_Multiply(projection_matrix, view_matrix);//HMM_Translate({0.0,0.0,0.0});
-    renderer_render(&rend, (float*)mat.Elements, p->current_time);
+    renderer_render(&rend, (float*)mat.Elements);
     //rendering the cube
     {
-        hmm_mat4 trans = HMM_Translate({0,0,-600*abs(sin(p->current_time))});
+        hmm_mat4 trans = HMM_Translate({0,0,-600*abs(sin(global_platform.current_time))});
         mat = HMM_MultiplyMat4(mat, trans);
         //render_cube(&c, mat);
     }
     {
-        hmm_vec3 rotation_axis = {p->dt*100,p->current_time};
+        hmm_vec3 rotation_axis = {global_platform.dt*100,global_platform.current_time};
         rotation_axis = HMM_Normalize(rotation_axis);
-        hmm_mat4 rotation = HMM_Rotate(sin(p->current_time)*20, rotation_axis);
+        hmm_mat4 rotation = HMM_Rotate(sin(global_platform.current_time)*20, rotation_axis);
         hmm_mat4 trans = HMM_Translate(c2.center);
         hmm_mat4 cm = HMM_Multiply(mat,HMM_Multiply(trans, rotation));
         //render_cube(&c2, cm);
@@ -124,27 +124,28 @@ void render(HDC *DC, platform* p)
 
     if (debug_menu){ 
         print_text(&bmf,"|console|",0,570, 20);
-        std::string g_t = std::to_string(p->current_time);
+        std::string g_t = std::to_string(global_platform.current_time);
         g_t.resize(5);
         std::string t("time: " +g_t);
         print_text(&bmf,t.c_str(),0,540, 20);
-        std::string w = std::to_string(p->window_width);
-        std::string h = std::to_string(p->window_height);
+        std::string w = std::to_string(global_platform.window_width);
+        std::string h = std::to_string(global_platform.window_height);
         std::string t2("wsize: " + w + "x"+ h) ;
         print_text(&bmf,t2.c_str(),0,510, 20); 
-        std::string t3("ms: " + std::to_string(p->dt));
+        std::string t3("ms: " + std::to_string(global_platform.dt));
         print_text(&bmf,t3.c_str(),0,490, 20);
     }
     {
-        glDisable(GL_DEPTH_TEST);
+        //glDisable(GL_DEPTH_TEST);
         hmm_vec3 rotation_axis = {0,1,0};
         rotation_axis = HMM_Normalize(rotation_axis);
-        hmm_mat4 rotation = HMM_Rotate(abs(sin(p->current_time)*180), rotation_axis);
-        hmm_mat4 model_mat = HMM_Translate({0,-1.5,-30}); //changing translate changes color???!
+        hmm_mat4 rotation = HMM_Rotate(abs(sin(global_platform.current_time)*180), rotation_axis);
+        //hmm_mat4 model_mat = HMM_Translate({0,-5.5,-30.f + abs(sin(global_platform.current_time))*(-50)}); //changing translate changes color???!
+        hmm_mat4 model_mat = HMM_Translate({0,-5.5,-30.f -50}); //changing translate changes color???!
         model_mat = HMM_MultiplyMat4(projection_matrix,HMM_MultiplyMat4(model_mat, rotation));
         render_model(&m, model_mat);
+        //glEnable(GL_DEPTH_TEST);
     }
-    glEnable(GL_DEPTH_TEST);
     SwapBuffers(*DC);
 
 }

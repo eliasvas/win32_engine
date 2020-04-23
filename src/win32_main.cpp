@@ -1,10 +1,11 @@
 #define WIN32_LEAN_AND_MEAN
 char infoLog[512]; //errors are written in here!
+#include "platform.h"
+static platform global_platform;
 #include <windows.h>
 #include "win32_opengl.cpp"
 #include "game.c"
 #include "tb.h"
-#include "platform.h"
 #include "text.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "ext/stb_image.h"
@@ -15,7 +16,6 @@ char infoLog[512]; //errors are written in here!
 
 static LARGE_INTEGER fr,st,ft;
 static HDC global_device_context;
-static platform global_platform;
 
 static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l_param) {
     LRESULT result = {0};
@@ -160,8 +160,8 @@ WinMain(HINSTANCE Instance,
         f32 dt = (st.QuadPart - ft.QuadPart)/ (float)fr.QuadPart; //NOTE(ilias): check on actual simulation!!
         global_platform.dt = dt;
         global_platform.current_time +=1.f/60;//dt;
-        update(&global_platform);
-        render(&DC, &global_platform);
+        update();
+        render(&DC);
         QueryPerformanceCounter(&ft);
 
         if (global_platform.vsync){

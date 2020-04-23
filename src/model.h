@@ -6,17 +6,16 @@
 
 struct vertex
 {
-   hmm_vec3 position; 
-   hmm_vec3 normal;
-   hmm_vec2 tex_coord;
+   vec3 position; 
+   vec3 normal;
+   vec2 tex_coord;
 };
-
 struct model{
     GLuint vao;
     shader s;
     std::vector<vertex> vertices;
     hmm_vec4 position;
-    hmm_vec3 scale;
+    vec3 scale;
     //quaternion rotation
 };
 
@@ -38,13 +37,25 @@ load_model_data(std::vector<vertex>& vec, const char * obj_path, const char * mt
         {
             tinyobj::index_t i = mesh.indices[j];
 
-            hmm_vec3 position = {attributes.vertices[i.vertex_index * 3], attributes.vertices[i.vertex_index * 3 + 1], attributes.vertices[i.vertex_index * 3 + 2]};
-            hmm_vec3 normal = {attributes.vertices[i.normal_index * 3], attributes.vertices[i.normal_index * 3 + 1], attributes.vertices[i.normal_index * 3 + 2]};
-            hmm_vec2 tex_coord = {attributes.vertices[i.texcoord_index * 2], attributes.vertices[i.texcoord_index * 2 + 1]};
+            vec3 position = {attributes.vertices[i.vertex_index * 3], attributes.vertices[i.vertex_index * 3 + 1], attributes.vertices[i.vertex_index * 3 + 2]};
+            vec3 normal = {attributes.vertices[i.normal_index * 3], attributes.vertices[i.normal_index * 3 + 1], attributes.vertices[i.normal_index * 3 + 2]};
+            vec2 tex_coord = {attributes.vertices[i.texcoord_index * 2], attributes.vertices[i.texcoord_index * 2 + 1]};
 
             vertex v = {position, normal, tex_coord};
             vec.push_back(v);
         }
+    }
+}
+static void
+load_model_dataOG(std::vector<vertex>& vec, const char * obj_path, const char *mtl_path)
+{
+    std::vector<vec3> vertices;
+    std::vector<vec3> normals;
+    std::vector<vec2> uvs;
+    load_obj(vertices, normals, uvs, obj_path);
+    for (int i = 0; i < vertices.size(); ++i)
+    {
+        vec.push_back({vertices[i], normals[i], uvs[i]});
     }
 }
 
@@ -74,7 +85,10 @@ render_model(model* m, hmm_mat4 mvp)
     use_shader(&m->s);
     setMat4fv(&m->s, "MVP", (GLfloat*)mvp.Elements);
     glBindVertexArray(m->vao);
-    glDrawArrays(GL_TRIANGLES, 0, m->vertices.size());
+    //int mode = (int)(global_platform.current_time) % 3;
+    //if (mode == 2)mode = GL_TRIANGLES;
+    //glDrawArrays( mode,0, m->vertices.size());
+    glDrawArrays(GL_TRIANGLES,0, m->vertices.size());
     glBindVertexArray(0);
 }
 

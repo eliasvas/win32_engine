@@ -6,16 +6,17 @@
 
 using std::vector;
 
+//TODO(ilias): investigate, for some reason some normals are {0,0,0}
 static b32 load_obj(std::vector<vec3>& vertices_arr,std::vector<vec3>& normals_arr, std::vector<vec2>& uvs_arr,const char * filename)
 {
 	vector<vec3> temp_vertices;
 	vector<vec3> temp_normals;
 	vector<vec2> temp_uvs;
 	
-	FILE* file = fopen(filename, "rw");
+	FILE* file = fopen(filename, "r");
 	if (file == NULL)
 	{
-		printf("Error Opening File!\n");
+		printf("Error Opening File!\n"); //send to infoLog
 		return 0;
 	}
 	
@@ -63,5 +64,5 @@ static b32 load_obj(std::vector<vec3>& vertices_arr,std::vector<vec3>& normals_a
 			normals_arr.push_back(temp_normals[normals[2]-1]);
 		}
 	}
-	
+    return 1;	
 }
