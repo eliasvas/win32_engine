@@ -89,38 +89,15 @@ void update(void)
     //projection_matrix =HMM_Orthographic(-10, 10, -10, 10, 90,300);
     projection_matrix = HMM_Perspective(45.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
 
-    hmm_vec2 rect_pos = {1,0.5};
-    hmm_vec2 rect_scale = {1,1};
-    hmm_vec2 rect_pos2 = {0.6,0.6};
-    for (GLfloat i = -1.0f; i < 1.0f;i+=0.5)
-    {
-        for (GLfloat j = -1.0f; j < 1.0f; j+=0.5)
-        {
-            //renderer_push(&rend, {(GLfloat)i,(GLfloat)j}, (GLuint)(0));
-        }
-    }
     renderer_push(&rend, {(GLfloat)-3.f,(GLfloat)0.0f},(GLuint)0);
     renderer_push(&rend, {(GLfloat)2.f,(GLfloat)0.0f},(GLuint)1);
 }
 
 void render(HDC *DC)
 {
-    hmm_mat4 mat = projection_matrix;//HMM_Multiply(projection_matrix, view_matrix);//HMM_Translate({0.0,0.0,0.0});
+    //hmm_mat4 mat = projection_matrix;//HMM_Multiply(projection_matrix, view_matrix);//HMM_Translate({0.0,0.0,0.0});
+    hmm_mat4 mat = HMM_Multiply(projection_matrix, view_matrix);//HMM_Translate({0.0,0.0,0.0});
     renderer_render(&rend, (float*)mat.Elements);
-    //rendering the cube
-    {
-        hmm_mat4 trans = HMM_Translate({0,0,-600*abs(sin(global_platform.current_time))});
-        mat = HMM_MultiplyMat4(mat, trans);
-        //render_cube(&c, mat);
-    }
-    {
-        hmm_vec3 rotation_axis = {global_platform.dt*100,global_platform.current_time};
-        rotation_axis = HMM_Normalize(rotation_axis);
-        hmm_mat4 rotation = HMM_Rotate(sin(global_platform.current_time)*20, rotation_axis);
-        hmm_mat4 trans = HMM_Translate(c2.center);
-        hmm_mat4 cm = HMM_Multiply(mat,HMM_Multiply(trans, rotation));
-        //render_cube(&c2, cm);
-    }
 
     if (debug_menu){ 
         print_text(&bmf,"|console|",0,570, 20);
@@ -135,17 +112,16 @@ void render(HDC *DC)
         std::string t3("ms: " + std::to_string(global_platform.dt));
         print_text(&bmf,t3.c_str(),0,490, 20);
     }
+#ifdef TEAPOT
     {
-        //glDisable(GL_DEPTH_TEST);
         hmm_vec3 rotation_axis = {0,1,0};
         rotation_axis = HMM_Normalize(rotation_axis);
         hmm_mat4 rotation = HMM_Rotate(abs(sin(global_platform.current_time)*180), rotation_axis);
-        //hmm_mat4 model_mat = HMM_Translate({0,-5.5,-30.f + abs(sin(global_platform.current_time))*(-50)}); //changing translate changes color???!
         hmm_mat4 model_mat = HMM_Translate({0,-5.5,-30.f -50}); //changing translate changes color???!
         model_mat = HMM_MultiplyMat4(projection_matrix,HMM_MultiplyMat4(model_mat, rotation));
         render_model(&m, model_mat);
-        //glEnable(GL_DEPTH_TEST);
     }
+#endif
     SwapBuffers(*DC);
 
 }

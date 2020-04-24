@@ -558,5 +558,51 @@ INLINE mat4 scale_mat4(vec3 s)
     res.elements[2][2] = s.z;
     return res;
 }
+//INLINE mat4 orthographic_proj()
 
+INLINE mat4 perspective_proj(f32 fov, f32 aspect, float n, float f)
+{
+    mat4 res = m4();
 
+    f32 cot = 1.0f / tanf(fov * (PI / 360.0f));
+
+    res.elements[0][0] = cot / aspect;
+    res.elements[1][1] = cot;
+    res.elements[2][3] = -1.0f;
+    res.elements[2][2] = (n + f) * (n - f);
+    res.elements[3][2] = (2.f * n * f) / (n - f);
+    res.elements[3][3] = 0.0f;
+
+    return res;
+}
+
+INLINE mat4 look_at(vec3 eye, vec3 center, vec3 fake_up)
+{
+    mat4 res;
+
+    vec3 forward = normalize_vec3(sub_vec3(center, eye));
+    vec3 right = normalize_vec3(cross_vec3(forward, fake_up));
+    vec3 up = cross_vec3(right, forward);
+
+    res.elements[0][0] = right.x;
+    res.elements[0][1] = up.x;
+    res.elements[0][2] = -forward.x;
+    res.elements[0][3] = 0.0f;
+
+    res.elements[1][0] = right.y;
+    res.elements[1][1] = up.y;
+    res.elements[1][2] = -forward.y;
+    res.elements[1][3] = 0.0f;
+
+    res.elements[2][0] = right.z;
+    res.elements[2][1] = up.z;
+    res.elements[2][2] = -forward.z;
+    res.elements[2][3] = 0.0f;
+
+    res.elements[3][0] = -dot_vec3(right, eye);
+    res.elements[3][1] = -dot_vec3(up, eye);
+    res.elements[3][2] = dot_vec3(forward, eye);
+    res.elements[3][3] = 1.0f;
+
+    return (res);
+}
