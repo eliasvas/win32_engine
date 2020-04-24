@@ -14,7 +14,7 @@ struct model{
     GLuint vao;
     shader s;
     std::vector<vertex> vertices;
-    hmm_vec4 position;
+    vec4 position;
     vec3 scale;
     //quaternion rotation
 };
@@ -80,6 +80,20 @@ init_model (model* m, std::vector<vertex>& vertices)
 }
 
 static void 
+render_model(model* m, mat4 mvp)
+{
+    use_shader(&m->s);
+    setMat4fv(&m->s, "MVP", (GLfloat*)mvp.elements);
+    glBindVertexArray(m->vao);
+    //int mode = (int)(global_platform.current_time) % 3;
+    //if (mode == 2)mode = GL_TRIANGLES;
+    //glDrawArrays( mode,0, m->vertices.size());
+    glDrawArrays(GL_TRIANGLES,0, m->vertices.size());
+    glBindVertexArray(0);
+}
+
+
+static void 
 render_model(model* m, hmm_mat4 mvp)
 {
     use_shader(&m->s);
@@ -91,7 +105,6 @@ render_model(model* m, hmm_mat4 mvp)
     glDrawArrays(GL_TRIANGLES,0, m->vertices.size());
     glBindVertexArray(0);
 }
-
 
 
 

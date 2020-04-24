@@ -22,8 +22,8 @@ typedef double    f64;
 typedef int32_t   b32;
 typedef char      b8;
 
-//#define global         static
-//#define internal       static
+//#define global static
+//#define internal static
 //#define local_persist  static
 #define INLINE static inline
 
@@ -311,7 +311,7 @@ INLINE vec3 div_vec3f(vec3 l, f32 r)
 
 INLINE f32 dot_vec3(vec3 l, vec3 r)
 {
-    f32 res = (l.x + r.x)+(l.y + r.y)+(l.z + r.z); // Σ(Ai*Bi)
+    f32 res = (l.x * r.x)+(l.y * r.y)+(l.z * r.z); // Σ(Ai*Bi)
     return res;
 }
 
@@ -320,7 +320,7 @@ INLINE f32 length_vec3(vec3 v)
     f32 res = sqrt(dot_vec3(v,v)); // (x^2 + y^2)^(1/2)
     return res;
 }
-   
+
 INLINE vec3 normalize_vec3(vec3 v)
 {
     vec3 res = {0}; //in case length is zero we return zero vector
@@ -465,7 +465,7 @@ INLINE mat4 mul_mat4f(mat4 m, f32 s)
     {
         for (u32 j = 0; j < 4; ++j)
         {
-            res.elements[i][j] = m.elements[i][j] * s;
+            res.elements[i][j] = (f32)m.elements[i][j] * s;
         }
     }
     return res;
@@ -495,7 +495,7 @@ INLINE mat4 add_mat4(mat4 l, mat4 r)
     {
         for (u32 j = 0; j < 4; ++j)
         {
-            res.elements[i][j] = l.elements[i][j] + r.elements[i][j];
+            res.elements[i][j] = (f32)l.elements[i][j] + (f32)r.elements[i][j];
         }
     }
     return res;
@@ -525,7 +525,7 @@ INLINE mat4 mul_mat4(mat4 l, mat4 r)
             f32 sum = 0;
             for (u32 current_index = 0; current_index < 4; ++current_index)
             {
-                sum += l.elements[current_index][row] * r.elements[col][current_index];
+                sum += (f32)l.elements[current_index][row] * (f32)r.elements[col][current_index];
             }
             res.elements[col][row] = sum;
         }
@@ -560,7 +560,7 @@ INLINE mat4 scale_mat4(vec3 s)
 }
 //INLINE mat4 orthographic_proj()
 
-INLINE mat4 perspective_proj(f32 fov, f32 aspect, float n, float f)
+INLINE mat4 perspective_proj(f32 fov, f32 aspect, f32 n, f32 f)
 {
     mat4 res = m4();
 
@@ -569,7 +569,10 @@ INLINE mat4 perspective_proj(f32 fov, f32 aspect, float n, float f)
     res.elements[0][0] = cot / aspect;
     res.elements[1][1] = cot;
     res.elements[2][3] = -1.0f;
-    res.elements[2][2] = (n + f) * (n - f);
+
+    res.elements[2][2] = (n + f) *(n - f);
+    res.elements[2][2] = -1.0f;// WHAT IS THIS ABOMINATION
+
     res.elements[3][2] = (2.f * n * f) / (n - f);
     res.elements[3][3] = 0.0f;
 
@@ -578,30 +581,30 @@ INLINE mat4 perspective_proj(f32 fov, f32 aspect, float n, float f)
 
 INLINE mat4 look_at(vec3 eye, vec3 center, vec3 fake_up)
 {
-    mat4 res;
+    mat4 res = m4();
 
-    vec3 forward = normalize_vec3(sub_vec3(center, eye));
-    vec3 right = normalize_vec3(cross_vec3(forward, fake_up));
-    vec3 up = cross_vec3(right, forward);
+    vec3 f = normalize_vec3(sub_vec3(center, eye));
+    vec3 r = normalize_vec3(cross_vec3(f, fake_up));
+    vec3 up = cross_vec3(r, f);
 
-    res.elements[0][0] = right.x;
+    res.elements[0][0] = r.x;
     res.elements[0][1] = up.x;
-    res.elements[0][2] = -forward.x;
+    res.elements[0][2] = -f.x;
     res.elements[0][3] = 0.0f;
 
-    res.elements[1][0] = right.y;
+    res.elements[1][0] = r.y;
     res.elements[1][1] = up.y;
-    res.elements[1][2] = -forward.y;
+    res.elements[1][2] = -f.y;
     res.elements[1][3] = 0.0f;
 
-    res.elements[2][0] = right.z;
+    res.elements[2][0] = r.z;
     res.elements[2][1] = up.z;
-    res.elements[2][2] = -forward.z;
+    res.elements[2][2] = -f.z;
     res.elements[2][3] = 0.0f;
 
-    res.elements[3][0] = -dot_vec3(right, eye);
+    res.elements[3][0] = -dot_vec3(r, eye);
     res.elements[3][1] = -dot_vec3(up, eye);
-    res.elements[3][2] = dot_vec3(forward, eye);
+    res.elements[3][2] = dot_vec3(f, eye);
     res.elements[3][3] = 1.0f;
 
     return (res);

@@ -42,7 +42,7 @@ struct renderer
     i32 sprite_alloc_pos;
      
 
-    hmm_mat4 projection_matrix;
+    mat4 projection_matrix;
     u32 render_width, render_height;
     shader shaders[SHADER_MAX];
     texture tex[TEXTURE_MAX];
