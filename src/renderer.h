@@ -19,27 +19,29 @@ struct rect
 };
 #define RECT_SIZE sizeof(rect)
 
-struct sprite 
+struct renderable 
 {
     vec2 pos;
     vec2 scale;
     GLuint texture_unit;
     GLfloat opacity;
+    vec2 bl;
+    vec2 tex_dim;
     //..
 };
-#define SPRITE_SIZE sizeof(sprite)
+#define SPRITE_SIZE sizeof(renderable)
 
 struct renderer
 {
     GLuint rect_vao, vertex_vbo, rect_instance_vbo;
 
-    GLuint sprite_vao, sprite_instance_vbo;//..
+    GLuint renderable_vao, renderable_instance_vbo;//..
 
     rect rect_instance_data[RECT_MAX];
     i32 rect_alloc_pos;
 
-    sprite sprite_instance_data[SPRITE_MAX];
-    i32 sprite_alloc_pos;
+    renderable renderable_instance_data[SPRITE_MAX];
+    i32 renderable_alloc_pos;
      
 
     mat4 projection_matrix;

@@ -9,6 +9,7 @@
 #include "cube.h"
 #include "text.h"
 #include "renderer.h"
+#include "animation.h"
 #include "model.h"
 #include <string>  //just for to_string
 
@@ -37,6 +38,7 @@ static camera cam;
 static bitmap_font bmf;
 static cube c;
 static cube c2;
+static sprite s;
 static model m;
 static mat4 view_matrix;
 static mat4 projection_matrix;
@@ -64,6 +66,12 @@ void init(void)
         init_model(&m, m.vertices);
     }
 
+    {
+        animation_info info; 
+        init_animation_info(&info,{0.0f,0.0f}, {1.f/6.f, 1.0f}, 2, 6, 0.2f, 0);
+        init_sprite(&s, {-2.5,0.0},{1.0,1.0}, 2, 1.f, info);
+    }
+
     init_renderer(&rend);
 }
 
@@ -73,6 +81,7 @@ void update(void)
     renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
     global_counter += 0.1f;
     update(&cam);
+    update_animation_info(&s.info);
     if (global_platform.key_pressed[KEY_R])
     {
         reload_shader_from_files(&basic.ID,basic.vertex_str,basic.fragment_str);
@@ -85,8 +94,9 @@ void update(void)
     //projection_matrix =HMM_Orthographic(-10, 10, -10, 10, 90,300);
     projection_matrix = perspective_proj(45.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
 
-    renderer_push(&rend, {(GLfloat)-3.f,(GLfloat)0.0f},(GLuint)0);
-    renderer_push(&rend, {(GLfloat)2.f,(GLfloat)0.0f},(GLuint)1);
+    int current_frame = ((int)global_platform.current_time) % 6; 
+    renderer_push(&rend, {(GLfloat)2.f,(GLfloat)0.0f},(GLuint)0);
+    renderer_push(&rend, s.pos, s.texture_unit, (s.info).bottom_left, (s.info).dim);
 }
 
 void render(HDC *DC)

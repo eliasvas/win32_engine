@@ -570,8 +570,7 @@ INLINE mat4 perspective_proj(f32 fov, f32 aspect, f32 n, f32 f)
     res.elements[1][1] = cot;
     res.elements[2][3] = -1.0f;
 
-    res.elements[2][2] = (n + f) *(n - f);
-    res.elements[2][2] = -1.0f;// WHAT IS THIS ABOMINATION
+    res.elements[2][2] = (n + f)/(n - f);
 
     res.elements[3][2] = (2.f * n * f) / (n - f);
     res.elements[3][3] = 0.0f;

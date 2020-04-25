@@ -18,10 +18,10 @@ init_renderer(renderer* rend)
 
 
 
-    {//initializing sprite VAO
-        glGenVertexArrays(1, &rend->sprite_vao);    
-        glBindVertexArray(rend->sprite_vao);
-        glGenBuffers(1, &rend->sprite_instance_vbo);
+    {//initializing renderable VAO
+        glGenVertexArrays(1, &rend->renderable_vao);    
+        glBindVertexArray(rend->renderable_vao);
+        glGenBuffers(1, &rend->renderable_instance_vbo);
         glGenBuffers(1,&rend->vertex_vbo);
 
         //binding per-vertex vbo
@@ -37,24 +37,34 @@ init_renderer(renderer* rend)
 
 
         //binding per-instance vbo
-        glBindBuffer(GL_ARRAY_BUFFER,rend->sprite_instance_vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(rend->sprite_instance_data),  rend->sprite_instance_data,GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER,rend->renderable_instance_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(rend->renderable_instance_data),  rend->renderable_instance_data,GL_DYNAMIC_DRAW);
         //position (per-instance)
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(sprite), (GLvoid*)0);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(renderable), (GLvoid*)0);
         glVertexAttribDivisor(2, 1);
         //scale (per-instance)
         glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(sprite), (GLvoid*)(2* sizeof(GLfloat)));
+        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(renderable), (GLvoid*)(2* sizeof(GLfloat)));
         glVertexAttribDivisor(3, 1);
         //texture unit (per-instance)
         glEnableVertexAttribArray(4);
-        glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT, sizeof(sprite), (GLvoid*)(4 * sizeof(GLfloat)));
+        glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT, sizeof(renderable), (GLvoid*)(4 * sizeof(GLfloat)));
         glVertexAttribDivisor(4, 1);
         //opacity (per-instance)
         glEnableVertexAttribArray(5);
-        glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(sprite), (GLvoid*)(5 * sizeof(GLfloat)));
+        glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(renderable), (GLvoid*)(5 * sizeof(GLfloat)));
         glVertexAttribDivisor(5, 1);
+        //bottom_left coord
+        glEnableVertexAttribArray(6);
+        glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(renderable), (GLvoid*)(6 * sizeof(GLfloat)));
+        glVertexAttribDivisor(6, 1);
+        //tex_dim
+        glEnableVertexAttribArray(7);
+        glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(renderable), (GLvoid*)(8 * sizeof(GLfloat)));
+        glVertexAttribDivisor(7, 1);
+
+
 
 
 
@@ -65,10 +75,14 @@ init_renderer(renderer* rend)
 
     shader_load(&rend->shaders[0], "../assets/shaders/batch.vert", "../assets/shaders/batch.frag");
 
+    //TODO make texture loading dynamic!!!!!!!!!! <---
     load_texture(&rend->tex[0],"../assets/verybadguy.png");
     rend->tex_count++;
     load_texture(&rend->tex[1],"../assets/notsobadguy.png");
     rend->tex_count++;
+    load_texture(&rend->tex[2],"../assets/runimation.png");
+    rend->tex_count++;
+
 }
 
 static void
@@ -76,10 +90,10 @@ renderer_render(renderer* rend,float* proj)
 {
     vec2 texture_sizes[TEXTURE_MAX];
 
-    glBindVertexArray(rend->sprite_vao);
+    glBindVertexArray(rend->renderable_vao);
     //update the isntanced array
-    glBindBuffer(GL_ARRAY_BUFFER, rend->sprite_instance_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rend->sprite_instance_data), rend->sprite_instance_data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, rend->renderable_instance_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(rend->renderable_instance_data), rend->renderable_instance_data, GL_STATIC_DRAW);
 
 
     for (i32 i = 0; i< rend->tex_count;++i)
@@ -94,8 +108,8 @@ renderer_render(renderer* rend,float* proj)
 
     //passing the available tex_units as uniform
     GLuint loc = glGetUniformLocation(rend->shaders[0].ID, "slots");
-    GLint arr[2] = {0,1};
-    glUniform1iv(loc, 2,arr);
+    GLint arr[3] = {0,1,2};
+    glUniform1iv(loc, 3,arr);
 
     //passing the dimensions of the available tex_units as uniform
     loc = glGetUniformLocation(rend->shaders[0].ID, "tex_sizes");
@@ -105,8 +119,8 @@ renderer_render(renderer* rend,float* proj)
     glUniform1f(loc, global_platform.current_time);
 
 
-    //glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->sprite_alloc_pos); // 10 diamonds, 4 vertices per instance
-    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->sprite_alloc_pos); // 10 diamonds, 4 vertices per instance
+    //glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->renderable_alloc_pos); // 10 diamonds, 4 vertices per instance
+    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->renderable_alloc_pos); // 10 diamonds, 4 vertices per instance
     glBindVertexArray(0);
 }
 
@@ -116,23 +130,31 @@ renderer_begin(renderer* rend, i32 w, i32 h)
     rend->render_width = w;
     rend->render_height = h;
     rend->rect_alloc_pos = 0;
-    rend->sprite_alloc_pos = 0;
+    rend->renderable_alloc_pos = 0;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.1f, 0.1f, 0.1f, 1);
     glViewport(0, 0, (GLsizei)rend->render_width, (GLsizei)(rend->render_height)); //for some reason this is the only viewport called
     //glViewport(0, 0, (GLsizei)rend->render_width, (GLsizei)(rend->render_height*(w/(float)h))); //this is the holy saviour???
     //NOTE(ilias): projection matrix should be provided at initialization..
-    //rend->projection_matrix = perspective_proj(adians(45.f),800.f/600.f, 0.1f,200.f); //TODO(ilias): change to HMM_Orthographic!! 
 }
 
 static void
 renderer_push(renderer* rend, vec2 offset, GLuint unit)
 {
 
-    sprite to_add = {offset,{1,1}, unit,1.0f};
-    //rend->sprite_instance_data[rend->sprite_alloc_pos/sizeof(sprite)] = to_add; //NOTE(ilias): maybe memcpy
-    rend->sprite_instance_data[rend->sprite_alloc_pos] = to_add; //NOTE(ilias): maybe memcpy
-    rend->sprite_alloc_pos++; 
+    renderable to_add = {offset,{1,1}, unit,1.0f,{0.0f,0.0f},{1.0f,1.0f}};
+    //rend->renderable_instance_data[rend->renderable_alloc_pos/sizeof(renderable)] = to_add; //NOTE(ilias): maybe memcpy
+    rend->renderable_instance_data[rend->renderable_alloc_pos] = to_add; //NOTE(ilias): maybe memcpy
+    rend->renderable_alloc_pos++; 
+}
+
+static void
+renderer_push(renderer* rend, vec2 offset, GLuint unit, vec2 bl, vec2 dim)
+{
+    renderable to_add = {offset,{1,1}, unit,1.0f,bl,dim};
+    //rend->renderable_instance_data[rend->renderable_alloc_pos/sizeof(renderable)] = to_add; //NOTE(ilias): maybe memcpy
+    rend->renderable_instance_data[rend->renderable_alloc_pos] = to_add; //NOTE(ilias): maybe memcpy
+    rend->renderable_alloc_pos++; 
 }
 
 
