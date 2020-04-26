@@ -27,6 +27,7 @@ struct renderable
     GLfloat opacity;
     vec2 bl;
     vec2 tex_dim;
+    GLuint flip;
     //..
 };
 #define SPRITE_SIZE sizeof(renderable)

@@ -60,6 +60,7 @@ struct sprite
     vec2 scale;
     GLuint texture_unit;
     GLfloat opacity;
+    u32 flip;
     animation_info info;
 };
 
@@ -71,5 +72,6 @@ init_sprite(sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, a
     s->texture_unit = tex_unit;
     s->opacity = opacity;
     s->info = info;
+    s->flip = 0;
 }
 

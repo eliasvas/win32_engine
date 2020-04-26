@@ -49,6 +49,22 @@ static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l
              {
                  key_input = KEY_TAB;
              }
+            else if (vkey_code == VK_LEFT)
+            {
+                key_input = KEY_LEFT;
+            }
+            else if (vkey_code == VK_RIGHT)
+            {
+                key_input = KEY_RIGHT;
+            }
+            else if (vkey_code == VK_UP)
+            {
+                key_input = KEY_UP;
+            }
+            else if (vkey_code == VK_DOWN)
+            {
+                key_input = KEY_DOWN;
+            }
             //handle more keys
         }
         if (is_down){
