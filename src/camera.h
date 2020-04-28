@@ -1,23 +1,23 @@
 #include "ext/HandmadeMath.h"
 float a = 0.f;
-struct camera
+struct Camera
 {
     vec3 pos;
     vec3 dir;
     vec3 front;
 };
 
-void turn_camera_around_center(camera* cam, f32 degrees)
+void turn_camera_around_center(Camera* cam, f32 degrees)
 {
 }
 
-void init_camera (camera* cam)
+void init_camera (Camera* cam)
 {
-    cam->pos = {0.f,0.f,0.f};
+    cam->pos = {0.f,0.f,4.f};
     cam->front = {0.0f,0.0f,-1.0f};
 }
 //TODO(ilias): maybe put controls in camera??
-void update(camera* cam)
+void update(Camera* cam)
 {
     //a+= 0.01;
     //if (cam->pos.Z < 1.f)cam->pos = {0.f,0.f,300.f};
@@ -51,7 +51,7 @@ void update(camera* cam)
     //cam->pos = {cam->pos[0] + cos(a),cam->pos[1] + sin(a)};
 }
 
-mat4 get_view_mat(camera* cam)
+mat4 get_view_mat(Camera* cam)
 {
     mat4 camera = look_at(cam->pos,add_vec3(cam->pos, {0.0,0.0,-1.0}),{0.f,1.f,0.f});
     //hmm_mat4 camera = HMM_LookAt(cam->pos, HMM_SubtractVec3({0.0,0.0,0.0}, cam->pos),{0.f,1.f,0.f});

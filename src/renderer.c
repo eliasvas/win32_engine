@@ -9,6 +9,7 @@ static void
 init_renderer(renderer* rend)
 {
     rend->tex_count = 0;
+   
     GLfloat vertices[8] = {
                             0.0f,0.0f,
                             1.0f,0.0f,
@@ -41,31 +42,31 @@ init_renderer(renderer* rend)
         glBufferData(GL_ARRAY_BUFFER, sizeof(rend->renderable_instance_data),  rend->renderable_instance_data,GL_DYNAMIC_DRAW);
         //position (per-instance)
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(renderable), (GLvoid*)0);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Renderable), (GLvoid*)0);
         glVertexAttribDivisor(2, 1);
         //scale (per-instance)
         glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(renderable), (GLvoid*)(2* sizeof(GLfloat)));
+        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Renderable), (GLvoid*)(2* sizeof(GLfloat)));
         glVertexAttribDivisor(3, 1);
         //texture unit (per-instance)
         glEnableVertexAttribArray(4);
-        glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT, sizeof(renderable), (GLvoid*)(4 * sizeof(GLfloat)));
+        glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT, sizeof(Renderable), (GLvoid*)(4 * sizeof(GLfloat)));
         glVertexAttribDivisor(4, 1);
         //opacity (per-instance)
         glEnableVertexAttribArray(5);
-        glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(renderable), (GLvoid*)(5 * sizeof(GLfloat)));
+        glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Renderable), (GLvoid*)(5 * sizeof(GLfloat)));
         glVertexAttribDivisor(5, 1);
         //bottom_left coord
         glEnableVertexAttribArray(6);
-        glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(renderable), (GLvoid*)(6 * sizeof(GLfloat)));
+        glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(Renderable), (GLvoid*)(6 * sizeof(GLfloat)));
         glVertexAttribDivisor(6, 1);
         //tex_dim
         glEnableVertexAttribArray(7);
-        glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(renderable), (GLvoid*)(8 * sizeof(GLfloat)));
+        glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(Renderable), (GLvoid*)(8 * sizeof(GLfloat)));
         glVertexAttribDivisor(7, 1);
         //flip
         glEnableVertexAttribArray(8);
-        glVertexAttribIPointer(8, 1, GL_UNSIGNED_INT, sizeof(renderable), (GLvoid*)(10 * sizeof(GLfloat)));
+        glVertexAttribIPointer(8, 1, GL_UNSIGNED_INT, sizeof(Renderable), (GLvoid*)(10 * sizeof(GLfloat)));
         glVertexAttribDivisor(8, 1);
 
 
@@ -147,7 +148,7 @@ static void
 renderer_push(renderer* rend, vec2 offset,vec2 scale, GLuint unit, GLuint flip = 0)
 {
 
-    renderable to_add = {offset,scale, unit,1.0f,{0.0f,0.0f},{1.0f,1.0f}, flip};
+    Renderable to_add = {offset,scale, unit,1.0f,{0.0f,0.0f},{1.0f,1.0f}, flip};
     rend->renderable_instance_data[rend->renderable_alloc_pos] = to_add; //NOTE(ilias): maybe memcpy
     rend->renderable_alloc_pos++; 
 }
@@ -155,8 +156,8 @@ renderer_push(renderer* rend, vec2 offset,vec2 scale, GLuint unit, GLuint flip =
 static void
 renderer_push(renderer* rend, vec2 offset,vec2 scale, GLuint unit, vec2 bl, vec2 dim, GLuint flip = 0)
 {
-    renderable to_add = {offset,scale, unit,1.0f,bl,dim, flip};
-    //rend->renderable_instance_data[rend->renderable_alloc_pos/sizeof(renderable)] = to_add; //NOTE(ilias): maybe memcpy
+    Renderable to_add = {offset,scale, unit,1.0f,bl,dim, flip};
+    //rend->renderable_instance_data[rend->renderable_alloc_pos/sizeof(Renderable)] = to_add; //NOTE(ilias): maybe memcpy
     rend->renderable_instance_data[rend->renderable_alloc_pos] = to_add; //NOTE(ilias): maybe memcpy
     rend->renderable_alloc_pos++; 
 }

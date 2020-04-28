@@ -11,15 +11,15 @@
 #define SPRITE_MAX 32
 #define DIAMOND_SIZE sizeof(float)
 
-struct rect 
+struct Rect 
 {
     vec2 pos;
     vec2 scale;
     f32 color;
 };
-#define RECT_SIZE sizeof(rect)
+#define RECT_SIZE sizeof(Rect)
 
-struct renderable 
+struct Renderable 
 {
     vec2 pos;
     vec2 scale;
@@ -30,7 +30,7 @@ struct renderable
     GLuint flip;
     //..
 };
-#define SPRITE_SIZE sizeof(renderable)
+#define SPRITE_SIZE sizeof(Renderable)
 
 struct renderer
 {
@@ -38,17 +38,17 @@ struct renderer
 
     GLuint renderable_vao, renderable_instance_vbo;//..
 
-    rect rect_instance_data[RECT_MAX];
+    Rect rect_instance_data[RECT_MAX];
     i32 rect_alloc_pos;
 
-    renderable renderable_instance_data[SPRITE_MAX];
+    Renderable renderable_instance_data[SPRITE_MAX];
     i32 renderable_alloc_pos;
      
 
     mat4 projection_matrix;
     u32 render_width, render_height;
-    shader shaders[SHADER_MAX];
-    texture tex[TEXTURE_MAX];
+    Shader shaders[SHADER_MAX];
+    Texture tex[TEXTURE_MAX];
     i32 tex_count;
 };
 static void 

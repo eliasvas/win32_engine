@@ -3,7 +3,7 @@
 #define KEY_MAX 100
 
 
-struct platform
+struct Platform
 {
     i32 window_width;
     i32 window_height;

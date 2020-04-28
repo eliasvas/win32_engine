@@ -11,14 +11,14 @@
 #pragma once
 
 //char infoLog[512];
-struct shader
+struct Shader
 {
     GLuint ID;   
     const char* vertex_str;
     const char* fragment_str;
 };
 
-void use_shader(shader* shader)
+void use_shader(Shader* shader)
 {
     glUseProgram(shader->ID);
 }
@@ -75,7 +75,7 @@ static GLuint load_shader_from_strings (const char * vertex_str, const char * fr
     glDeleteShader(fragment);
     return ID;
 }
-static void shader_load (shader* s, const char * vertex_path, const char * fragment_path)
+static void shader_load (Shader* s, const char * vertex_path, const char * fragment_path)
 {
     s->vertex_str = vertex_path;
     s->fragment_str = fragment_path;
@@ -87,7 +87,7 @@ static void shader_load (shader* s, const char * vertex_path, const char * fragm
 
 static void reload_shader_from_files( GLuint* program, const char* vertex_shader_filename, const char* fragment_shader_filename ) {
   assert( program && vertex_shader_filename && fragment_shader_filename );
-  shader new_shader;
+  Shader new_shader;
   shader_load(&new_shader,vertex_shader_filename, fragment_shader_filename );
   if ( new_shader.ID ) {
     glDeleteProgram( *program );
@@ -95,22 +95,22 @@ static void reload_shader_from_files( GLuint* program, const char* vertex_shader
   }
 }
 static void 
-setBool(shader* shader, const std::string &name, bool value)
+setBool(Shader* shader, const std::string &name, bool value)
 {         
     glUniform1i(glGetUniformLocation(shader->ID, name.c_str()), (int)value); 
 }
 static void 
-setInt(shader* shader, const std::string &name, i32 value)
+setInt(Shader* shader, const std::string &name, i32 value)
 { 
     glUniform1i(glGetUniformLocation(shader->ID, name.c_str()), value); 
 }
 static void 
-setFloat(shader * shader, const std::string &name, f32 value)
+setFloat(Shader * shader, const std::string &name, f32 value)
 { 
     glUniform1f(glGetUniformLocation(shader->ID, name.c_str()), value); 
 } 
 static void 
-setMat4fv(shader * shader, const std::string &name, f32* value)
+setMat4fv(Shader * shader, const std::string &name, f32* value)
 { 
     glUniformMatrix4fv(glGetUniformLocation(shader->ID, name.c_str()),1,GL_FALSE, value);  //NOTE(ilias): check
 }

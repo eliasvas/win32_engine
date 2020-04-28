@@ -1,9 +1,10 @@
 #pragma once
 #include "tb.h"
 #include "shader.h"
+#include "physics.h"
 #include "texture.h"
 
-struct animation_info
+struct AnimationInfo
 { 
     vec2 bottom_left;
     vec2 dim;
@@ -17,7 +18,7 @@ struct animation_info
 };
 
 static void
-init_animation_info(animation_info* info, vec2 bl, vec2 dim, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
+init_animation_info(AnimationInfo* info, vec2 bl, vec2 dim, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
 {
     info->bottom_left = bl;
     info->dim = dim;
@@ -31,10 +32,10 @@ init_animation_info(animation_info* info, vec2 bl, vec2 dim, f32 tex_unit, i32 f
 }
 
 static void 
-update_animation_info(animation_info* info)
+update_animation_info(AnimationInfo* info)
 {
    if(info->done)return; 
-   info->bottom_left = {(float)(info->frame +1)/ (float)info->frame_count,0.f}; //TODO(ilias): make animations_span many y's
+   info->bottom_left = {(float)(info->frame +1)/ (float)info->frame_count,info->bottom_left.y}; //TODO(ilias): make animations_span many y's
     info->time_left -= global_platform.dt;
     if (info->time_left < 0.f)
     {
@@ -54,18 +55,19 @@ update_animation_info(animation_info* info)
     }
 }
 
-struct sprite
+struct Sprite
 {
     vec2 pos;
     vec2 scale;
+    Box box;
     GLuint texture_unit;
     GLfloat opacity;
     u32 flip;
-    animation_info info;
+    AnimationInfo info;
 };
 
 static void
-init_sprite(sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, animation_info info)
+init_sprite(Sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, AnimationInfo info)
 {
     s->pos = pos;
     s->scale = scale;
@@ -73,5 +75,7 @@ init_sprite(sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, a
     s->opacity = opacity;
     s->info = info;
     s->flip = 0;
+    init_Box(&s->box,pos, add_vec2(pos,scale)); //because our coordinates are in [0,1]
+
 }
 

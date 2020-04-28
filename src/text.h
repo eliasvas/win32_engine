@@ -2,28 +2,28 @@
 #include <vector> //what a disgrace!! NOTE(ilias): replace with fixed sized array
 #include "ext/HandmadeMath.h"
 #include "shader.h"
-#include "texture.h"
+#include "Texture.h"
 
 
-struct bitmap_font
+struct BitmapFont 
 {
     GLuint VAO, vertex_buffer, uv_buffer;
-    texture tex;
-    shader s;
+    Texture tex;
+    Shader s;
 };
 
 static void 
-init_text(bitmap_font* f, const char * texture_path)
+init_text(BitmapFont* f, const char * Texture_path)
 {
     glGenVertexArrays(1, &f->VAO);
     glGenBuffers(1, &f->vertex_buffer);
     glGenBuffers(1, &f->uv_buffer);
 
     shader_load(&f->s, "../assets/shaders/text.vert", "../assets/shaders/text.frag");
-    load_texture(&f->tex,texture_path);
+    load_texture(&f->tex,Texture_path);
 }
 static void                                //start end finish is the interval to print in text
-print_text(bitmap_font *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32 size)
+print_text(BitmapFont *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32 size)
 {
 
     u32 length = strlen(text);
@@ -53,8 +53,8 @@ print_text(bitmap_font *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32
         vertices.push_back(v_down_left);
         /*
          every UV is basically in range [0 1] and it denotes the coordinates to sample
-         inside the texture, every (ASCII) character has uv_x = (c%16) /16.f and uv_y = (c/16)/16.f
-         now, we must have the UV-coordinates of every letter in our texture atlas, and every letter
+         inside the Texture, every (ASCII) character has uv_x = (c%16) /16.f and uv_y = (c/16)/16.f
+         now, we must have the UV-coordinates of every letter in our Texture atlas, and every letter
          in our atlas is composed of 4 points (it's a QUAD) so we need to find them:
         */
         char letter = text[i]; //NOTE(ilias): getting the last byte, which is its ASCII encoding value
@@ -105,7 +105,7 @@ print_text(bitmap_font *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32
 
 
 static void 
-print_text(bitmap_font *f,const char*text, i32 x,i32 y, i32 size)
+print_text(BitmapFont *f,const char*text, i32 x,i32 y, i32 size)
 {
 
     u32 length = strlen(text);
@@ -135,8 +135,8 @@ print_text(bitmap_font *f,const char*text, i32 x,i32 y, i32 size)
         vertices.push_back(v_down_left);
         /*
          every UV is basically in range [0 1] and it denotes the coordinates to sample
-         inside the texture, every (ASCII) character has uv_x = (c%16) /16.f and uv_y = (c/16)/16.f
-         now, we must have the UV-coordinates of every letter in our texture atlas, and every letter
+         inside the Texture, every (ASCII) character has uv_x = (c%16) /16.f and uv_y = (c/16)/16.f
+         now, we must have the UV-coordinates of every letter in our Texture atlas, and every letter
          in our atlas is composed of 4 points (it's a QUAD) so we need to find them:
         */
         char letter = text[i]; //NOTE(ilias): getting the last byte, which is its ASCII encoding value
@@ -186,7 +186,7 @@ print_text(bitmap_font *f,const char*text, i32 x,i32 y, i32 size)
 }
 
 static void 
-cleanup_text(bitmap_font *f)
+cleanup_text(BitmapFont *f)
 {
 
 }

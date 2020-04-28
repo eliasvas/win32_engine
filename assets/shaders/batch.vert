@@ -22,7 +22,7 @@ uniform mat4 projection_matrix;
 void main()
 {
 	vec2 real_position = position * scale;
-	gl_Position = vec4(real_position.x + wps.x, real_position.y + wps.y,-5.0, 1.0);
+	gl_Position = vec4(real_position.x + wps.x, real_position.y + wps.y,-1.0, 1.0);
 	gl_Position = projection_matrix * gl_Position;
 	tex_unit = unit;
 	f_opacity = opacity;
@@ -31,7 +31,7 @@ void main()
 	f_dim = dim;
 	
 	//very slow please change
-	vec2 real_tex_coords = tex_coords	;
+	vec2 real_tex_coords = tex_coords;
 	if (flip)
 	{
 		if (real_tex_coords.x  < 0.01f)

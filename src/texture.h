@@ -2,14 +2,14 @@
 #include "tb.h"
 #include "ext/stb_image.h"
 
-struct texture 
+struct Texture 
 {
     GLuint id;
     u32 width;
     u32 height;
 };
 
-static b32 load_texture(texture* tex,const char *filename)
+static b32 load_texture(Texture* tex,const char *filename)
 {
     b32 result = 0;
     glGenTextures(1, &tex->id);

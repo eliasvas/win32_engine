@@ -1,7 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 char infoLog[512]; //errors are written in here!
 #include "platform.h"
-static platform global_platform;
+static Platform global_platform;
 #include <windows.h>
 #include "win32_opengl.cpp"
 #include "game.c"
@@ -155,7 +155,7 @@ WinMain(HINSTANCE Instance,
     QueryPerformanceFrequency(&fr);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-    glEnable(GL_BLEND);
+    glEnable(GL_BLEND); // <-- this fucker makes artifacts appear in animaiton
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
     //glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);

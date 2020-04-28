@@ -558,7 +558,23 @@ INLINE mat4 scale_mat4(vec3 s)
     res.elements[2][2] = s.z;
     return res;
 }
-//INLINE mat4 orthographic_proj()
+
+INLINE mat4 orthographic_proj(float l, float r, float b, float t, float n, float f)
+{
+    mat4 res = m4();
+
+    //the quotents are in reverse because we were supposed to do one more matrix multiplication to negate Z..
+    res.elements[0][0] = 2.0f / (r - l);
+    res.elements[1][1] = 2.0f / (t - b);
+    res.elements[2][2] = 2.0f / (n - f);
+    res.elements[3][3] = 1.0f;
+
+    res.elements[3][0] = (l + r) / (l - r);
+    res.elements[3][1] = (b + t) / (b - t);
+    res.elements[3][2] = (f + n) / (n - f);
+
+    return res;
+}
 
 INLINE mat4 perspective_proj(f32 fov, f32 aspect, f32 n, f32 f)
 {
@@ -606,5 +622,6 @@ INLINE mat4 look_at(vec3 eye, vec3 center, vec3 fake_up)
     res.elements[3][2] = dot_vec3(f, eye);
     res.elements[3][3] = 1.0f;
 
-    return (res);
+    return res;
 }
+

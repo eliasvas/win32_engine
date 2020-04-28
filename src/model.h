@@ -10,9 +10,9 @@ struct vertex
    vec3 normal;
    vec2 tex_coord;
 };
-struct model{
+struct Model{
     GLuint vao;
-    shader s;
+    Shader s;
     std::vector<vertex> vertices;
     vec4 position;
     vec3 scale;
@@ -60,7 +60,7 @@ load_model_dataOG(std::vector<vertex>& vec, const char * obj_path, const char *m
 }
 
 static void 
-init_model (model* m, std::vector<vertex>& vertices)
+init_model (Model* m, std::vector<vertex>& vertices)
 {
     glGenVertexArrays(1, &m->vao);
     glBindVertexArray(m->vao);
@@ -80,7 +80,7 @@ init_model (model* m, std::vector<vertex>& vertices)
 }
 
 static void 
-render_model(model* m, mat4 mvp)
+render_model(Model* m, mat4 mvp)
 {
     use_shader(&m->s);
     setMat4fv(&m->s, "MVP", (GLfloat*)mvp.elements);
@@ -94,7 +94,7 @@ render_model(model* m, mat4 mvp)
 
 
 static void 
-render_model(model* m, hmm_mat4 mvp)
+render_model(Model* m, hmm_mat4 mvp)
 {
     use_shader(&m->s);
     setMat4fv(&m->s, "MVP", (GLfloat*)mvp.Elements);

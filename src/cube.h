@@ -2,15 +2,15 @@
 #include "ext/HandmadeMath.h" 
 #include "shader.h"
 
-struct cube
+struct Cube
 {
     GLuint VAO;
     hmm_vec3 center;
-    shader cube_shader; //maybe put it ouside the struct or make it static(???)
+    Shader cube_shader; //maybe put it ouside the struct or make it static(???)
 };
 
 static void 
-init_cube(cube* c)
+init_cube(Cube* c)
 {
     shader_load(&c->cube_shader,"../assets/shaders/colored_cube.vert", "../assets/shaders/colored_cube.frag");
     float vertices[] = {
@@ -77,7 +77,7 @@ init_cube(cube* c)
 }
 
 static void
-render_cube(cube* c, hmm_mat4 projection_matrix)
+render_cube(Cube* c, hmm_mat4 projection_matrix)
 {
     use_shader(&c->cube_shader);
 
