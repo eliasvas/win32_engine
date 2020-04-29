@@ -75,24 +75,25 @@ init_quad(quad* q)
 
 
 static void 
-render_quad(quad* q, float* m)
+render_quad(quad* q, float* m, f32 red = 0.f)
 {
     use_shader(&q->s);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, q->t.id);
     setMat4fv(&q->s, "MVP", m);
+    setFloat(&q->s, "red", red);
     glBindVertexArray(q->VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
 static void 
-render_quad_as_lines(quad* q, float* m)
+render_collider(quad* q, float* m,f32 red = 0.f)
 {
     use_shader(&q->s);
     setMat4fv(&q->s, "MVP", m);
+    setFloat(&q->s, "red", red);
     glBindVertexArray(q->VAO);
-    glPointSize(10);
     glDrawArrays(GL_LINE_LOOP, 0, 4);
     glBindVertexArray(0);
 }

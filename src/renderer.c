@@ -88,6 +88,9 @@ init_renderer(renderer* rend)
     rend->tex_count++;
     load_texture(&rend->tex[2],"../assets/runimation.png");
     rend->tex_count++;
+    load_texture(&rend->tex[3],"../assets/bat.png");
+    rend->tex_count++;
+
 
 }
 
@@ -114,8 +117,8 @@ renderer_render(renderer* rend,float* proj)
 
     //passing the available tex_units as uniform
     GLuint loc = glGetUniformLocation(rend->shaders[0].ID, "slots");
-    GLint arr[3] = {0,1,2};
-    glUniform1iv(loc, 3,arr);
+    GLint arr[4] = {0,1,2,3};
+    glUniform1iv(loc, 4,arr);
 
     //passing the dimensions of the available tex_units as uniform
     loc = glGetUniformLocation(rend->shaders[0].ID, "tex_sizes");

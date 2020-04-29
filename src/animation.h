@@ -55,27 +55,3 @@ update_animation_info(AnimationInfo* info)
     }
 }
 
-struct Sprite
-{
-    vec2 pos;
-    vec2 scale;
-    Box box;
-    GLuint texture_unit;
-    GLfloat opacity;
-    u32 flip;
-    AnimationInfo info;
-};
-
-static void
-init_sprite(Sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, AnimationInfo info)
-{
-    s->pos = pos;
-    s->scale = scale;
-    s->texture_unit = tex_unit;
-    s->opacity = opacity;
-    s->info = info;
-    s->flip = 0;
-    init_Box(&s->box,pos, add_vec2(pos,scale)); //because our coordinates are in [0,1]
-
-}
-

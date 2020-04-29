@@ -9,6 +9,7 @@
 #include "cube.h"
 #include "text.h"
 #include "renderer.h"
+#include "sprite.h"
 #include "animation.h"
 #include "model.h"
 #include "physics.h"
@@ -30,12 +31,15 @@ mat4 MVP;
 static Camera cam;
 static BitmapFont bmf;
 static Sprite s;
+static Sprite bat;
 static Model m;
 static mat4 view_matrix;
 static mat4 perspective_matrix;
 static mat4 ortho_matrix;
 static renderer rend;
 b32 debug_menu = 1;
+
+
 void init(void)
 {
     init_text(&bmf,"../assets/ASCII_512.png"); 
@@ -45,11 +49,19 @@ void init(void)
         load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/utah_teapot.mtl");
         init_model(&m, m.vertices);
     }
-
+    //player initializiation
     {
+
         AnimationInfo info; 
+        //init_animation_info(AnimationInfo* info, vec2 bl, vec2 dim, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
         init_animation_info(&info,{0.0f,0.0f}, {1.f/6.f, 1.0f}, 2, 6, 0.1f, 0);
         init_sprite(&s, {-2.5,0.0},{0.5,1.25}, 2, 1.f, info);
+    }
+    //bat initialization
+    {
+        AnimationInfo info;
+        init_animation_info(&info, {0.0f,0.0f},{1.f/9.f, 1.0f},3,9,0.05f,0);
+        init_sprite(&bat, {0.0f,1.0f},{0.5f,0.5f},3,1.f,info);
     }
     init_collider_render_quad();
     init_renderer(&rend);
@@ -61,6 +73,7 @@ void update(void)
     renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
     update(&cam);
     update_animation_info(&s.info);
+    update_animation_info(&bat.info);
 
     if (global_platform.key_pressed[KEY_TAB] != debug_menu)
     {
@@ -71,21 +84,35 @@ void update(void)
     {
         if(global_platform.key_pressed[KEY_RIGHT])
         {
-            s.pos = add_vec2(s.pos,mul_vec2f({1.0,0.0}, global_platform.dt));
+            s.box.min = add_vec2(s.box.min,mul_vec2f({1.0,0.0}, global_platform.dt));
             s.flip = 0;
         }else if (global_platform.key_pressed[KEY_LEFT])
         {
-            s.pos = sub_vec2(s.pos,mul_vec2f({1.0,0.0}, global_platform.dt));
+            s.box.min = sub_vec2(s.box.min,mul_vec2f({1.0,0.0}, global_platform.dt));
             s.flip = 1;
         }
+    }
+    //collisions
+    {
+        for(u32 i = 0; i < colliders.size();++i)
+        {
+            colliders[i]->is_colliding = 0;
+            //if (check_collision(*colliders[i]))colliders[i]->is_colliding = 1;
+            for(u32 j = 0; j < colliders.size();++j)
+            {
+                if (collide(colliders[i], colliders[j]))colliders[i]->is_colliding = 1;
+            }
+        }
+        
     }
     view_matrix = get_view_mat(&cam);
     perspective_matrix = perspective_proj(43.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
     ortho_matrix = orthographic_proj(-3.f,3.f,-3.f,3.f, 0.1, 100.f);
 
     int current_frame = ((int)global_platform.current_time) % 6; 
-    renderer_push(&rend, {(GLfloat)2.f,(GLfloat)0.0f}, {1,1},(GLuint)0);
-    renderer_push(&rend, s.pos,s.scale, s.texture_unit, (s.info).bottom_left, (s.info).dim, s.flip);
+    //renderer_push(&rend, {(GLfloat)2.f,(GLfloat)0.0f}, {1,1},(GLuint)0);
+    render_sprite(&s, &rend);
+    render_sprite(&bat, &rend);
 }
 
 void render(HDC *DC)
@@ -106,10 +133,6 @@ void render(HDC *DC)
         print_text(&bmf,t2.c_str(),0,510, 20); 
         std::string t3("ms: " + std::to_string(global_platform.dt));
         print_text(&bmf,t3.c_str(),0,490, 20);
-        std::string t4("box dimensions: min = {" + std::to_string(s.box.min.x) + ", "+ std::to_string(s.box.min.y) + "}, max = {" +std::to_string(s.box.max.x) +", " + std::to_string(s.box.max.y) +"}");
-        print_text(&bmf, t4.c_str(), 0, 470,10);
-        std::string t5("pos = {" + std::to_string(s.pos.x) + ", "+ std::to_string(s.pos.y) + "}, scale = {" +std::to_string(s.scale.x) +", " + std::to_string(s.scale.y) +"}");
-        print_text(&bmf, t5.c_str(), 0, 460,10);
     }
 #if 0
     {
@@ -120,8 +143,11 @@ void render(HDC *DC)
         //model_mat2 = HMM_MultiplyMat4(perspective_matrixh,model_mat2);
 #endif
 
-    glDisable(GL_DEPTH_TEST);
-    render_collider_in_pos (mat, {s.pos.x, s.pos.y,-1.f}, {s.scale.x,s.scale.y});
+    glDisable(GL_DEPTH_TEST); //NOTE(ilias): this is used only for collider visualization
+    glLineWidth(2);
+    render_collider_in_pos (mat, {s.box.min.x, s.box.min.y,-1.f}, {s.box.w,s.box.h}, (float)s.box.is_colliding);
+    render_collider_in_pos (mat, {bat.box.min.x, bat.box.min.y,-1.f}, {bat.box.w,bat.box.h}, (float)bat.box.is_colliding);
+    glLineWidth(1);
     glEnable(GL_DEPTH_TEST);
     SwapBuffers(*DC);
 
