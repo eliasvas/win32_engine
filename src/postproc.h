@@ -59,6 +59,9 @@ init_fake_framebuffer()
 }
 static void change_to_fake_framebuffer(){
     glBindFramebuffer(GL_FRAMEBUFFER, fbo); //we draw the whole screen in the second framebuffer
+    glBindTexture(GL_TEXTURE_2D, color_buffer); //TODO(ilias): check performance of reallocating texture data!!!!!!!!
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, global_platform.window_width, global_platform.window_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
     glViewport(0, 0,global_platform.window_width,global_platform.window_height); //for some reason this is the only viewport called
     glEnable(GL_DEPTH_TEST);
 }

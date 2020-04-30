@@ -14,6 +14,8 @@
 #include "model.h"
 #include "physics.h"
 #include "postproc.h"
+#define CUTE_SOUND_IMPLEMENTATION
+#include "ext/cute_sound.h"
 #include <string>  //just for to_string
 
 /*
@@ -40,13 +42,11 @@ static mat4 ortho_matrix;
 static renderer rend;
 b32 debug_menu = 1;
 f32 inverted = 0.f;
-#define postproc 0
+
 void init(void)
 {
 
-#if postproc
     init_fake_framebuffer();
-#endif
     init_text(&bmf,"../assets/ASCII_512.png"); 
 
     init_camera(&cam);
@@ -71,13 +71,15 @@ void init(void)
     }
     init_collider_render_quad();
     init_renderer(&rend);
+
+    //cs_context_t* ctx =cs_make_context(WND,44000,8192,0,NULL);
+    //cs_play_sound_def_t def = cs_make_def(&cs_load_wav("../assets/explosion.wav"));
+    //cs_play_sound(ctx, def);
 }
 
 void update(void)
 {
-#if postproc
     change_to_fake_framebuffer();
-#endif
 
     global_platform.vsync = 1;
     renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
@@ -167,9 +169,7 @@ void render(HDC *DC)
     glLineWidth(1);
     glEnable(GL_DEPTH_TEST);
 
-#if postproc 
     render_to_framebuffer0(inverted);
-#endif
 
     SwapBuffers(*DC);
 

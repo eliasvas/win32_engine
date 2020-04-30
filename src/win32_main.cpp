@@ -2,6 +2,8 @@
 char infoLog[512]; //errors are written in here!
 #include "platform.h"
 static Platform global_platform;
+static HDC global_device_context;
+static HWND WND;
 #include <windows.h>
 #include "win32_opengl.cpp"
 #include "game.c"
@@ -15,7 +17,6 @@ static Platform global_platform;
 #include "ext/tiny_obj_loader.h"
 
 static LARGE_INTEGER fr,st,ft;
-static HDC global_device_context;
 
 static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l_param) {
     LRESULT result = {0};
@@ -129,7 +130,7 @@ WinMain(HINSTANCE Instance,
 
     }
     RegisterClass(&windowClass);
-    HWND WND = CreateWindow(
+    WND = CreateWindow(
             windowClass.lpszClassName, "Window",      // window class, title
             WS_OVERLAPPEDWINDOW, // style
             CW_USEDEFAULT,CW_USEDEFAULT,800,600,//CW_USEDEFAULT,CW_USEDEFAULT,
