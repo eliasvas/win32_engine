@@ -13,6 +13,7 @@
 #include "animation.h"
 #include "model.h"
 #include "physics.h"
+#include "postproc.h"
 #include <string>  //just for to_string
 
 /*
@@ -38,11 +39,16 @@ static mat4 perspective_matrix;
 static mat4 ortho_matrix;
 static renderer rend;
 b32 debug_menu = 1;
-
-
+f32 inverted = 0.f;
+#define postproc 0
 void init(void)
 {
+
+#if postproc
+    init_fake_framebuffer();
+#endif
     init_text(&bmf,"../assets/ASCII_512.png"); 
+
     init_camera(&cam);
 
     {
@@ -69,6 +75,10 @@ void init(void)
 
 void update(void)
 {
+#if postproc
+    change_to_fake_framebuffer();
+#endif
+
     global_platform.vsync = 1;
     renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
     update(&cam);
@@ -79,6 +89,12 @@ void update(void)
     {
        debug_menu = !debug_menu; 
     }
+
+    if (global_platform.key_pressed[KEY_SPACE])
+        inverted = 1.f;
+    else
+        inverted = 0.f;
+
 
     //player movement
     {
@@ -92,7 +108,7 @@ void update(void)
             s.flip = 1;
         }
     }
-    //collisions
+    //update collisions
     {
         for(u32 i = 0; i < colliders.size();++i)
         {
@@ -143,12 +159,18 @@ void render(HDC *DC)
         //model_mat2 = HMM_MultiplyMat4(perspective_matrixh,model_mat2);
 #endif
 
+    //NOTE(ilias): this is for drawing colliders!
     glDisable(GL_DEPTH_TEST); //NOTE(ilias): this is used only for collider visualization
     glLineWidth(2);
     render_collider_in_pos (mat, {s.box.min.x, s.box.min.y,-1.f}, {s.box.w,s.box.h}, (float)s.box.is_colliding);
     render_collider_in_pos (mat, {bat.box.min.x, bat.box.min.y,-1.f}, {bat.box.w,bat.box.h}, (float)bat.box.is_colliding);
     glLineWidth(1);
     glEnable(GL_DEPTH_TEST);
+
+#if postproc 
+    render_to_framebuffer0(inverted);
+#endif
+
     SwapBuffers(*DC);
 
 }

@@ -1,11 +1,12 @@
 #pragma once
 #include "ext/HandmadeMath.h" 
 #include "shader.h"
+#include "tb.h"
 
 struct Cube
 {
     GLuint VAO;
-    hmm_vec3 center;
+    vec3 center;
     Shader cube_shader; //maybe put it ouside the struct or make it static(???)
 };
 
@@ -77,16 +78,16 @@ init_cube(Cube* c)
 }
 
 static void
-render_cube(Cube* c, hmm_mat4 projection_matrix)
+render_cube(Cube* c, mat4 projection_matrix)
 {
     use_shader(&c->cube_shader);
 
-    hmm_mat4 world_matrix = HMM_Translate(c->center);
-    hmm_mat4 MVP = HMM_Multiply(projection_matrix,world_matrix);
+    mat4 world_matrix = translate_mat4(c->center);
+    mat4 MVP = mul_mat4(projection_matrix,world_matrix);
 
 
     auto loc = glGetUniformLocation(c->cube_shader.ID, "MVP");
-    glUniformMatrix4fv(loc,1, GL_FALSE, (GLfloat*)MVP.Elements);
+    glUniformMatrix4fv(loc,1, GL_FALSE, (GLfloat*)MVP.elements);
     glBindVertexArray(c->VAO);
 
     glDrawArrays(GL_TRIANGLES, 0, 36);

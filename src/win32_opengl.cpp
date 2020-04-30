@@ -30,6 +30,7 @@ static PFNWGLMAKECONTEXTCURRENTARBPROC    wglMakeContextCurrentARB;
 static PFNWGLSWAPINTERVALEXTPROC          wglSwapIntervalEXT;
 static PFNGLGENBUFFERSPROC glGenBuffers;
 static PFNGLBINDBUFFERPROC glBindBuffer;
+static PFNGLDRAWBUFFERSPROC glDrawBuffers;
 static PFNGLUSEPROGRAMPROC glUseProgram;
 static PFNGLSHADERSOURCEPROC glShaderSource;
 static PFNGLCOMPILESHADERPROC glCompileShader;
@@ -61,10 +62,13 @@ static PFNGLBUFFERDATAPROC glBufferData;
 static PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 static PFNGLVERTEXATTRIBIPOINTERPROC glVertexAttribIPointer;
 static PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
-//static PFNGLTEXTUREPARAMETERIPROC glTexParameteri;
 static PFNGLGENERATEMIPMAPPROC glGenerateMipmap;
+static PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
+static PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
+static PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
+static PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
 
-void *GetAnyGLFuncAddress(const char *name)
+void *GetGLFuncAddress(const char *name)
 {
   void *p = (void *)wglGetProcAddress(name);
   if(p == 0 ||
@@ -82,41 +86,48 @@ void *GetAnyGLFuncAddress(const char *name)
 static void 
 LoadAllOpenGLProcedures()
 {
-   glGenBuffers = (PFNGLGENBUFFERSPROC)GetAnyGLFuncAddress("glGenBuffers"); 
-   glBindBuffer = (PFNGLBINDBUFFERPROC)GetAnyGLFuncAddress("glBindBuffer"); 
-   glUseProgram = (PFNGLUSEPROGRAMPROC)GetAnyGLFuncAddress("glUseProgram"); 
-   glShaderSource = (PFNGLSHADERSOURCEPROC)GetAnyGLFuncAddress("glShaderSource"); 
-   glCompileShader = (PFNGLCOMPILESHADERPROC)GetAnyGLFuncAddress("glCompileShader"); 
-   glGetShaderiv = (PFNGLGETSHADERIVPROC)GetAnyGLFuncAddress("glGetShaderiv"); 
-   glCreateShader = (PFNGLCREATESHADERPROC)GetAnyGLFuncAddress("glCreateShader"); 
-   glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)GetAnyGLFuncAddress("glGetShaderInfoLog"); 
-   glCreateProgram = (PFNGLCREATEPROGRAMPROC)GetAnyGLFuncAddress("glCreateProgram"); 
-   glAttachShader = (PFNGLATTACHSHADERPROC)GetAnyGLFuncAddress("glAttachShader"); 
-   glLinkProgram = (PFNGLLINKPROGRAMPROC)GetAnyGLFuncAddress("glLinkProgram"); 
-   glMapBufferRange = (PFNGLMAPBUFFERRANGEPROC)GetAnyGLFuncAddress("glMapBufferRange"); 
-   glMapBuffer = (PFNGLMAPBUFFERPROC)GetAnyGLFuncAddress("glMapBuffer"); 
-   glGetProgramiv = (PFNGLGETPROGRAMIVPROC)GetAnyGLFuncAddress("glGetProgramiv"); 
-   glUniform1i = (PFNGLUNIFORM1IPROC)GetAnyGLFuncAddress("glUniform1i"); 
-   glUniform1iv = (PFNGLUNIFORM1IVPROC)GetAnyGLFuncAddress("glUniform1iv"); 
-   glUniform1f = (PFNGLUNIFORM1FPROC)GetAnyGLFuncAddress("glUniform1f"); 
-   glUniform2fv = (PFNGLUNIFORM2FVPROC)GetAnyGLFuncAddress("glUniform2fv"); 
-   glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)GetAnyGLFuncAddress("glUniformMatrix4fv");
-   glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)GetAnyGLFuncAddress("glGetUniformLocation"); 
-   glDeleteShader = (PFNGLDELETESHADERPROC)GetAnyGLFuncAddress("glDeleteShader"); 
-   glDeleteProgram = (PFNGLDELETEPROGRAMPROC)GetAnyGLFuncAddress("glDeleteProgram"); 
-   glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)GetAnyGLFuncAddress("glGenVertexArrays"); 
-   glDrawElementsInstanced = (PFNGLDRAWELEMENTSINSTANCEDPROC)GetAnyGLFuncAddress("glDrawElementsInstanced"); 
-   glDrawArraysInstanced = (PFNGLDRAWARRAYSINSTANCEDPROC)GetAnyGLFuncAddress("glDrawArraysInstanced"); 
-   glBufferData = (PFNGLBUFFERDATAPROC)GetAnyGLFuncAddress("glBufferData"); 
-   glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)GetAnyGLFuncAddress("glBindVertexArray"); 
-   glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)GetAnyGLFuncAddress("glGetProgramInfoLog"); 
-   glActiveTexture = (PFNGLACTIVETEXTUREPROC)GetAnyGLFuncAddress("glActiveTexture");
-   glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)GetAnyGLFuncAddress("glVertexAttribPointer"); 
-   glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)GetAnyGLFuncAddress("glVertexAttribIPointer"); 
-   glVertexAttribDivisor = (PFNGLVERTEXATTRIBDIVISORPROC)GetAnyGLFuncAddress("glVertexAttribDivisor"); 
-   glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)GetAnyGLFuncAddress("glEnableVertexAttribArray"); 
-   //glTexParameteri = (PFNGLTEXTUREPARAMETERIPROC)GetAnyGLFuncAddress("glTextureParameteri"); 
-   glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)GetAnyGLFuncAddress("glGenerateMipmap"); 
+   glGenBuffers = (PFNGLGENBUFFERSPROC)GetGLFuncAddress("glGenBuffers"); 
+   glBindBuffer = (PFNGLBINDBUFFERPROC)GetGLFuncAddress("glBindBuffer"); 
+   glUseProgram = (PFNGLUSEPROGRAMPROC)GetGLFuncAddress("glUseProgram"); 
+   glShaderSource = (PFNGLSHADERSOURCEPROC)GetGLFuncAddress("glShaderSource"); 
+   glCompileShader = (PFNGLCOMPILESHADERPROC)GetGLFuncAddress("glCompileShader"); 
+   glGetShaderiv = (PFNGLGETSHADERIVPROC)GetGLFuncAddress("glGetShaderiv"); 
+   glCreateShader = (PFNGLCREATESHADERPROC)GetGLFuncAddress("glCreateShader"); 
+   glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)GetGLFuncAddress("glGetShaderInfoLog"); 
+   glCreateProgram = (PFNGLCREATEPROGRAMPROC)GetGLFuncAddress("glCreateProgram"); 
+   glAttachShader = (PFNGLATTACHSHADERPROC)GetGLFuncAddress("glAttachShader"); 
+   glLinkProgram = (PFNGLLINKPROGRAMPROC)GetGLFuncAddress("glLinkProgram"); 
+   glMapBufferRange = (PFNGLMAPBUFFERRANGEPROC)GetGLFuncAddress("glMapBufferRange"); 
+   glMapBuffer = (PFNGLMAPBUFFERPROC)GetGLFuncAddress("glMapBuffer"); 
+   glGetProgramiv = (PFNGLGETPROGRAMIVPROC)GetGLFuncAddress("glGetProgramiv"); 
+   glUniform1i = (PFNGLUNIFORM1IPROC)GetGLFuncAddress("glUniform1i"); 
+   glUniform1iv = (PFNGLUNIFORM1IVPROC)GetGLFuncAddress("glUniform1iv"); 
+   glUniform1f = (PFNGLUNIFORM1FPROC)GetGLFuncAddress("glUniform1f"); 
+   glUniform2fv = (PFNGLUNIFORM2FVPROC)GetGLFuncAddress("glUniform2fv"); 
+   glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)GetGLFuncAddress("glUniformMatrix4fv");
+   glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)GetGLFuncAddress("glGetUniformLocation"); 
+   glDeleteShader = (PFNGLDELETESHADERPROC)GetGLFuncAddress("glDeleteShader"); 
+   glDeleteProgram = (PFNGLDELETEPROGRAMPROC)GetGLFuncAddress("glDeleteProgram"); 
+   glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)GetGLFuncAddress("glGenVertexArrays"); 
+   glDrawElementsInstanced = (PFNGLDRAWELEMENTSINSTANCEDPROC)GetGLFuncAddress("glDrawElementsInstanced"); 
+   glDrawArraysInstanced = (PFNGLDRAWARRAYSINSTANCEDPROC)GetGLFuncAddress("glDrawArraysInstanced"); 
+   glBufferData = (PFNGLBUFFERDATAPROC)GetGLFuncAddress("glBufferData"); 
+   glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)GetGLFuncAddress("glBindVertexArray"); 
+   glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)GetGLFuncAddress("glGetProgramInfoLog"); 
+   glActiveTexture = (PFNGLACTIVETEXTUREPROC)GetGLFuncAddress("glActiveTexture");
+   glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)GetGLFuncAddress("glVertexAttribPointer"); 
+   glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)GetGLFuncAddress("glVertexAttribIPointer"); 
+   glVertexAttribDivisor = (PFNGLVERTEXATTRIBDIVISORPROC)GetGLFuncAddress("glVertexAttribDivisor"); 
+   glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)GetGLFuncAddress("glEnableVertexAttribArray"); 
+   //glTexParameteri = (PFNGLTEXTUREPARAMETERIPROC)GetGLFuncAddress("glTextureParameteri"); 
+   glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)GetGLFuncAddress("glGenerateMipmap"); 
+   glGenFramebuffers =  (PFNGLGENFRAMEBUFFERSPROC)GetGLFuncAddress("glGenFramebuffers");
+   glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)GetGLFuncAddress("glFramebufferTexture2D") ;
+   glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)GetGLFuncAddress("glBindFramebuffer");
+   glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC)GetGLFuncAddress("glCheckFramebufferStatus");
+   glDrawBuffers = (PFNGLDRAWBUFFERSPROC)GetGLFuncAddress("glDrawBuffers");
+
+
    //and on and on and on......
 }
 
@@ -144,10 +155,10 @@ b32 Win32InitOpenGL(HDC* device_context, HINSTANCE Instance){
     wglMakeCurrent(*device_context, fakeRC);
 
     {
-        wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)GetAnyGLFuncAddress("wglChoosePixelFormatARB");
-        wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)GetAnyGLFuncAddress("wglCreateContextAttribsARB");
-        wglMakeContextCurrentARB = (PFNWGLMAKECONTEXTCURRENTARBPROC)GetAnyGLFuncAddress("wglMakeContextCurrentARB");
-        wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)GetAnyGLFuncAddress("wglSwapIntervalEXT");
+        wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)GetGLFuncAddress("wglChoosePixelFormatARB");
+        wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)GetGLFuncAddress("wglCreateContextAttribsARB");
+        wglMakeContextCurrentARB = (PFNWGLMAKECONTEXTCURRENTARBPROC)GetGLFuncAddress("wglMakeContextCurrentARB");
+        wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)GetGLFuncAddress("wglSwapIntervalEXT");
         LoadAllOpenGLProcedures();
     }
     //now we can call wglChoosePixelFormatARB() and wglCreateContextAttribsARB()

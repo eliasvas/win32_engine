@@ -4,6 +4,8 @@
 #include "renderer.h"
 #include "tb.h"
 
+//TODO(ilias): when physics engine is finished make flip be
+//set by velocity vector direction on the x-axis!
 
 struct Sprite
 {

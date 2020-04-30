@@ -28,8 +28,8 @@ print_text(BitmapFont *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32 
 
     u32 length = strlen(text);
 
-	std::vector<hmm_vec2> vertices;
-	std::vector<hmm_vec2> UVs;
+	std::vector<vec2> vertices;
+	std::vector<vec2> UVs;
     for (u32 i = start; i < finish; ++i)
     {
         /*
@@ -38,10 +38,10 @@ print_text(BitmapFont *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32 
         to our vertex buffer as 6 points, meaning 2 triangles so we can render
         (this is basically where each character goes in screen(?) space)
         */
-        hmm_vec2 v_up_left = {(f32)x + i*size, (f32)y+size};
-        hmm_vec2 v_up_right = {(f32)x + i*size + size, (f32)y+size};
-        hmm_vec2 v_down_left = {(f32)x + i*size, (f32)y};
-        hmm_vec2 v_down_right = {(f32)x + i*size + size, (f32)y};
+        vec2 v_up_left = {(f32)x + i*size, (f32)y+size};
+        vec2 v_up_right = {(f32)x + i*size + size, (f32)y+size};
+        vec2 v_down_left = {(f32)x + i*size, (f32)y};
+        vec2 v_down_right = {(f32)x + i*size + size, (f32)y};
 
         vertices.push_back(v_up_left);
         vertices.push_back(v_down_left);
@@ -60,10 +60,10 @@ print_text(BitmapFont *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32 
         char letter = text[i]; //NOTE(ilias): getting the last byte, which is its ASCII encoding value
         f32 uv_x = (letter % 16) / 16.f;
         f32 uv_y = 1 - (letter / 16) / 16.f - 1/16.f; //NOTE(ilias): but why????
-        hmm_vec2 uv_down_left = {uv_x, uv_y};
-        hmm_vec2 uv_down_right = {uv_x+1.0f/16.0f, uv_y};
-        hmm_vec2 uv_up_right = {uv_x+1.0f/16.0f, (uv_y + 1.0f/16.0f)};
-        hmm_vec2 uv_up_left = {uv_x, (uv_y + 1.0f/16.0f)};
+        vec2 uv_down_left = {uv_x, uv_y};
+        vec2 uv_down_right = {uv_x+1.0f/16.0f, uv_y};
+        vec2 uv_up_right = {uv_x+1.0f/16.0f, (uv_y + 1.0f/16.0f)};
+        vec2 uv_up_left = {uv_x, (uv_y + 1.0f/16.0f)};
 
         UVs.push_back(uv_up_left);
         UVs.push_back(uv_down_left);
@@ -75,10 +75,10 @@ print_text(BitmapFont *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32 
         UVs.push_back(uv_down_left);
     }
     glBindBuffer(GL_ARRAY_BUFFER, f->vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(hmm_vec2), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(vec2), &vertices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, f->uv_buffer);
-    glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(hmm_vec2), &UVs[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(vec2), &UVs[0], GL_STATIC_DRAW);
 
 
    
@@ -110,8 +110,8 @@ print_text(BitmapFont *f,const char*text, i32 x,i32 y, i32 size)
 
     u32 length = strlen(text);
 
-	std::vector<hmm_vec2> vertices;
-	std::vector<hmm_vec2> UVs;
+	std::vector<vec2> vertices;
+	std::vector<vec2> UVs;
     for (u32 i = 0; i < length; ++i)
     {
         /*
@@ -120,10 +120,10 @@ print_text(BitmapFont *f,const char*text, i32 x,i32 y, i32 size)
         to our vertex buffer as 6 points, meaning 2 triangles so we can render
         (this is basically where each character goes in screen(?) space)
         */
-        hmm_vec2 v_up_left = {(f32)x + i*size, (f32)y+size};
-        hmm_vec2 v_up_right = {(f32)x + i*size + size, (f32)y+size};
-        hmm_vec2 v_down_left = {(f32)x + i*size, (f32)y};
-        hmm_vec2 v_down_right = {(f32)x + i*size + size, (f32)y};
+        vec2 v_up_left = {(f32)x + i*size, (f32)y+size};
+        vec2 v_up_right = {(f32)x + i*size + size, (f32)y+size};
+        vec2 v_down_left = {(f32)x + i*size, (f32)y};
+        vec2 v_down_right = {(f32)x + i*size + size, (f32)y};
 
         vertices.push_back(v_up_left);
         vertices.push_back(v_down_left);
@@ -142,10 +142,10 @@ print_text(BitmapFont *f,const char*text, i32 x,i32 y, i32 size)
         char letter = text[i]; //NOTE(ilias): getting the last byte, which is its ASCII encoding value
         f32 uv_x = (letter % 16) / 16.f;
         f32 uv_y = 1 - (letter / 16) / 16.f - 1/16.f; //NOTE(ilias): but why????
-        hmm_vec2 uv_down_left = {uv_x, uv_y};
-        hmm_vec2 uv_down_right = {uv_x+1.0f/16.0f, uv_y};
-        hmm_vec2 uv_up_right = {uv_x+1.0f/16.0f, (uv_y + 1.0f/16.0f)};
-        hmm_vec2 uv_up_left = {uv_x, (uv_y + 1.0f/16.0f)};
+        vec2 uv_down_left = {uv_x, uv_y};
+        vec2 uv_down_right = {uv_x+1.0f/16.0f, uv_y};
+        vec2 uv_up_right = {uv_x+1.0f/16.0f, (uv_y + 1.0f/16.0f)};
+        vec2 uv_up_left = {uv_x, (uv_y + 1.0f/16.0f)};
 
         UVs.push_back(uv_up_left);
         UVs.push_back(uv_down_left);
@@ -157,10 +157,10 @@ print_text(BitmapFont *f,const char*text, i32 x,i32 y, i32 size)
         UVs.push_back(uv_down_left);
     }
     glBindBuffer(GL_ARRAY_BUFFER, f->vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(hmm_vec2), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(vec2), &vertices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, f->uv_buffer);
-    glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(hmm_vec2), &UVs[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(vec2), &UVs[0], GL_STATIC_DRAW);
 
 
    
