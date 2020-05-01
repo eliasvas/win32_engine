@@ -18,23 +18,12 @@
 #include "ext/cute_sound.h"
 #include <string>  //just for to_string
 
-/*
-TODO(ilias):Things that need to be done 
-
-@Play Music 
-	-initialize dsound
-	-load wavs
-@Particles!
-
-@Physics Engine
-
-@Platforming
-*/
 mat4 MVP;
 static Camera cam;
 static BitmapFont bmf;
 static Sprite s;
 static Sprite bat;
+static quad background;
 static Model m;
 static mat4 view_matrix;
 static mat4 perspective_matrix;
@@ -47,6 +36,27 @@ static cs_context_t* ctx;
 static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
 #define sound_on 0
+
+static Box b1;
+static Box b2;
+static Box b3;
+static Box b4;
+
+/*GAMEPLPAY CODE*/
+#include <vector>
+
+struct Sneeze
+{
+    Sprite s;
+    f32 duration;
+};
+static void 
+init_sneeze(Sneeze* s, vec2 pos, f32 duration)
+{
+
+}
+
+std::vector<Sprite> enemies;
 
 void init(void)
 {
@@ -65,8 +75,9 @@ void init(void)
 
         AnimationInfo info; 
         //init_animation_info(AnimationInfo* info, vec2 bl, vec2 dim, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
-        init_animation_info(&info,{0.0f,0.0f}, {1.f/6.f, 1.0f}, 2, 6, 0.1f, 0);
-        init_sprite(&s, {-2.5,0.0},{0.5,1.25}, 2, 1.f, info);
+        init_animation_info(&info,{0.0f,0.0f}, {1.f, 1.f}, 4, 1, 10000.f, 1);
+        init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 4, 1.f, info);
+
     }
     //bat initialization
     {
@@ -74,15 +85,29 @@ void init(void)
         init_animation_info(&info, {0.0f,0.0f},{1.f/9.f, 1.0f},3,9,0.05f,0);
         init_sprite(&bat, {0.0f,1.0f},{0.5f,0.5f},3,1.f,info);
     }
+    //background initialization
+    {
+        init_quad(&background,"../assets/background.png");
+        background.pos = {0,0,0};
+    }
+    //initializing collider boxes
+    {
+       init_Box(&b1,{-25.f,-25.f},1.f,50.f); 
+       init_Box(&b2,{-25.f,-25.f},50.f,1.f); 
+       init_Box(&b3,{-26.f,26.f},55.f,1.f); 
+       init_Box(&b4,{26.f,-26.f},1.f,55.f); 
+    }
     init_collider_render_quad();
     init_renderer(&rend);
 
+#if sound_on
     ctx =cs_make_context(WND,44000,8192,0,0);
     loaded = cs_load_wav("../assets/loop.wav");
     //cs_play_sound_def_t def = cs_make_def(&loaded);
     sound = cs_make_playing_sound(&loaded);
     cs_insert_sound(ctx, &sound);
     //cs_spawn_mix_thread(ctx);
+#endif
 }
 
 void update(void)
@@ -95,7 +120,7 @@ void update(void)
 
     global_platform.vsync = 1;
     renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
-    update(&cam);
+    update_wrt_player(&cam, {s.box.min.x, s.box.min.y});
     update_animation_info(&s.info);
     update_animation_info(&bat.info);
 
@@ -114,15 +139,35 @@ void update(void)
     {
         if(global_platform.key_pressed[KEY_RIGHT])
         {
-            s.box.velocity.x += 3.f* global_platform.dt; //constant must be speed
+            if (s.box.velocity.x < 0.f)s.box.velocity.x += 6.f * global_platform.dt;
+            s.box.velocity.x += 6.f* global_platform.dt; //constant must be speed
             s.flip = 0;
-        }else if (global_platform.key_pressed[KEY_LEFT])
+        }
+        if (global_platform.key_pressed[KEY_LEFT])
         {
-            s.box.velocity.x -= 3.f * global_platform.dt;
+            if (s.box.velocity.x > 0.f)s.box.velocity.x -= 6.f * global_platform.dt;
+            s.box.velocity.x -= 6.f * global_platform.dt;
             s.flip = 1;
         }
-        if (abs(s.box.velocity.x) > 0.01f)
-            s.box.velocity.x += 0.02 * (-1.f)* (s.box.velocity.x / abs(s.box.velocity.x));
+        if (global_platform.key_pressed[KEY_UP])
+        {
+            if (s.box.velocity.y < 0.f)s.box.velocity.y += 6.f * global_platform.dt;
+            s.box.velocity.y += 6.f * global_platform.dt;
+        }
+        if (global_platform.key_pressed[KEY_DOWN])
+        {
+            if (s.box.velocity.y > 0.f)s.box.velocity.y -= 6.f * global_platform.dt;
+            s.box.velocity.y -= 6.f * global_platform.dt;
+        }
+        s.box.velocity.x = max(-5, min(s.box.velocity.x, 5));
+        s.box.velocity.y = max(-5, min(s.box.velocity.y, 5));
+        //s.box.velocity = normalize_vec2(s.box.velocity);
+
+        if (abs(s.box.velocity.x) > 0.01f && !global_platform.key_pressed[KEY_LEFT] && !global_platform.key_pressed[KEY_RIGHT])
+            s.box.velocity.x += 0.2 * (-1.f)* (s.box.velocity.x / abs(s.box.velocity.x));
+       if (abs(s.box.velocity.y) > 0.01f && !global_platform.key_pressed[KEY_DOWN] && !global_platform.key_pressed[KEY_UP])
+            s.box.velocity.y += 0.2 * (-1.f)* (s.box.velocity.y / abs(s.box.velocity.y));
+
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
     //update collisions
@@ -134,8 +179,8 @@ void update(void)
             for(u32 j = 0; j < colliders.size();++j)
             {
                 if (collide(colliders[i], colliders[j])){
-                    colliders[i]->is_colliding = 1;
-                    colliders[i]->velocity.x = 10.f * global_platform.dt * ((colliders[i]->min.x - colliders[j]->min.x) /abs(colliders[i]->min.x - colliders[j]->min.x));
+                    //handle_collision_basic(colliders[i], colliders[j]);
+                    resolve_collision(colliders[i], colliders[j]);
                 }
             }
         }
@@ -143,7 +188,7 @@ void update(void)
     }
     view_matrix = get_view_mat(&cam);
     perspective_matrix = perspective_proj(43.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
-    ortho_matrix = orthographic_proj(-3.f,3.f,-3.f,3.f, 0.1, 100.f);
+    ortho_matrix = orthographic_proj(-6.f,6.f,-6.f,6.f, 0.1, 100.f);
 
     int current_frame = ((int)global_platform.current_time) % 6; 
     //renderer_push(&rend, {(GLfloat)2.f,(GLfloat)0.0f}, {1,1},(GLuint)0);
@@ -154,8 +199,12 @@ void update(void)
 void render(HDC *DC)
 {
     mat4 mat = mul_mat4(ortho_matrix, view_matrix);
+        //rendering background 
+    {
+        mat4 background_mat = mul_mat4(mat, translate_mat4({1.0,1.0,1.0}));
+        render_quad(&background, (float*)background_mat.elements);
+    }
     renderer_render(&rend, (float*)mat.elements);
-
 
     if (debug_menu){ 
         print_text(&bmf,"|console|",0,570, 20);
@@ -169,7 +218,13 @@ void render(HDC *DC)
         print_text(&bmf,t2.c_str(),0,510, 20); 
         std::string t3("ms: " + std::to_string(global_platform.dt));
         print_text(&bmf,t3.c_str(),0,490, 20);
+        std::string t4("camera: {" + std::to_string(cam.pos.x) + ", " + std::to_string(cam.pos.y) + ", " + std::to_string(cam.pos.z) + "}");
+        print_text(&bmf,t4.c_str(),0,470, 15);
     }
+    std::string g_t = std::to_string(global_platform.current_time);
+    g_t.resize(4);
+    print_text(&bmf,g_t.c_str(),790/2.f,570, 20);
+
 #if 0
     {
         mat4 model_mat = translate_mat4({0,-5.5,-30.f -50.f}); //changing translate changes color???!
@@ -182,8 +237,11 @@ void render(HDC *DC)
     //NOTE(ilias): this is for drawing colliders!
     glDisable(GL_DEPTH_TEST); //NOTE(ilias): this is used only for collider visualization
     glLineWidth(2);
-    render_collider_in_pos (mat, {s.box.min.x, s.box.min.y,-1.f}, {s.box.w,s.box.h}, (float)s.box.is_colliding);
-    render_collider_in_pos (mat, {bat.box.min.x, bat.box.min.y,-1.f}, {bat.box.w,bat.box.h}, (float)bat.box.is_colliding);
+    //render_collider_in_pos (mat, {s.box.min.x, s.box.min.y,-1.f}, {s.box.w,s.box.h}, (float)s.box.is_colliding);
+    //render_collider_in_pos (mat, {bat.box.min.x, bat.box.min.y,-1.f}, {bat.box.w,bat.box.h}, (float)bat.box.is_colliding);
+    //render_collider_in_pos (mat, {b1.min.x,b1.min.y,-1.f}, {b1.w, b1.h}, (float)b1.is_colliding);
+    for (Box *b : colliders)
+        render_collider_in_pos (mat, {b->min.x,b->min.y,-1.f}, {b->w, b->h}, (float)b->is_colliding);
     glLineWidth(1);
     glEnable(GL_DEPTH_TEST);
 

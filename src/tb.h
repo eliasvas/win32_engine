@@ -254,6 +254,14 @@ INLINE f32 dot_vec2(vec2 l, vec2 r)
     return res;
 }
 
+INLINE vec2 sqrt_vec2(vec2 v)
+{
+    vec2 res;
+    res.x = sqrt(v.x);
+    res.y = sqrt(v.y);
+    return res;
+}
+
 INLINE f32 length_vec2(vec2 v)
 {
     f32 res = sqrt(dot_vec2(v,v)); // (x^2 + y^2)^(1/2)

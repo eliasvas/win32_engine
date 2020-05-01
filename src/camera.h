@@ -1,5 +1,6 @@
 #include "ext/HandmadeMath.h"
 float a = 0.f;
+static const f32 MAX_DISTANCE = 5.f;
 struct Camera
 {
     vec3 pos;
@@ -7,17 +8,33 @@ struct Camera
     vec3 front;
 };
 
-void turn_camera_around_center(Camera* cam, f32 degrees)
+static void 
+turn_camera_around_center(Camera* cam, f32 degrees)
 {
 }
 
-void init_camera (Camera* cam)
+static void 
+init_camera (Camera* cam)
 {
     cam->pos = {0.f,0.f,4.f};
     cam->front = {0.0f,0.0f,-1.0f};
 }
-//TODO(ilias): maybe put controls in camera??
-void update(Camera* cam)
+
+static void 
+move_camera_wrt_player(Camera* cam, vec2 player_pos)
+{
+    cam->pos.x  = player_pos.x;
+    cam->pos.y = player_pos.y;
+}
+
+static void 
+move_camera_wrt_player_smooth(Camera* cam, vec2 player_pos)
+{
+}
+
+
+static void 
+update(Camera* cam)
 {
     //a+= 0.01;
     //if (cam->pos.Z < 1.f)cam->pos = {0.f,0.f,300.f};
@@ -50,6 +67,12 @@ void update(Camera* cam)
     cam->dir = {0,0,-1}; //NOTE(ilias): maybe orientation is messed up?
     //cam->pos = {cam->pos[0] + cos(a),cam->pos[1] + sin(a)};
 }
+static void 
+update_wrt_player(Camera* cam, vec2 player_pos)
+{
+    move_camera_wrt_player(cam, player_pos);
+}
+
 
 mat4 get_view_mat(Camera* cam)
 {

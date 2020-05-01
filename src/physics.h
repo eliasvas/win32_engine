@@ -16,8 +16,8 @@ struct Box
     u32 id;
 
     vec2 velocity;
-    f32 restitution = 0.f;
-    f32 mass = 0.f;
+    f32 restitution = 1.f;
+    f32 mass = 1.f;
     b32 on_ground;
     b32 is_colliding;
 };
@@ -60,8 +60,7 @@ resolve_collision(Box* A, Box* B)
 {
   // Calculate relative velocity
   vec2 rv = sub_vec2(B->velocity,A->velocity);
-  vec2 normal = {0.0,1.0};
- 
+  vec2 normal = sub_vec2(add_vec2(B->min, {B->w/2.f,B->h/2.f}),add_vec2(A->min, {A->w/2.f,A->h/2.f}));//{0,-1}; 
   // Calculate relative velocity in terms of the normal direction
   f32 velAlongNormal = dot_vec2(rv, normal);
  
@@ -82,6 +81,13 @@ resolve_collision(Box* A, Box* B)
   B->velocity = add_vec2(B->velocity,mul_vec2f(impulse,(1 / B->mass)));
 }
 
+static void 
+handle_collision_basic(Box *b1, Box *b2)
+{
+    b1->is_colliding = 1;
+    b1->velocity.x = 30.f * global_platform.dt * (b1->min.x - b2->min.x) /abs(b1->min.x - b2->min.x);
+    b1->velocity.y = 30.f * global_platform.dt * (b1->min.y - b2->min.y) /abs(b1->min.y - b2->min.y);
+}
 
 
 /*These are just for testing intersection stuff!*/

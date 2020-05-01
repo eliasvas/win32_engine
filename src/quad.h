@@ -5,10 +5,10 @@
 
 static f32 quad_vertices[] = {
      // positions          // texture coords
-     0.5f,  0.5f, 0.0f,   1.0f, 1.0f,   // top right
-     0.5f, -0.5f, 0.0f,   1.0f, 0.0f,   // bottom right
-    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f,   // bottom left
-    -0.5f,  0.5f, 0.0f,   0.0f, 1.0f    // top left
+     25.f,  25.f, 0.0f,   1.0f, 1.0f,   // top right
+     25.f, -25.f, 0.0f,   1.0f, 0.0f,   // bottom right
+    -25.f, -25.f, 0.0f,   0.0f, 0.0f,   // bottom left
+    -25.f,  25.f, 0.0f,   0.0f, 1.0f    // top left
 };
 
 
@@ -75,18 +75,30 @@ init_quad(quad* q)
 
 
 static void 
-render_quad(quad* q, float* m, f32 red = 0.f)
+render_quad(quad* q, float* m)
 {
     use_shader(&q->s);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, q->t.id);
     setMat4fv(&q->s, "MVP", m);
-    setFloat(&q->s, "red", red);
     glBindVertexArray(q->VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
+/*
+static void 
+render_quad(quad* q, float* m,f32 red = 0.f)
+{
+    use_shader(&q->s);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, q->t.id);
+    setMat4fv(&q->s, "MVP", m);
+    glBindVertexArray(q->VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+}
+*/
 static void 
 render_collider(quad* q, float* m,f32 red = 0.f)
 {

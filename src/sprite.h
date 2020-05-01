@@ -44,3 +44,4 @@ render_sprite(Sprite* s, renderer* rend) //maybe make the renderer static
     renderer_push(rend, s->box.min,{s->box.w, s->box.h}, s->texture_unit, (s->info).bottom_left, (s->info).dim, s->flip);
 }
 
+
