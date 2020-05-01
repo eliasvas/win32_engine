@@ -42,6 +42,10 @@ static mat4 ortho_matrix;
 static renderer rend;
 b32 debug_menu = 1;
 f32 inverted = 0.f;
+static cs_context_t* ctx;
+
+static cs_playing_sound_t sound;
+static cs_loaded_sound_t loaded;
 
 void init(void)
 {
@@ -72,14 +76,22 @@ void init(void)
     init_collider_render_quad();
     init_renderer(&rend);
 
-    //cs_context_t* ctx =cs_make_context(WND,44000,8192,0,NULL);
-    //cs_play_sound_def_t def = cs_make_def(&cs_load_wav("../assets/explosion.wav"));
-    //cs_play_sound(ctx, def);
+    ctx =cs_make_context(WND,44000,8192,0,0);
+    loaded = cs_load_wav("../assets/loop.wav");
+    //cs_play_sound_def_t def = cs_make_def(&loaded);
+    sound = cs_make_playing_sound(&loaded);
+    cs_insert_sound(ctx, &sound);
+    cs_mix(ctx);
+    //cs_spawn_mix_thread(ctx);
 }
 
 void update(void)
 {
     change_to_fake_framebuffer();
+    //cs_insert_sound(ctx, &sound);
+    cs_mix(ctx);
+
+
 
     global_platform.vsync = 1;
     renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
