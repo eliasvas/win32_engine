@@ -191,11 +191,28 @@ INLINE vec2 add_vec2(vec2 l, vec2 r)
     return res;
 }
 
+INLINE vec2 add_vec2f(vec2 v,f32 val)
+{
+    vec2 res;
+    res.x = v.x + val;
+    res.y = v.y + val;
+    return res;
+}
+
+
 INLINE vec2 sub_vec2(vec2 l, vec2 r)
 {
     vec2 res;
     res.x = l.x - r.x;
     res.y = l.y - r.y;
+    return res;
+}
+
+INLINE vec2 sub_vec2f(vec2 v,f32 val)
+{
+    vec2 res;
+    res.x = v.x - val;
+    res.y = v.y - val;
     return res;
 }
 

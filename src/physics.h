@@ -16,6 +16,8 @@ struct Box
     u32 id;
 
     vec2 velocity;
+    f32 restitution = 0.f;
+    f32 mass = 0.f;
     b32 on_ground;
     b32 is_colliding;
 };
@@ -28,6 +30,7 @@ static void init_Box(Box* b,vec2 min,f32 w, f32 h)
     b->min = min;
     b->w = w;
     b->h = h;
+    b->velocity = {0.f,0.f};
     b->id = collider_id++;
     colliders.push_back(b);
 }
@@ -52,6 +55,32 @@ Box* check_collision(Box b1)
 }
 
 
+static void 
+resolve_collision(Box* A, Box* B)
+{
+  // Calculate relative velocity
+  vec2 rv = sub_vec2(B->velocity,A->velocity);
+  vec2 normal = {0.0,1.0};
+ 
+  // Calculate relative velocity in terms of the normal direction
+  f32 velAlongNormal = dot_vec2(rv, normal);
+ 
+  // Do not resolve if velocities are separating
+  if(velAlongNormal > 0)
+    return;
+ 
+  // Calculate restitution
+  f32 e = min( A->restitution, B->restitution);
+ 
+  // Calculate impulse scalar
+  f32 j = -(1 + e) * velAlongNormal;
+  j /= (1 / A->mass) + (1 / B->mass);
+ 
+  // Apply impulse
+  vec2 impulse = mul_vec2f(normal, j);
+  A->velocity = sub_vec2(A->velocity, mul_vec2f(impulse,(1 / A->mass)));
+  B->velocity = add_vec2(B->velocity,mul_vec2f(impulse,(1 / B->mass)));
+}
 
 
 

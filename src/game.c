@@ -46,6 +46,7 @@ static cs_context_t* ctx;
 
 static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
+#define sound_on 0
 
 void init(void)
 {
@@ -81,16 +82,15 @@ void init(void)
     //cs_play_sound_def_t def = cs_make_def(&loaded);
     sound = cs_make_playing_sound(&loaded);
     cs_insert_sound(ctx, &sound);
-    cs_mix(ctx);
     //cs_spawn_mix_thread(ctx);
 }
 
 void update(void)
 {
     change_to_fake_framebuffer();
-    //cs_insert_sound(ctx, &sound);
+#if sound_on
     cs_mix(ctx);
-
+#endif
 
 
     global_platform.vsync = 1;
@@ -114,13 +114,16 @@ void update(void)
     {
         if(global_platform.key_pressed[KEY_RIGHT])
         {
-            s.box.min = add_vec2(s.box.min,mul_vec2f({1.0,0.0}, global_platform.dt));
+            s.box.velocity.x += 3.f* global_platform.dt; //constant must be speed
             s.flip = 0;
         }else if (global_platform.key_pressed[KEY_LEFT])
         {
-            s.box.min = sub_vec2(s.box.min,mul_vec2f({1.0,0.0}, global_platform.dt));
+            s.box.velocity.x -= 3.f * global_platform.dt;
             s.flip = 1;
         }
+        if (abs(s.box.velocity.x) > 0.01f)
+            s.box.velocity.x += 0.02 * (-1.f)* (s.box.velocity.x / abs(s.box.velocity.x));
+        s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
     //update collisions
     {
@@ -130,7 +133,10 @@ void update(void)
             //if (check_collision(*colliders[i]))colliders[i]->is_colliding = 1;
             for(u32 j = 0; j < colliders.size();++j)
             {
-                if (collide(colliders[i], colliders[j]))colliders[i]->is_colliding = 1;
+                if (collide(colliders[i], colliders[j])){
+                    colliders[i]->is_colliding = 1;
+                    colliders[i]->velocity.x = 10.f * global_platform.dt * ((colliders[i]->min.x - colliders[j]->min.x) /abs(colliders[i]->min.x - colliders[j]->min.x));
+                }
             }
         }
         
