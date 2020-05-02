@@ -40,12 +40,14 @@ static float wait_of_death = 3.f;
 static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
 #define sound_on 0
-#define colliders_on 1
+#define colliders_on 0
 
 static Box b1;
 static Box b2;
 static Box b3;
 static Box b4;
+
+Box hit_colliders[4];
 
 /*GAMEPLPAY CODE*/
 #include <vector>
@@ -77,6 +79,7 @@ void init(void)
         init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 4, 1.f, info);
         //s.is_blinking = 1;
         s.box.hb = {{0.3f,0.0f}, 0.4f,0.6f};
+        s.box.id = 0;
     }
     //enemy initialization
     {
@@ -95,10 +98,28 @@ void init(void)
     //initializing collider boxes
     {
        init_Box(&b1,{-25.f,-25.f},1.f,50.f); 
+       b1.id = 2;
+       b1.active = 0;
        init_Box(&b2,{-25.f,-25.f},50.f,1.f); 
+       b2.id = 2;
+       b2.active = 0;
        init_Box(&b3,{-26.f,26.f},55.f,1.f); 
+       b3.id = 2;
+       b3.active = 0;
        init_Box(&b4,{26.f,-26.f},1.f,55.f); 
+       b4.id = 2;
+       b4.active = 0;
+
     }
+
+    //init hit colliders
+    {
+        init_Box(&hit_colliders[0],{-1, 0},0.1f,1.f); 
+        init_Box(&hit_colliders[1],{1, 0},0.1f,1.f); 
+        init_Box(&hit_colliders[2],{0, -1},1.f,0.1f); 
+        init_Box(&hit_colliders[3],{0, 1},1.f,0.1f); 
+    }
+
     init_collider_render_quad();
     init_renderer(&rend);
 
@@ -188,6 +209,14 @@ void update(void)
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
 
+    //update hit colliders
+    {
+        vec2 player_pos = s.box.min;
+        hit_colliders[0].min = add_vec2(player_pos, {-0.1f,0});
+        hit_colliders[1].min = add_vec2(player_pos, {1.1f,0});
+        hit_colliders[2].min = add_vec2(player_pos, {0,-0.2f});
+        hit_colliders[3].min = add_vec2(player_pos, {0,1.1f});
+    }
     //enemies update
     {
         for (Enemy& e : enemies){

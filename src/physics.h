@@ -12,18 +12,20 @@ struct HitBox
     vec2 min;
     f32 w, h;
 };
+
 struct Box
 {
     vec2 min;
     f32 w, h;
     HitBox hb;
-    u32 id;
+    u32 id; //0 == player, 1 == enemy, 2 == hit, 3 == wall, 4 = king 
 
     vec2 velocity;
     f32 restitution = 1.f;
     f32 mass = 1.f;
     b32 on_ground;
     b32 is_colliding;
+    b32 active = 1;
 };
 
 static vector<Box*> colliders;
@@ -42,7 +44,7 @@ static void init_Box(Box* b,vec2 min,f32 w, f32 h)
 b32 collide(Box *b1, Box *b2)
 {
     //render_collider_in_pos (mat, {b->min.x + b->hb.min.x,b->min.y + b->hb.min.y,-1.f}, {b->w * b->hb.w, b->h * b->hb.h}, (float)b->is_colliding);
-    if (b1 == NULL || b2 == NULL || b1->id == b2->id)return 0;
+    if ((b1 == NULL || b2 == NULL || b1->id == b2->id)||!((bool)b1->active) || !((bool)b2->active) || b1->id ==2 || b2->id == 2)return 0;
     vec2 b1_min = {b1->min.x + b1->hb.min.x, b1->min.y + b1->hb.min.y};
     vec2 b2_min = {b2->min.x + b2->hb.min.x, b2->min.y + b2->hb.min.y};
     vec2 b1_max = {b1_min.x + b1->w * b1->hb.w, b1_min.y + b1->h*b1->hb.h};
