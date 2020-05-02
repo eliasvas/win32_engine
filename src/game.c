@@ -36,6 +36,7 @@ static cs_context_t* ctx;
 static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
 #define sound_on 0
+#define colliders_on 1
 
 static Box b1;
 static Box b2;
@@ -66,9 +67,11 @@ void init(void)
     {
 
         AnimationInfo info; 
-        //init_animation_info(AnimationInfo* info, vec2 bl, vec2 dim, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
-        init_animation_info(&info,{0.0f,0.0f}, {1.f, 1.f}, 4, 1, 10000.f, 1);
+        //init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
+        init_animation_info(&info,{0.0f,(1.f - 1.f/7.f)}, 7, 7, 4, 50, 0.05f, 0);
         init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 4, 1.f, info);
+        //s.is_blinking = 1;
+        s.box.hb = {{0.3f,0.0f}, 0.4f,0.6f};
     }
     //enemy initialization
     {
@@ -77,6 +80,7 @@ void init(void)
         init_animation_info(&info, {0.0f,0.0f},{1.f, 1.0f},5,1,0.05f,0);
         //init_sprite(Sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, AnimationInfo info)
         init_sprite(&enemies[enemies_index++], {0.0f,1.0f},{1.0f,1.0f},5,1.f,info);
+        enemies[enemies_index -1].box.hb = {{0.2,0.2},0.6,0.6};
     }
     //background initialization
     {
@@ -114,7 +118,7 @@ void update(void)
     global_platform.vsync = 1;
     renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
     update_wrt_player(&cam, {s.box.min.x, s.box.min.y});
-    update_animation_info(&s.info);
+    update_animation_info_plus_ultra(&s.info);
     update_animation_info(&enemy.info);
 
     if (global_platform.key_pressed[KEY_TAB] != debug_menu)
@@ -127,8 +131,6 @@ void update(void)
     else
         inverted = 0.f;
 
-
-    //player movement
     {
         if(global_platform.key_pressed[KEY_RIGHT])
         {
@@ -163,13 +165,14 @@ void update(void)
 
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
+
     //enemies update
     {
         for (Enemy& e : enemies){
             vec2 target = add_vec2(s.box.min, {s.box.w/2.f, s.box.h/2.f}); 
             vec2 direction = sub_vec2(target, add_vec2(e.box.min, {e.box.w/2.f,e.box.h/2.f}));  
-            f32 a = (float)rand()/((float)RAND_MAX/45.f);
-            direction = rotate_vec2(direction, a);
+            //f32 a = (float)rand()/((float)RAND_MAX/45.f);
+            //direction = rotate_vec2(direction, a);
             e.box.velocity = add_vec2(e.box.velocity,direction);
             e.box.velocity = mul_vec2f(e.box.velocity, 0.01f);
             e.box.velocity.x = max(-5, min(e.box.velocity.x, 5));
@@ -249,6 +252,7 @@ void render(HDC *DC)
         //model_mat2 = HMM_MultiplyMat4(perspective_matrixh,model_mat2);
 #endif
 
+#if colliders_on
     //NOTE(ilias): this is for drawing colliders!
     glDisable(GL_DEPTH_TEST); //NOTE(ilias): this is used only for collider visualization
     glLineWidth(2);
@@ -256,9 +260,10 @@ void render(HDC *DC)
     //render_collider_in_pos (mat, {enemy.box.min.x, enemy.box.min.y,-1.f}, {enemy.box.w,enemy.box.h}, (float)enemy.box.is_colliding);
     //render_collider_in_pos (mat, {b1.min.x,b1.min.y,-1.f}, {b1.w, b1.h}, (float)b1.is_colliding);
     for (Box *b : colliders)
-        render_collider_in_pos (mat, {b->min.x,b->min.y,-1.f}, {b->w, b->h}, (float)b->is_colliding);
+        render_collider_in_pos (mat, {b->min.x + b->hb.min.x,b->min.y + b->hb.min.y,-1.f}, {b->w * b->hb.w, b->h * b->hb.h}, (float)b->is_colliding);
     glLineWidth(1);
     glEnable(GL_DEPTH_TEST);
+#endif
 
     render_to_framebuffer0(inverted);
 

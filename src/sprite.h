@@ -16,6 +16,7 @@ struct Sprite
     GLfloat opacity;
     u32 flip;
     AnimationInfo info;
+    b32 is_blinking = 0;
 };
 
 static void
@@ -41,7 +42,12 @@ update_sprite(Sprite* s)
 static void 
 render_sprite(Sprite* s, renderer* rend) //maybe make the renderer static
 {
-    renderer_push(rend, s->box.min,{s->box.w, s->box.h}, s->texture_unit, (s->info).bottom_left, (s->info).dim, s->flip);
+    //renderer_push(renderer* rend, vec2 offset,vec2 scale, GLuint unit, GLuint flip,f32 opacity)
+    if (s->is_blinking)
+        renderer_push(rend, s->box.min,{s->box.w, s->box.h}, s->texture_unit, (s->info).bottom_left, (s->info).dim, s->flip, (f32)abs(sin(5* global_platform.current_time)));
+    else 
+        renderer_push(rend, s->box.min,{s->box.w, s->box.h}, s->texture_unit, (s->info).bottom_left, (s->info).dim, s->flip, 1.f);
+
 }
 
 

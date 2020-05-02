@@ -82,15 +82,15 @@ init_renderer(renderer* rend)
     shader_load(&rend->shaders[0], "../assets/shaders/batch.vert", "../assets/shaders/batch.frag");
 
     //TODO make texture loading dynamic!!!!!!!!!! <---
-    load_texture(&rend->tex[0],"../assets/verybadguy.png");
+    load_texture(&rend->tex[0],"../assets/trans.png");
     rend->tex_count++;
-    load_texture(&rend->tex[1],"../assets/notsobadguy.png");
+    load_texture(&rend->tex[1],"../assets/trans.png");
     rend->tex_count++;
     load_texture(&rend->tex[2],"../assets/runimation.png");
     rend->tex_count++;
     load_texture(&rend->tex[3],"../assets/bat.png");
     rend->tex_count++;
-    load_texture(&rend->tex[4],"../assets/player.png");
+    load_texture(&rend->tex[4],"../assets/pandasheet.png");
     rend->tex_count++;
     load_texture(&rend->tex[5],"../assets/corona.png");
     rend->tex_count++;
@@ -162,10 +162,20 @@ renderer_push(renderer* rend, vec2 offset,vec2 scale, GLuint unit, GLuint flip =
     rend->renderable_alloc_pos++; 
 }
 
+
 static void
 renderer_push(renderer* rend, vec2 offset,vec2 scale, GLuint unit, vec2 bl, vec2 dim, GLuint flip = 0)
 {
     Renderable to_add = {offset,scale, unit,1.0f,bl,dim, flip};
+    //rend->renderable_instance_data[rend->renderable_alloc_pos/sizeof(Renderable)] = to_add; //NOTE(ilias): maybe memcpy
+    rend->renderable_instance_data[rend->renderable_alloc_pos] = to_add; //NOTE(ilias): maybe memcpy
+    rend->renderable_alloc_pos++; 
+}
+
+static void
+renderer_push(renderer* rend, vec2 offset,vec2 scale, GLuint unit, vec2 bl, vec2 dim, GLuint flip, f32 opacity)
+{
+    Renderable to_add = {offset,scale, unit,opacity,bl,dim, flip};
     //rend->renderable_instance_data[rend->renderable_alloc_pos/sizeof(Renderable)] = to_add; //NOTE(ilias): maybe memcpy
     rend->renderable_instance_data[rend->renderable_alloc_pos] = to_add; //NOTE(ilias): maybe memcpy
     rend->renderable_alloc_pos++; 
