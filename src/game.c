@@ -33,6 +33,10 @@ b32 debug_menu = 1;
 f32 inverted = 0.f;
 static cs_context_t* ctx;
 
+static b32 DEATH = 0;
+static float time_of_death = 0.f;
+static float wait_of_death = 3.f;
+
 static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
 #define sound_on 0
@@ -70,7 +74,7 @@ void init(void)
         //init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
         init_animation_info(&info,{0.0f,(1.f - 1.f/7.f)}, 7, 7, 4, 50, 0.05f, 0);
         init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 4, 1.f, info);
-        //s.is_blinking = 1;
+        s.is_blinking = 1;
         s.box.hb = {{0.3f,0.0f}, 0.4f,0.6f};
     }
     //enemy initialization
@@ -114,6 +118,16 @@ void update(void)
     cs_mix(ctx);
 #endif
 
+    if(DEATH)
+    {
+        wait_of_death -= global_platform.dt;
+        if (wait_of_death < 0)
+        {
+            exit(666);
+        }
+        return;
+    }
+
 
     global_platform.vsync = 1;
     renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
@@ -125,6 +139,13 @@ void update(void)
     {
        debug_menu = !debug_menu; 
     }
+
+    if (global_platform.key_pressed[KEY_D])
+    {
+        DEATH = 1;
+        if(time_of_death == 0.f)time_of_death = global_platform.current_time;
+    }
+
 
     if (global_platform.key_pressed[KEY_SPACE])
         inverted = 1.f;
@@ -200,6 +221,20 @@ void update(void)
         }
         
     }
+    //enemy_spawner
+    {
+        vec2 random_position = {(float)rand()/((float)RAND_MAX/25.f),   (float)rand()/((float)RAND_MAX/25.f)};
+        if(enemies_index < 20 && (int)global_platform.current_time % 10 == 0){
+            Enemy enemy;
+            AnimationInfo info;
+            init_animation_info(&info, {0.0f,0.0f},{1.f, 1.0f},5,1,0.05f,0);
+            //init_sprite(Sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, AnimationInfo info)
+            init_sprite(&enemies[enemies_index++], {random_position},{1.0f,1.0f},5,1.f,info);
+            enemies[enemies_index -1].box.hb = {{0.2,0.2},0.6,0.6};
+        }
+
+    }
+
     view_matrix = get_view_mat(&cam);
     perspective_matrix = perspective_proj(43.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
     ortho_matrix = orthographic_proj(-6.f,6.f,-6.f,6.f, 0.1, 100.f);
@@ -239,6 +274,16 @@ void render(HDC *DC)
         std::string t5 = ("Enemies spawned: " + enemies_index);
         print_text(&bmf,t5.c_str(),0,450, 15);
     }
+
+    if (DEATH){
+        std::string g_t = std::to_string(time_of_death);
+        g_t.resize(5);
+        std::string t("YOU SURVIVED: ");
+        print_text(&bmf,t.c_str(), 70.f,570/1.5f, 50,  max(0.f,min(1.0,wait_of_death-1.f)));
+        std::string t2(g_t + "SECONDS!");
+        print_text(&bmf,t2.c_str(), 70.f,570/1.5f - 50.f, 50, max(0.f,min(1.0,wait_of_death-1.f)));
+    }
+
     std::string g_t = std::to_string(global_platform.current_time);
     g_t.resize(4);
     print_text(&bmf,g_t.c_str(),790/2.f,570, 20);

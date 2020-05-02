@@ -23,7 +23,7 @@ init_text(BitmapFont* f, const char * Texture_path)
     load_texture(&f->tex,Texture_path);
 }
 static void                                //start end finish is the interval to print in text
-print_text(BitmapFont *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32 size)
+print_text(BitmapFont *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32 size, f32 fade = 1.f)
 {
 
     u32 length = strlen(text);
@@ -85,6 +85,7 @@ print_text(BitmapFont *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32 
     use_shader(&f->s);
 
     setFloat(&f->s, "time", ((float)time(NULL)) / (float)FLT_MAX);
+    setFloat(&f->s, "fade", fade);
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, f->tex.id); 
@@ -105,7 +106,7 @@ print_text(BitmapFont *f,const char*text,i32 start,i32 finish, i32 x,i32 y, i32 
 
 
 static void 
-print_text(BitmapFont *f,const char*text, i32 x,i32 y, i32 size)
+print_text(BitmapFont *f,const char*text, i32 x,i32 y, i32 size, f32 fade = 1.0f)
 {
 
     u32 length = strlen(text);
@@ -167,6 +168,7 @@ print_text(BitmapFont *f,const char*text, i32 x,i32 y, i32 size)
     use_shader(&f->s);
 
     setFloat(&f->s, "time", ((float)time(NULL)) / (float)FLT_MAX);
+    setFloat(&f->s, "fade", fade);
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, f->tex.id); 
