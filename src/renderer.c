@@ -82,7 +82,7 @@ init_renderer(renderer* rend)
     shader_load(&rend->shaders[0], "../assets/shaders/batch.vert", "../assets/shaders/batch.frag");
 
     //TODO make texture loading dynamic!!!!!!!!!! <---
-    load_texture(&rend->tex[0],"../assets/trans.png");
+    load_texture(&rend->tex[0],"../assets/panda.png");
     rend->tex_count++;
     load_texture(&rend->tex[1],"../assets/trans.png");
     rend->tex_count++;

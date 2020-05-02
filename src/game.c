@@ -72,9 +72,10 @@ void init(void)
 
         AnimationInfo info; 
         //init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
-        init_animation_info(&info,{0.0f,(1.f - 1.f/7.f)}, 7, 7, 4, 50, 0.05f, 0);
+        init_animation_info(&info,{0.0f,(1.f - 1.f/7.f)}, 7, 7, 4, 50, 0.01f, 0);
+        //init_animation_info(&info,{0.0f,0.0f}, 1, 1, 1, 1, 300000.f, 0);
         init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 4, 1.f, info);
-        s.is_blinking = 1;
+        //s.is_blinking = 1;
         s.box.hb = {{0.3f,0.0f}, 0.4f,0.6f};
     }
     //enemy initialization
