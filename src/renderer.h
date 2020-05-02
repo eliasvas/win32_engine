@@ -8,7 +8,7 @@
 #define SHADER_MAX 32
 #define RECT_MAX 32
 #define TEXTURE_MAX 32
-#define SPRITE_MAX 32
+#define SPRITE_MAX 128 
 #define DIAMOND_SIZE sizeof(float)
 
 struct Rect 

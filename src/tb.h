@@ -262,6 +262,15 @@ INLINE vec2 sqrt_vec2(vec2 v)
     return res;
 }
 
+INLINE vec2 rotate_vec2(vec2 v, f32 a) {
+	vec2 res;
+    f32 sn = sin(a);
+	f32 cs = cos(a);
+    res.x = v.x * cs - v.y * sn;
+    res.y = v.x * sn + v.y * cs;
+    return res;
+} 
+
 INLINE f32 length_vec2(vec2 v)
 {
     f32 res = sqrt(dot_vec2(v,v)); // (x^2 + y^2)^(1/2)
@@ -272,7 +281,7 @@ INLINE vec2 normalize_vec2(vec2 v)
 {
     vec2 res = {0}; //in case length is zero we return zero vector
     f32 vec_length = length_vec2(v);
-    if (vec_length != 0)
+    if (vec_length > 0.1)
     {
         res.x = v.x * (1.0f/vec_length);
         res.y = v.y * (1.0f/vec_length);
@@ -444,7 +453,7 @@ INLINE vec4 normalize_vec4(vec4 v)
 {
     vec4 res = {0}; //in case length is zero we return zero vector
     f32 vec_length = length_vec4(v);
-    if (vec_length != 0)
+    if (!equalf(vec_length, 0.f, 0.01))
     {
         res.x = v.x * (1.0f/vec_length);
         res.y = v.y * (1.0f/vec_length);

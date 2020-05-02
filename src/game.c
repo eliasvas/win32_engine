@@ -22,7 +22,7 @@ mat4 MVP;
 static Camera cam;
 static BitmapFont bmf;
 static Sprite s;
-static Sprite bat;
+static Sprite enemy;
 static quad background;
 static Model m;
 static mat4 view_matrix;
@@ -45,18 +45,10 @@ static Box b4;
 /*GAMEPLPAY CODE*/
 #include <vector>
 
-struct Sneeze
-{
-    Sprite s;
-    f32 duration;
-};
-static void 
-init_sneeze(Sneeze* s, vec2 pos, f32 duration)
-{
-
-}
-
-std::vector<Sprite> enemies;
+#define MAX_ENEMIES 100
+typedef Sprite Enemy;
+Enemy enemies[MAX_ENEMIES];
+u32 enemies_index = 0;
 
 void init(void)
 {
@@ -77,13 +69,14 @@ void init(void)
         //init_animation_info(AnimationInfo* info, vec2 bl, vec2 dim, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
         init_animation_info(&info,{0.0f,0.0f}, {1.f, 1.f}, 4, 1, 10000.f, 1);
         init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 4, 1.f, info);
-
     }
-    //bat initialization
+    //enemy initialization
     {
+        Enemy enemy;
         AnimationInfo info;
-        init_animation_info(&info, {0.0f,0.0f},{1.f/9.f, 1.0f},3,9,0.05f,0);
-        init_sprite(&bat, {0.0f,1.0f},{0.5f,0.5f},3,1.f,info);
+        init_animation_info(&info, {0.0f,0.0f},{1.f, 1.0f},5,1,0.05f,0);
+        //init_sprite(Sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, AnimationInfo info)
+        init_sprite(&enemies[enemies_index++], {0.0f,1.0f},{1.0f,1.0f},5,1.f,info);
     }
     //background initialization
     {
@@ -102,7 +95,7 @@ void init(void)
 
 #if sound_on
     ctx =cs_make_context(WND,44000,8192,0,0);
-    loaded = cs_load_wav("../assets/loop.wav");
+    loaded = cs_load_wav("../assets/background_music.wav");
     //cs_play_sound_def_t def = cs_make_def(&loaded);
     sound = cs_make_playing_sound(&loaded);
     cs_insert_sound(ctx, &sound);
@@ -122,7 +115,7 @@ void update(void)
     renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
     update_wrt_player(&cam, {s.box.min.x, s.box.min.y});
     update_animation_info(&s.info);
-    update_animation_info(&bat.info);
+    update_animation_info(&enemy.info);
 
     if (global_platform.key_pressed[KEY_TAB] != debug_menu)
     {
@@ -170,6 +163,24 @@ void update(void)
 
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
+    //enemies update
+    {
+        for (Enemy& e : enemies){
+            vec2 target = add_vec2(s.box.min, {s.box.w/2.f, s.box.h/2.f}); 
+            vec2 direction = sub_vec2(target, add_vec2(e.box.min, {e.box.w/2.f,e.box.h/2.f}));  
+            f32 a = (float)rand()/((float)RAND_MAX/45.f);
+            direction = rotate_vec2(direction, a);
+            e.box.velocity = add_vec2(e.box.velocity,direction);
+            e.box.velocity = mul_vec2f(e.box.velocity, 0.01f);
+            e.box.velocity.x = max(-5, min(e.box.velocity.x, 5));
+            e.box.velocity.y = max(-5, min(e.box.velocity.y, 5));
+            e.box.w = min(abs(sin(global_platform.current_time))/3.f + 0.7f, 1.f);
+            e.box.h = min(abs(sin(global_platform.current_time))/3.f + 0.7f, 1.f);
+
+            e.box.min = add_vec2(e.box.min,e.box.velocity);
+        }
+    }
+
     //update collisions
     {
         for(u32 i = 0; i < colliders.size();++i)
@@ -193,7 +204,9 @@ void update(void)
     int current_frame = ((int)global_platform.current_time) % 6; 
     //renderer_push(&rend, {(GLfloat)2.f,(GLfloat)0.0f}, {1,1},(GLuint)0);
     render_sprite(&s, &rend);
-    render_sprite(&bat, &rend);
+    //render_sprite(&enemy, &rend);
+    for (Enemy& e: enemies)
+        render_sprite(&e, &rend);
 }
 
 void render(HDC *DC)
@@ -220,6 +233,8 @@ void render(HDC *DC)
         print_text(&bmf,t3.c_str(),0,490, 20);
         std::string t4("camera: {" + std::to_string(cam.pos.x) + ", " + std::to_string(cam.pos.y) + ", " + std::to_string(cam.pos.z) + "}");
         print_text(&bmf,t4.c_str(),0,470, 15);
+        std::string t5 = ("Enemies spawned: " + enemies_index);
+        print_text(&bmf,t5.c_str(),0,450, 15);
     }
     std::string g_t = std::to_string(global_platform.current_time);
     g_t.resize(4);
@@ -238,7 +253,7 @@ void render(HDC *DC)
     glDisable(GL_DEPTH_TEST); //NOTE(ilias): this is used only for collider visualization
     glLineWidth(2);
     //render_collider_in_pos (mat, {s.box.min.x, s.box.min.y,-1.f}, {s.box.w,s.box.h}, (float)s.box.is_colliding);
-    //render_collider_in_pos (mat, {bat.box.min.x, bat.box.min.y,-1.f}, {bat.box.w,bat.box.h}, (float)bat.box.is_colliding);
+    //render_collider_in_pos (mat, {enemy.box.min.x, enemy.box.min.y,-1.f}, {enemy.box.w,enemy.box.h}, (float)enemy.box.is_colliding);
     //render_collider_in_pos (mat, {b1.min.x,b1.min.y,-1.f}, {b1.w, b1.h}, (float)b1.is_colliding);
     for (Box *b : colliders)
         render_collider_in_pos (mat, {b->min.x,b->min.y,-1.f}, {b->w, b->h}, (float)b->is_colliding);
