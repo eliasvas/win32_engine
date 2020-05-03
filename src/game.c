@@ -109,9 +109,10 @@ void init(void)
         AnimationInfo info;
         init_animation_info(&info, {1.0f,1.0f},{1.f, 1.0f},0,1,0.01f,0);
         //init_sprite(Sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, AnimationInfo info)
-        init_sprite(&king, {0.5f,9.0f},{1.0f,1.0f},0,1.f,info);
-        king.box.hb = {{0.2,0.2},0.6,0.6};
+        init_sprite(&king, {0.0f,9.0f},{2.0f,2.0f},0,1.f,info);
+        king.box.hb = {{0.6,0.2},0.6,0.6};
         king.box.id = 667;
+        king.box.mass = 20.f;
     }
 
     //background initialization
