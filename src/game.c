@@ -23,6 +23,7 @@ static Camera cam;
 static BitmapFont bmf;
 static Sprite s;
 static Sprite enemy;
+static Sprite king;
 static quad background;
 static Model m;
 static mat4 view_matrix;
@@ -38,8 +39,12 @@ static float time_of_death = 0.f;
 static float wait_of_death = 3.f;
 
 static cs_playing_sound_t sound;
+static cs_playing_sound_t sound2;
 static cs_loaded_sound_t loaded;
-#define sound_on 0
+static cs_loaded_sound_t destroy_corona;
+static int king_hp =2;
+static f32 king_wait = 2.f;
+#define sound_on 1
 #define colliders_on 0
 
 static Box b1;
@@ -57,6 +62,14 @@ typedef Sprite Enemy;
 Enemy enemies[MAX_ENEMIES];
 u32 enemies_index = 0;
 
+static void 
+update_king(Sprite* king)
+{
+    if (king_hp < 0){DEATH = 1;if(time_of_death == 0.f)time_of_death = global_platform.current_time;}
+
+    if (king->is_blinking)king_wait-=global_platform.dt;
+    if (king_wait < 0.f){king_wait = 2.f;king->is_blinking = 0;} 
+}
 void init(void)
 {
 
@@ -74,22 +87,33 @@ void init(void)
 
         AnimationInfo info; 
         //init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
-        init_animation_info(&info,{0.0f,(1.f - 1.f/7.f)}, 7, 7, 4, 50, 0.01f, 0);
+        init_animation_info(&info,{0.0f,(1.f - 1.f/7.f)}, 7, 7, 7, 50, 0.005f, 0);
         //init_animation_info(&info,{0.0f,0.0f}, 1, 1, 1, 1, 300000.f, 0);
-        init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 4, 1.f, info);
+        init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 7, 1.f, info);
         //s.is_blinking = 1;
         s.box.hb = {{0.3f,0.0f}, 0.4f,0.6f};
-        s.box.id = 0;
+        s.box.id = 1024;
     }
     //enemy initialization
     {
         Enemy enemy;
         AnimationInfo info;
-        init_animation_info(&info, {0.0f,0.0f},{1.f, 1.0f},5,1,0.05f,0);
+        init_animation_info(&info, {0.0f,0.0f},{1.f, 1.0f},5,1,0.01f,0);
         //init_sprite(Sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, AnimationInfo info)
         init_sprite(&enemies[enemies_index++], {0.0f,1.0f},{1.0f,1.0f},5,1.f,info);
         enemies[enemies_index -1].box.hb = {{0.2,0.2},0.6,0.6};
+        enemies[enemies_index -1].box.id = 666;
     }
+  //king initialization
+    {
+        AnimationInfo info;
+        init_animation_info(&info, {1.0f,1.0f},{1.f, 1.0f},0,1,0.01f,0);
+        //init_sprite(Sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, AnimationInfo info)
+        init_sprite(&king, {0.5f,9.0f},{1.0f,1.0f},0,1.f,info);
+        king.box.hb = {{0.2,0.2},0.6,0.6};
+        king.box.id = 667;
+    }
+
     //background initialization
     {
         init_quad(&background,"../assets/background.png");
@@ -98,26 +122,26 @@ void init(void)
     //initializing collider boxes
     {
        init_Box(&b1,{-25.f,-25.f},1.f,50.f); 
-       b1.id = 2;
-       b1.active = 0;
+       b1.id = -1;
        init_Box(&b2,{-25.f,-25.f},50.f,1.f); 
-       b2.id = 2;
-       b2.active = 0;
+       b2.id = -1;
        init_Box(&b3,{-26.f,26.f},55.f,1.f); 
-       b3.id = 2;
-       b3.active = 0;
+       b3.id = -1;
        init_Box(&b4,{26.f,-26.f},1.f,55.f); 
-       b4.id = 2;
-       b4.active = 0;
+       b4.id = -1;
 
     }
 
     //init hit colliders
     {
         init_Box(&hit_colliders[0],{-1, 0},0.1f,1.f); 
+        hit_colliders[0].id = 1;
         init_Box(&hit_colliders[1],{1, 0},0.1f,1.f); 
+        hit_colliders[1].id = 1;
         init_Box(&hit_colliders[2],{0, -1},1.f,0.1f); 
+        hit_colliders[2].id = 1;
         init_Box(&hit_colliders[3],{0, 1},1.f,0.1f); 
+        hit_colliders[3].id = 1;
     }
 
     init_collider_render_quad();
@@ -126,8 +150,10 @@ void init(void)
 #if sound_on
     ctx =cs_make_context(WND,44000,8192,0,0);
     loaded = cs_load_wav("../assets/background_music.wav");
+    destroy_corona = cs_load_wav("../assets/explosion.wav");
     //cs_play_sound_def_t def = cs_make_def(&loaded);
     sound = cs_make_playing_sound(&loaded);
+    sound2 = cs_make_playing_sound(&destroy_corona);
     cs_insert_sound(ctx, &sound);
     //cs_spawn_mix_thread(ctx);
 #endif
@@ -156,6 +182,7 @@ void update(void)
     update_wrt_player(&cam, {s.box.min.x, s.box.min.y});
     update_animation_info_plus_ultra(&s.info);
     update_animation_info(&enemy.info);
+    update_king(&king);
 
     if (global_platform.key_pressed[KEY_TAB] != debug_menu)
     {
@@ -177,23 +204,40 @@ void update(void)
     {
         if(global_platform.key_pressed[KEY_RIGHT])
         {
+            s.texture_unit = 7; 
+            s.info.bottom_leftOG = {0, 1 - 1/7.f};
+            s.flip = 0;
+            s.info.dim = {1/7.f,1/7.f};
             if (s.box.velocity.x < 0.f)s.box.velocity.x += 6.f * global_platform.dt;
             s.box.velocity.x += 6.f* global_platform.dt; //constant must be speed
-            s.flip = 0;
         }
         if (global_platform.key_pressed[KEY_LEFT])
         {
+                s.texture_unit = 8; 
+                s.flip = 1;
+            s.info.bottom_leftOG = {0, 1 - 1/7.f};
+                s.info.dim = {1/7.f,1/7.f};
             if (s.box.velocity.x > 0.f)s.box.velocity.x -= 6.f * global_platform.dt;
             s.box.velocity.x -= 6.f * global_platform.dt;
-            s.flip = 1;
         }
         if (global_platform.key_pressed[KEY_UP])
         {
+            if (!global_platform.key_pressed[KEY_LEFT] && !global_platform.key_pressed[KEY_RIGHT]){
+                s.texture_unit = 6; 
+                s.info.bottom_leftOG = {0, 1 - 1/7.f};
+                s.info.dim = {1/7.f,1/7.f};
+                //s.flip = 1;
+            }
             if (s.box.velocity.y < 0.f)s.box.velocity.y += 6.f * global_platform.dt;
             s.box.velocity.y += 6.f * global_platform.dt;
         }
         if (global_platform.key_pressed[KEY_DOWN])
         {
+            if (!global_platform.key_pressed[KEY_LEFT] && !global_platform.key_pressed[KEY_RIGHT]){
+                s.texture_unit = 9; 
+                s.info.bottom_leftOG = {0, 1.f - 1/7.f};
+                s.info.dim = {1/7.f,1/7.f};
+            }
             if (s.box.velocity.y > 0.f)s.box.velocity.y -= 6.f * global_platform.dt;
             s.box.velocity.y -= 6.f * global_platform.dt;
         }
@@ -220,10 +264,10 @@ void update(void)
     //enemies update
     {
         for (Enemy& e : enemies){
-            vec2 target = add_vec2(s.box.min, {s.box.w/2.f, s.box.h/2.f}); 
+            e.box.id = 666;
+            if (!e.box.active)continue;
+            vec2 target = add_vec2(king.box.min, {s.box.w/2.f, s.box.h/2.f}); 
             vec2 direction = sub_vec2(target, add_vec2(e.box.min, {e.box.w/2.f,e.box.h/2.f}));  
-            //f32 a = (float)rand()/((float)RAND_MAX/45.f);
-            //direction = rotate_vec2(direction, a);
             e.box.velocity = add_vec2(e.box.velocity,direction);
             e.box.velocity = mul_vec2f(e.box.velocity, 0.01f);
             e.box.velocity.x = max(-5, min(e.box.velocity.x, 5));
@@ -231,7 +275,7 @@ void update(void)
             e.box.w = min(abs(sin(global_platform.current_time))/3.f + 0.7f, 1.f);
             e.box.h = min(abs(sin(global_platform.current_time))/3.f + 0.7f, 1.f);
 
-            e.box.min = add_vec2(e.box.min,e.box.velocity);
+            e.box.min = add_vec2(e.box.min,div_vec2f(e.box.velocity,2.f));
         }
     }
 
@@ -243,9 +287,14 @@ void update(void)
             //if (check_collision(*colliders[i]))colliders[i]->is_colliding = 1;
             for(u32 j = 0; j < colliders.size();++j)
             {
-                if (collide(colliders[i], colliders[j])){
-                    //handle_collision_basic(colliders[i], colliders[j]);
-                    resolve_collision(colliders[i], colliders[j]);
+                collider_id = collide(colliders[i], colliders[j]);
+                if (collider_id){
+                    if (collider_id == 666){if (king.is_blinking == 0)king_hp--;king.is_blinking = 1;}
+                    if (collider_id != 989) 
+                        handle_collision_basic(colliders[i], colliders[j]);
+                    else   
+                        resolve_collision(colliders[i], colliders[j]);
+                    if (collider_id == -989){colliders[j]->is_destroyed = 1;colliders[j]->active = 0;cs_insert_sound(ctx, &sound2);}
                 }
             }
         }
@@ -253,16 +302,25 @@ void update(void)
     }
     //enemy_spawner
     {
-        vec2 random_position = {(float)rand()/((float)RAND_MAX/25.f),   (float)rand()/((float)RAND_MAX/25.f)};
+        vec2 random_position = {(float)rand()/((float)RAND_MAX/25.f),   (float)rand()/((float)RAND_MAX/45.f)};
         if(enemies_index < 20 && (int)global_platform.current_time % 10 == 0){
             Enemy enemy;
             AnimationInfo info;
             init_animation_info(&info, {0.0f,0.0f},{1.f, 1.0f},5,1,0.05f,0);
+            enemy.box.id = 666;
             //init_sprite(Sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, AnimationInfo info)
             init_sprite(&enemies[enemies_index++], {random_position},{1.0f,1.0f},5,1.f,info);
             enemies[enemies_index -1].box.hb = {{0.2,0.2},0.6,0.6};
         }
-
+        for (int i = 0; i < 20 ;++i)
+        {
+            if (!enemies[i].box.active)
+            {
+                vec2 random_position = {(float)rand()/((float)RAND_MAX/25.f),   (float)rand()/((float)RAND_MAX/45.f)};
+                enemies[i].box.min = random_position;
+                enemies[i].box.active = 1;
+            }
+        }
     }
 
     view_matrix = get_view_mat(&cam);
@@ -272,9 +330,10 @@ void update(void)
     int current_frame = ((int)global_platform.current_time) % 6; 
     //renderer_push(&rend, {(GLfloat)2.f,(GLfloat)0.0f}, {1,1},(GLuint)0);
     render_sprite(&s, &rend);
+    render_sprite(&king, &rend);
     //render_sprite(&enemy, &rend);
     for (Enemy& e: enemies)
-        render_sprite(&e, &rend);
+        if (e.box.active)render_sprite(&e, &rend);
 }
 
 void render(HDC *DC)

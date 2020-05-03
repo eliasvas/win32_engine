@@ -94,6 +94,18 @@ init_renderer(renderer* rend)
     rend->tex_count++;
     load_texture(&rend->tex[5],"../assets/corona.png");
     rend->tex_count++;
+   load_texture(&rend->tex[6],"../assets/pandabackrunsheet.png");
+    rend->tex_count++;
+   load_texture(&rend->tex[7],"../assets/pandaleftrunsheet.png");
+    rend->tex_count++;
+   load_texture(&rend->tex[8],"../assets/pandarightrunsheet.png");
+    rend->tex_count++;
+   load_texture(&rend->tex[9],"../assets/pandafrontrunsheet.png");
+    rend->tex_count++;
+
+
+
+
 
 
 
@@ -123,8 +135,8 @@ renderer_render(renderer* rend,float* proj)
 
     //passing the available tex_units as uniform
     GLuint loc = glGetUniformLocation(rend->shaders[0].ID, "slots");
-    GLint arr[6] = {0,1,2,3,4,5};
-    glUniform1iv(loc, 6,arr);
+    GLint arr[10] = {0,1,2,3,4,5,6,7,8,9};
+    glUniform1iv(loc, 10,arr);
 
     //passing the dimensions of the available tex_units as uniform
     loc = glGetUniformLocation(rend->shaders[0].ID, "tex_sizes");

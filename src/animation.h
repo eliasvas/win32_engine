@@ -85,7 +85,7 @@ static void
 update_animation_info_plus_ultra(AnimationInfo* info)
 {
    if(info->done)return; 
-   info->bottom_left = {info->bottom_leftOG.y+((info->frame )%info->frames_per_row) / (f32)info->frames_per_row,info->bottom_leftOG.y- ((info->frame-1 )/info->frames_per_col) / (f32)info->frames_per_col}; 
+   info->bottom_left = {info->bottom_leftOG.x+((info->frame )%info->frames_per_row) / (f32)info->frames_per_row,info->bottom_leftOG.y - ((info->frame )/info->frames_per_col) / (f32)info->frames_per_col}; 
 
 
 
@@ -122,4 +122,3 @@ set_animation_info(AnimationInfo* info, AnimationInfo to_copy)
     info->done = to_copy.done;
 
 }
-
