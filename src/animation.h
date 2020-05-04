@@ -23,23 +23,6 @@ struct AnimationInfo
 };
 
 static void
-init_animation_info(AnimationInfo* info, vec2 bl, vec2 dim, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
-{
-    info->bottom_left = bl;
-    info->dim = dim;
-    info->tex_unit = tex_unit; //NOTE(ilias): umm, tex unit is handled by sprite, maybe remove??
-    info->frame_count = frame_count;
-    info->frame = 0;
-    info->time_per_frame = time_per_frame;
-    info->play_once = play_once;
-    info->time_left = info->time_per_frame;
-    info->done = 0;
-    info->frames_per_row = frame_count;
-
-    info->bottom_leftOG = info->bottom_left; // maybe just dont change info->bottom_left????
-}
-
-static void
 init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
 {
     info->bottom_left = bl;
