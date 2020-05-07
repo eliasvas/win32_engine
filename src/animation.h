@@ -19,7 +19,7 @@ struct AnimationInfo
     b32 done;
 
 
-    vec2 bottom_leftOG;
+    vec2 bottom_leftOG; //hmmm...
 };
 
 static void
@@ -41,7 +41,7 @@ init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames
 }
 
 static void 
-update_animation_info(AnimationInfo* info)
+update_animation_info_once_col(AnimationInfo* info)
 {
    if(info->done)return; 
    info->bottom_left = {(float)(info->frame +1)/ (float)info->frame_count,info->bottom_left.y}; //TODO(ilias): make animations_span many y's
@@ -65,7 +65,7 @@ update_animation_info(AnimationInfo* info)
 }
 
 static void 
-update_animation_info_plus_ultra(AnimationInfo* info)
+update_animation_info(AnimationInfo* info)
 {
    if(info->done)return; 
    info->bottom_left = {info->bottom_leftOG.x+((info->frame )%info->frames_per_row) / (f32)info->frames_per_row,info->bottom_leftOG.y - ((info->frame )/info->frames_per_col) / (f32)info->frames_per_col}; 

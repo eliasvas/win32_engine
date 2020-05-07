@@ -20,7 +20,6 @@ void main(){
 	
 	FragColor = texture(slots[tex_unit], vec2(bottom_left.x + tex_length.x*(f_tex_coords.x),bottom_left.y + f_tex_coords.y * tex_length.y));
 	
-	
 	if (FragColor.a < 0.1)
 	{
 		discard;

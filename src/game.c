@@ -77,7 +77,7 @@ void init(void)
     //background initialization
     {
         init_quad(&background,"../assets/background.png");
-        background.pos = {0,0,0};
+        background.pos = {0,0,-1.1f};
     }
     //initializing collider boxes
     {
@@ -91,7 +91,6 @@ void init(void)
        b4.id = -1;
 
     }
-    init_collider_render_quad();
     init_renderer(&rend);
 
 #if sound_on
@@ -109,10 +108,13 @@ void update(void)
     cs_mix(ctx);
 #endif
 
+    //background.pos = {0,0,abs(sin(global_platform.current_time)) * -80.f};
+
     global_platform.vsync = 1;
     renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
-    update_wrt_player(&cam, {s.box.min.x, s.box.min.y});
-    update_animation_info_plus_ultra(&s.info);
+    //update_wrt_player(&cam, {s.box.min.x, s.box.min.y});
+    update_cam(&cam);
+    update_animation_info(&s.info);
 
     if (global_platform.key_pressed[KEY_TAB] != debug_menu)
     {
@@ -192,11 +194,10 @@ void update(void)
 
 void render(HDC *DC)
 {
-    mat4 mat = mul_mat4(ortho_matrix, view_matrix);
-        //rendering background 
+    mat4 mat = mul_mat4(perspective_matrix, view_matrix);
+    //rendering background 
     {
-        mat4 background_mat = mul_mat4(mat, translate_mat4({1.0,1.0,1.0}));
-        render_quad(&background, (float*)background_mat.elements);
+        render_quad(&background, mat);
     }
     renderer_render(&rend, (float*)mat.elements);
 
@@ -222,9 +223,8 @@ void render(HDC *DC)
 
 #if 0
     {
-        mat4 model_mat = translate_mat4({0,-5.5,-30.f -50.f}); //changing translate changes color???!
-        model_mat = mul_mat4(mat,model_mat);
-        render_model(&m, model_mat);
+        m.position = {0,0,-3};
+        render_model(&m, mat);
     }
         //model_mat2 = HMM_MultiplyMat4(perspective_matrixh,model_mat2);
 #endif
@@ -233,11 +233,8 @@ void render(HDC *DC)
     //NOTE(ilias): this is for drawing colliders!
     glDisable(GL_DEPTH_TEST); //NOTE(ilias): this is used only for collider visualization
     glLineWidth(2);
-    //render_collider_in_pos (mat, {s.box.min.x, s.box.min.y,-1.f}, {s.box.w,s.box.h}, (float)s.box.is_colliding);
-    //render_collider_in_pos (mat, {enemy.box.min.x, enemy.box.min.y,-1.f}, {enemy.box.w,enemy.box.h}, (float)enemy.box.is_colliding);
-    //render_collider_in_pos (mat, {b1.min.x,b1.min.y,-1.f}, {b1.w, b1.h}, (float)b1.is_colliding);
-    for (Box *b : colliders)
-        render_collider_in_pos (mat, {b->min.x + b->hb.min.x,b->min.y + b->hb.min.y,-1.f}, {b->w * b->hb.w, b->h * b->hb.h}, (float)b->is_colliding);
+    //for (Box *b : colliders)
+        //render_collider_in_pos (mat, {b->min.x + b->hb.min.x,b->min.y + b->hb.min.y,-1.f}, {b->w * b->hb.w, b->h * b->hb.h}, (float)b->is_colliding);
     glLineWidth(1);
     glEnable(GL_DEPTH_TEST);
 #endif

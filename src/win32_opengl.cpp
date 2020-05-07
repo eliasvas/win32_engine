@@ -67,6 +67,10 @@ static PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
 static PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
 static PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
 static PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
+static PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer;
+static PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage;
+static PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers;
+static PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer;
 
 void *GetGLFuncAddress(const char *name)
 {
@@ -119,13 +123,16 @@ LoadAllOpenGLProcedures()
    glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)GetGLFuncAddress("glVertexAttribIPointer"); 
    glVertexAttribDivisor = (PFNGLVERTEXATTRIBDIVISORPROC)GetGLFuncAddress("glVertexAttribDivisor"); 
    glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)GetGLFuncAddress("glEnableVertexAttribArray"); 
-   //glTexParameteri = (PFNGLTEXTUREPARAMETERIPROC)GetGLFuncAddress("glTextureParameteri"); 
    glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)GetGLFuncAddress("glGenerateMipmap"); 
    glGenFramebuffers =  (PFNGLGENFRAMEBUFFERSPROC)GetGLFuncAddress("glGenFramebuffers");
    glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)GetGLFuncAddress("glFramebufferTexture2D") ;
    glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)GetGLFuncAddress("glBindFramebuffer");
    glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC)GetGLFuncAddress("glCheckFramebufferStatus");
    glDrawBuffers = (PFNGLDRAWBUFFERSPROC)GetGLFuncAddress("glDrawBuffers");
+   glBindRenderbuffer = (PFNGLBINDRENDERBUFFERPROC)GetGLFuncAddress("glBindRenderbuffer");
+   glRenderbufferStorage = (PFNGLRENDERBUFFERSTORAGEPROC)GetGLFuncAddress("glRenderbufferStorage");
+   glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFERPROC)GetGLFuncAddress("glFramebufferRenderbuffer");
+   glGenRenderbuffers = (PFNGLGENRENDERBUFFERSPROC)GetGLFuncAddress("glGenRenderbuffers");
 
 
    //and on and on and on......

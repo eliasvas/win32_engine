@@ -34,7 +34,7 @@ move_camera_wrt_player_smooth(Camera* cam, vec2 player_pos)
 
 
 static void 
-update(Camera* cam)
+update_cam(Camera* cam)
 {
     //a+= 0.01;
     //if (cam->pos.Z < 1.f)cam->pos = {0.f,0.f,300.f};
@@ -78,6 +78,13 @@ mat4 get_view_mat(Camera* cam)
 {
     mat4 camera = look_at(cam->pos,add_vec3(cam->pos, {0.0,0.0,-1.0}),{0.f,1.f,0.f});
     //hmm_mat4 camera = HMM_LookAt(cam->pos, HMM_SubtractVec3({0.0,0.0,0.0}, cam->pos),{0.f,1.f,0.f});
+#if 1
+    const float radius = 10.0f;
+    float camX = sin(global_platform.current_time) * radius;
+    float camY = sin(global_platform.current_time) * radius;
+    float camZ = cam->pos.z;
+    camera = look_at(v3(camX, 0.0, camZ), v3(0.0, 0.0, 0.0), v3(0.0, 1.0, 0.0));
+#endif
     return camera;
 }
 

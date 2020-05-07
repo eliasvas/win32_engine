@@ -10,15 +10,6 @@ init_renderer(renderer* rend)
 {
     rend->tex_count = 0;
    
-    GLfloat vertices[8] = {
-                            0.0f,0.0f,
-                            1.0f,0.0f,
-                            0.0f,1.0f,
-                            1.0f,1.0f,
-                            };
-
-
-
     {//initializing renderable VAO
         glGenVertexArrays(1, &rend->renderable_vao);    
         glBindVertexArray(rend->renderable_vao);

@@ -8,5 +8,5 @@ uniform float flag;
 
 void main()
 {
-    FragColor = vec4(vec3(1 -texture(screenTexture, TexCoords)) * flag +vec3(texture(screenTexture, TexCoords)) * (1 - flag) , 1.0);
+    FragColor = texture(screenTexture, TexCoords);
 }

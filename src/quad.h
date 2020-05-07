@@ -86,6 +86,20 @@ render_quad(quad* q, float* m)
     glBindVertexArray(0);
 }
 
+static void 
+render_quad(quad* q, mat4 m)
+{
+    mat4 mvp = mul_mat4(m, translate_mat4(q->pos)); 
+    use_shader(&q->s);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, q->t.id);
+    setMat4fv(&q->s, "MVP", (float*)mvp.elements);
+    glBindVertexArray(q->VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+}
+
+
 /*
 static void 
 render_quad(quad* q, float* m,f32 red = 0.f)

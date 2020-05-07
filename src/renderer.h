@@ -11,6 +11,8 @@
 #define SPRITE_MAX 128 
 #define DIAMOND_SIZE sizeof(float)
 
+GLfloat vertices[8] = {0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,1.0f,1.0f};
+
 struct Rect 
 {
     vec2 pos;
@@ -18,6 +20,14 @@ struct Rect
     f32 color;
 };
 #define RECT_SIZE sizeof(Rect)
+
+struct OpenGLFBO
+{
+    GLuint fbo;
+    GLuint color_attachments[4];
+    GLuint depth_attachment;
+    u32 w,h;
+};
 
 struct Renderable 
 {
@@ -28,7 +38,6 @@ struct Renderable
     vec2 bl;
     vec2 tex_dim;
     GLuint flip;
-    //..
 };
 #define SPRITE_SIZE sizeof(Renderable)
 
@@ -50,6 +59,11 @@ struct renderer
     Shader shaders[SHADER_MAX];
     Texture tex[TEXTURE_MAX];
     i32 tex_count;
+
+
+    mat4 view_projection;
+    mat4 orthographic_projection;
+    mat4 perspective_projection;
 };
 static void 
 init_renderer(renderer* r);
