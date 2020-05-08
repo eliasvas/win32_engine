@@ -16,6 +16,8 @@ struct Platform
 
     f32 mouse_x;
     f32 mouse_y;
+    b8 left_mouse_down;
+    b8 right_mouse_down;
     b8 key_down[KEY_MAX];
     b8 key_pressed[KEY_MAX];
     i32 last_key;

@@ -186,7 +186,7 @@ void update(void)
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
 
-    light_pos = {sin(global_platform.current_time)* 30, 10,0};
+    light_pos = {sin(global_platform.current_time)* 30, 20,0};
 
     view_matrix = get_view_mat(&cam);
     perspective_matrix = perspective_proj(43.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
@@ -212,12 +212,15 @@ void render(HDC *DC)
         print_text(&bmf,t.c_str(),0,540, 20);
         std::string w = std::to_string(global_platform.window_width);
         std::string h = std::to_string(global_platform.window_height);
-        std::string t2("wsize: " + w + "x"+ h) ;
-        print_text(&bmf,t2.c_str(),0,510, 20); 
-        std::string t3("ms: " + std::to_string(global_platform.dt));
-        print_text(&bmf,t3.c_str(),0,490, 20);
-        std::string t4("camera: {" + std::to_string(cam.pos.x) + ", " + std::to_string(cam.pos.y) + ", " + std::to_string(cam.pos.z) + "}");
-        print_text(&bmf,t4.c_str(),0,470, 15);
+        std::string window_info("wsize: " + w + "x"+ h) ;
+        print_text(&bmf,window_info.c_str(),0,510, 20); 
+        std::string fps_info("ms: " + std::to_string(global_platform.dt));
+        print_text(&bmf,fps_info.c_str(),0,490, 20);
+        std::string camera_info("camera: {" + std::to_string(cam.pos.x) + ", " + std::to_string(cam.pos.y) + ", " + std::to_string(cam.pos.z) + "}");
+        print_text(&bmf,camera_info.c_str(),0,470, 15);
+        std::string mouse_info("mouse: {" + std::to_string(global_platform.mouse_x) + ", " + std::to_string(global_platform.mouse_y) + "}" + " [" + std::to_string(global_platform.left_mouse_down) + "]" + " [" + std::to_string(global_platform.right_mouse_down) + "]");
+        print_text(&bmf,mouse_info.c_str(),0,450, 15);
+
     }
 
     std::string g_t = std::to_string(global_platform.current_time);
@@ -226,7 +229,7 @@ void render(HDC *DC)
 
 #if 1
     {
-        m.position = {0,0, -50};
+        m.position = {0,0, -5};
         render_model(&m,&perspective_matrix, &view_matrix, light_pos, cam.pos);
     }
         //model_mat2 = HMM_MultiplyMat4(perspective_matrixh,model_mat2);

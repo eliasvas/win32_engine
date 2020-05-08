@@ -84,7 +84,20 @@ static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l
             global_platform.key_down[key_input] = 0;
             global_platform.key_pressed[key_input] = 0;
         }
+    }else if (message == WM_LBUTTONDOWN)
+    {
+        global_platform.left_mouse_down = 1;
+    }else if (message == WM_LBUTTONUP)
+    {
+        global_platform.left_mouse_down = 0;
+    }else if (message == WM_RBUTTONDOWN)
+    {
+        global_platform.right_mouse_down = 1;
+    }else if (message == WM_RBUTTONUP)
+    {
+        global_platform.right_mouse_down = 0;
     }
+
     else{
         result = DefWindowProc(hWnd, message, w_param, l_param);
     }
@@ -168,6 +181,15 @@ WinMain(HINSTANCE Instance,
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
+
+        {
+            POINT mouse;
+            GetCursorPos(&mouse);
+            ScreenToClient(WND, &mouse);
+            global_platform.mouse_x = (f32)(mouse.x);
+            global_platform.mouse_y = (f32)(mouse.y);
+        }
+        
         {
             RECT client_rect;
             GetClientRect(WND, &client_rect);

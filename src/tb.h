@@ -586,10 +586,10 @@ INLINE mat4 rotate_mat4(f32 angle, vec3 axis)
 
 INLINE mat4 scale_mat4(vec3 s)
 {
-    mat4 res = {0};
-    res.elements[0][0] = s.x;
-    res.elements[1][1] = s.y;
-    res.elements[2][2] = s.z;
+    mat4 res = m4d(1.f);
+    res.elements[0][0] *= s.x;
+    res.elements[1][1] *= s.y;
+    res.elements[2][2] *= s.z;
     return res;
 }
 

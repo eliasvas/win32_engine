@@ -98,6 +98,9 @@ render_model(Model* m, mat4* projection, mat4* view, vec3 light_pos, vec3 camera
 {
     use_shader(&m->s);
     mat4 model = translate_mat4(m->position);
+    model.elements[0][0] =0.1f;
+    model.elements[1][1] =0.1f;
+    model.elements[2][2] =0.1f;
     setMat4fv(&m->s, "proj", (GLfloat*)projection->elements);
     setMat4fv(&m->s, "view", (GLfloat*)view->elements);
     setMat4fv(&m->s, "model", (GLfloat*)model.elements);

@@ -4,8 +4,9 @@ static const f32 MAX_DISTANCE = 5.f;
 struct Camera
 {
     vec3 pos;
-    vec3 dir;
     vec3 front;
+    vec3 up;
+    f32 camera_speed = 2.f;
 };
 
 static void 
@@ -18,6 +19,7 @@ init_camera (Camera* cam)
 {
     cam->pos = {0.f,0.f,4.f};
     cam->front = {0.0f,0.0f,-1.0f};
+    cam->up = {0.f,1.f,0.f};
 }
 
 static void 
@@ -36,25 +38,25 @@ move_camera_wrt_player_smooth(Camera* cam, vec2 player_pos)
 static void 
 update_cam(Camera* cam)
 {
-    //a+= 0.01;
-    //if (cam->pos.Z < 1.f)cam->pos = {0.f,0.f,300.f};
-    //cam->pos.Z -= 1.f;
-    //cam->pos.Z++;
     if (global_platform.key_down[KEY_A])
     {
-        cam->pos.x -= 0.1f;
+        //cam->pos.x -= 0.1f; //we must make a right vector and move along it
+        cam->pos = sub_vec3(cam->pos, mul_vec3f(cross_vec3(cam->front, cam->up), cam->camera_speed * global_platform.dt));
     }
     if (global_platform.key_down[KEY_D])
     {
-        cam->pos.x += 0.1f;
+        //cam->pos.x += 0.1f; //we must make a right vector and move along it
+        cam->pos = add_vec3(cam->pos, mul_vec3f(cross_vec3(cam->front, cam->up), cam->camera_speed * global_platform.dt));
     }
     if (global_platform.key_down[KEY_W])
     {
-        cam->pos.y += 0.1f;
+        //cam->pos.y += 0.1f;
+        cam->pos = add_vec3(cam->pos, mul_vec3f(cam->front,cam->camera_speed* global_platform.dt));
     }
     if (global_platform.key_down[KEY_S])
     {
-        cam->pos.y -= 0.1f;
+        //cam->pos.y -= 0.1f;
+        cam->pos = sub_vec3(cam->pos, mul_vec3f(cam->front,cam->camera_speed* global_platform.dt));
     }
     if (global_platform.key_down[KEY_Q])
     {
@@ -64,8 +66,6 @@ update_cam(Camera* cam)
     {
         turn_camera_around_center(cam, -1.f);
     }
-    cam->dir = {0,0,-1}; //NOTE(ilias): maybe orientation is messed up?
-    //cam->pos = {cam->pos[0] + cos(a),cam->pos[1] + sin(a)};
 }
 static void 
 update_wrt_player(Camera* cam, vec2 player_pos)
@@ -76,7 +76,7 @@ update_wrt_player(Camera* cam, vec2 player_pos)
 
 mat4 get_view_mat(Camera* cam)
 {
-    mat4 camera = look_at(cam->pos,add_vec3(cam->pos, {0.0,0.0,-1.0}),{0.f,1.f,0.f});
+    mat4 camera = look_at(cam->pos,add_vec3(cam->pos, cam->front),cam->up);
     //hmm_mat4 camera = HMM_LookAt(cam->pos, HMM_SubtractVec3({0.0,0.0,0.0}, cam->pos),{0.f,1.f,0.f});
 #if 0
     const float radius = 10.0f;
