@@ -78,7 +78,7 @@ mat4 get_view_mat(Camera* cam)
 {
     mat4 camera = look_at(cam->pos,add_vec3(cam->pos, {0.0,0.0,-1.0}),{0.f,1.f,0.f});
     //hmm_mat4 camera = HMM_LookAt(cam->pos, HMM_SubtractVec3({0.0,0.0,0.0}, cam->pos),{0.f,1.f,0.f});
-#if 1
+#if 0
     const float radius = 10.0f;
     float camX = sin(global_platform.current_time) * radius;
     float camY = sin(global_platform.current_time) * radius;

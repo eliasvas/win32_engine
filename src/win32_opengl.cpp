@@ -47,6 +47,7 @@ static PFNGLDELETEPROGRAMPROC glDeleteProgram;
 static PFNGLLINKPROGRAMPROC glLinkProgram;
 static PFNGLGETPROGRAMIVPROC glGetProgramiv;
 static PFNGLUNIFORM1IPROC glUniform1i;
+static PFNGLUNIFORM3FPROC glUniform3f;
 static PFNGLUNIFORM1IVPROC glUniform1iv;
 static PFNGLUNIFORM2FVPROC glUniform2fv;
 static PFNGLUNIFORM1FPROC glUniform1f;
@@ -133,7 +134,7 @@ LoadAllOpenGLProcedures()
    glRenderbufferStorage = (PFNGLRENDERBUFFERSTORAGEPROC)GetGLFuncAddress("glRenderbufferStorage");
    glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFERPROC)GetGLFuncAddress("glFramebufferRenderbuffer");
    glGenRenderbuffers = (PFNGLGENRENDERBUFFERSPROC)GetGLFuncAddress("glGenRenderbuffers");
-
+   glUniform3f = (PFNGLUNIFORM3FPROC) GetGLFuncAddress("glUniform3f");
 
    //and on and on and on......
 }

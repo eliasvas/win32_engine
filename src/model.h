@@ -76,7 +76,7 @@ init_model (Model* m, std::vector<vertex>& vertices)
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 6));
     glBindVertexArray(0);
 
-    shader_load(&m->s,"../assets/shaders/mesh.vert","../assets/shaders/mesh.frag");
+    shader_load(&m->s,"../assets/shaders/phong.vert","../assets/shaders/phong.frag");
 }
 
 static void 
@@ -92,5 +92,25 @@ render_model(Model* m, mat4 mat)
     glDrawArrays(GL_TRIANGLES,0, m->vertices.size());
     glBindVertexArray(0);
 }
+
+static void 
+render_model(Model* m, mat4* projection, mat4* view, vec3 light_pos, vec3 camera_pos)
+{
+    use_shader(&m->s);
+    mat4 model = translate_mat4(m->position);
+    setMat4fv(&m->s, "proj", (GLfloat*)projection->elements);
+    setMat4fv(&m->s, "view", (GLfloat*)view->elements);
+    setMat4fv(&m->s, "model", (GLfloat*)model.elements);
+    glUniform3f(glGetUniformLocation(m->s.ID, "light_pos"), light_pos.x, light_pos.y, light_pos.z); 
+    glUniform3f(glGetUniformLocation(m->s.ID, "view_pos"), camera_pos.x, camera_pos.y, camera_pos.z); 
+
+    glBindVertexArray(m->vao);
+    //int mode = (int)(global_platform.current_time) % 3;
+    //if (mode == 2)mode = GL_TRIANGLES;
+    //glDrawArrays( mode,0, m->vertices.size());
+    glDrawArrays(GL_TRIANGLES,0, m->vertices.size());
+    glBindVertexArray(0);
+}
+
 
 

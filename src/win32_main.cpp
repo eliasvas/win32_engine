@@ -24,7 +24,7 @@ static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l
         {
            RECT rect;
            GetClientRect(hWnd, &rect);
-           glViewport(0, 0, (GLsizei)rect.right, (GLsizei)rect.bottom); //for some reason this is useless 
+           //glViewport(0, 0, (GLsizei)rect.right, (GLsizei)rect.bottom); //for some reason this is useless 
            global_platform.window_width = rect.right;
            global_platform.window_height = rect.bottom;
     }else if (message == WM_CLOSE || message == WM_DESTROY || message == WM_QUIT){

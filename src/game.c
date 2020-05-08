@@ -30,6 +30,7 @@ static mat4 view_matrix;
 static mat4 perspective_matrix;
 static mat4 ortho_matrix;
 static renderer rend;
+static vec3 light_pos;
 b32 debug_menu = 1;
 f32 inverted = 0.f;
 static cs_context_t* ctx;
@@ -185,6 +186,8 @@ void update(void)
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
 
+    light_pos = {sin(global_platform.current_time)* 30, 10,0};
+
     view_matrix = get_view_mat(&cam);
     perspective_matrix = perspective_proj(43.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
     ortho_matrix = orthographic_proj(-6.f,6.f,-6.f,6.f, 0.1, 100.f);
@@ -197,7 +200,7 @@ void render(HDC *DC)
     mat4 mat = mul_mat4(perspective_matrix, view_matrix);
     //rendering background 
     {
-        render_quad(&background, mat);
+        //render_quad(&background, mat);
     }
     renderer_render(&rend, (float*)mat.elements);
 
@@ -221,10 +224,10 @@ void render(HDC *DC)
     g_t.resize(4);
     print_text(&bmf,g_t.c_str(),790/2.f,570, 20);
 
-#if 0
+#if 1
     {
-        m.position = {0,0,-3};
-        render_model(&m, mat);
+        m.position = {0,0, -50};
+        render_model(&m,&perspective_matrix, &view_matrix, light_pos, cam.pos);
     }
         //model_mat2 = HMM_MultiplyMat4(perspective_matrixh,model_mat2);
 #endif
