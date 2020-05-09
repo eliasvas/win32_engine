@@ -1,5 +1,5 @@
-#include "ext/HandmadeMath.h"
-float a = 0.f;
+#include "tb.h"
+
 static const f32 MAX_DISTANCE = 5.f;
 struct Camera
 {
@@ -77,14 +77,40 @@ update_wrt_player(Camera* cam, vec2 player_pos)
 mat4 get_view_mat(Camera* cam)
 {
     mat4 camera = look_at(cam->pos,add_vec3(cam->pos, cam->front),cam->up);
-    //hmm_mat4 camera = HMM_LookAt(cam->pos, HMM_SubtractVec3({0.0,0.0,0.0}, cam->pos),{0.f,1.f,0.f});
-#if 0
-    const float radius = 10.0f;
-    float camX = sin(global_platform.current_time) * radius;
-    float camY = sin(global_platform.current_time) * radius;
-    float camZ = cam->pos.z;
-    camera = look_at(v3(camX, 0.0, camZ), v3(0.0, 0.0, 0.0), v3(0.0, 1.0, 0.0));
-#endif
     return camera;
 }
+ 
+
+/* in case there is no math lib
+INLINE mat4 look_at(vec3 eye, vec3 center, vec3 fake_up)
+{
+    mat4 res = m4();
+
+    vec3 f = normalize_vec3(sub_vec3(center, eye));
+    vec3 r = normalize_vec3(cross_vec3(f, fake_up));
+    vec3 up = cross_vec3(r, f);
+
+    res.elements[0][0] = r.x;
+    res.elements[0][1] = up.x;
+    res.elements[0][2] = -f.x;
+    res.elements[0][3] = 0.0f;
+
+    res.elements[1][0] = r.y;
+    res.elements[1][1] = up.y;
+    res.elements[1][2] = -f.y;
+    res.elements[1][3] = 0.0f;
+
+    res.elements[2][0] = r.z;
+    res.elements[2][1] = up.z;
+    res.elements[2][2] = -f.z;
+    res.elements[2][3] = 0.0f;
+
+    res.elements[3][0] = -dot_vec3(r, eye);
+    res.elements[3][1] = -dot_vec3(up, eye);
+    res.elements[3][2] = dot_vec3(f, eye);
+    res.elements[3][3] = 1.0f;
+
+    return res;
+}
+*/
 

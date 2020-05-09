@@ -33,6 +33,14 @@ typedef char      b8;
 #define clamp(x, a, b)  (maximum(a, minimum(x, b)))
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
 
+#ifndef SIN_APPROX
+#define SINF sin_32
+#endif
+
+#ifndef COS_APPROX
+#define COSF cos_32
+#endif
+
 #define PI 3.1415926535897f
 
 static b32
@@ -154,7 +162,33 @@ INLINE f32 lerp(f32 A, f32 B, f32 time)
     f32 res = (1.0f - time)*A + time*B;
     return res;
 }
+f32 cos_32s(float x)
+{
+    const float c1= 0.99940307;
+    const float c2=-0.49558072;
+    const float c3= 0.03679168;
+    float x2; // The input argument squared
+    x2= x * x;
+    return (c1 + x2*(c2 + c3 * x2));
+}
+float cos_32(float x){
+    i32 quad; // what quadrant are we in?
+    x= fmod(x,(2.f*PI)); // Get rid of values > 2* pi
+    if(x<0)x=-x; // cos(-x) = cos(x)
+    quad=i32(x/(PI/2.f)); // Get quadrant # (0 to 3) switch (quad){
+    switch(quad){
+        case 0: return cos_32s(x);
+        case 1: return -cos_32s(PI-x);
+        case 2: return -cos_32s(x-PI);
+        case 3: return cos_32s((2.f*PI)-x);
+        default: return cos_32s(x);
+    }
+}
 
+f32 sin_32(f32 x)
+{
+    return cos_32(PI/2.f - x);
+}
 
 INLINE vec2 v2(f32 x, f32 y)
 {
@@ -354,6 +388,14 @@ INLINE f32 length_vec3(vec3 v)
     f32 res = sqrt(dot_vec3(v,v)); // (x^2 + y^2)^(1/2)
     return res;
 }
+
+INLINE vec3 rotate_vec3(vec3 v, f32 a)
+{
+    vec3 res;
+    //TBA
+    return res;
+}
+
 
 INLINE vec3 normalize_vec3(vec3 v)
 {
