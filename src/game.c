@@ -186,7 +186,7 @@ void update(void)
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
 
-    light_pos = {sin(global_platform.current_time)* 30, 20,0};
+    light_pos = {sin(global_platform.current_time)* 10, 5,0};
 
     view_matrix = get_view_mat(&cam);
     perspective_matrix = perspective_proj(43.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 

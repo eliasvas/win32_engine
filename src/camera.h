@@ -7,6 +7,13 @@ struct Camera
     vec3 front;
     vec3 up;
     f32 camera_speed = 2.f;
+
+
+    f32 yaw;
+    f32 pitch;
+    f32 last_x;
+    f32 last_y;
+    b32 first_mouse = 0;
 };
 
 static void 
@@ -20,6 +27,7 @@ init_camera (Camera* cam)
     cam->pos = {0.f,0.f,4.f};
     cam->front = {0.0f,0.0f,-1.0f};
     cam->up = {0.f,1.f,0.f};
+    cam->yaw = -90.0f;
 }
 
 static void 
@@ -39,33 +47,47 @@ static void
 update_cam(Camera* cam)
 {
     if (global_platform.key_down[KEY_A])
-    {
-        //cam->pos.x -= 0.1f; //we must make a right vector and move along it
         cam->pos = sub_vec3(cam->pos, mul_vec3f(cross_vec3(cam->front, cam->up), cam->camera_speed * global_platform.dt));
-    }
     if (global_platform.key_down[KEY_D])
-    {
-        //cam->pos.x += 0.1f; //we must make a right vector and move along it
         cam->pos = add_vec3(cam->pos, mul_vec3f(cross_vec3(cam->front, cam->up), cam->camera_speed * global_platform.dt));
-    }
     if (global_platform.key_down[KEY_W])
-    {
-        //cam->pos.y += 0.1f;
         cam->pos = add_vec3(cam->pos, mul_vec3f(cam->front,cam->camera_speed* global_platform.dt));
-    }
     if (global_platform.key_down[KEY_S])
-    {
-        //cam->pos.y -= 0.1f;
         cam->pos = sub_vec3(cam->pos, mul_vec3f(cam->front,cam->camera_speed* global_platform.dt));
-    }
-    if (global_platform.key_down[KEY_Q])
+
+    if(!global_platform.left_mouse_down){cam->first_mouse = 1;return;}
+
+    if(cam->first_mouse)
     {
-        turn_camera_around_center(cam, 1.f);
+        cam->last_x = global_platform.mouse_x;
+        cam->last_y = global_platform.mouse_y;
+        cam->first_mouse = 0;
     }
-   if (global_platform.key_down[KEY_E])
-    {
-        turn_camera_around_center(cam, -1.f);
-    }
+
+    f32 x_offset = global_platform.mouse_x - cam->last_x;
+    f32 y_offset = global_platform.mouse_y - cam->last_y;
+    cam->last_x = global_platform.mouse_x;
+    cam->last_y = global_platform.mouse_y;
+
+    float sensitivity = 0.05;
+    x_offset *= sensitivity;
+    y_offset *= sensitivity;
+
+    cam->yaw   += x_offset;
+    cam->pitch += y_offset;
+
+    //for gimbal lock
+    if(cam->pitch > 89.0f)
+            cam->pitch = 89.0f;
+    if(cam->pitch < -89.0f)
+        cam->pitch = -89.0f;
+    
+    
+    vec3 direction;
+    direction.x = cos(to_radians(cam->yaw)) * cos(to_radians(cam->pitch));
+    direction.y = sin(to_radians(cam->pitch));
+    direction.z = sin(to_radians(cam->yaw)) * cos(to_radians(cam->pitch));
+    cam->front = normalize_vec3(direction);
 }
 static void 
 update_wrt_player(Camera* cam, vec2 player_pos)

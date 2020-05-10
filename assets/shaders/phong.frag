@@ -19,7 +19,7 @@ void main()
 	float diff = max(dot(norm,light_dir),0.0);
 	vec3 diffuse = diff * vec3(0.5,0.2,0.2);
 	
-	vec3 view_dir = normalize(view_pos - w_frag_pos);
+	vec3 view_dir = normalize(light_pos - w_frag_pos);
 	vec3 reflect_dir = reflect(-light_dir, norm);
 	float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 128);
 	vec3 specular = specular_str * spec * vec3(0.1,0.1,0.1);
