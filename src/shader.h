@@ -109,6 +109,11 @@ setFloat(Shader * shader, const std::string &name, f32 value)
 { 
     glUniform1f(glGetUniformLocation(shader->ID, name.c_str()), value); 
 } 
+static void
+setVec3(Shader * shader, const std::string &name, vec3 value)
+{ 
+    glUniform3f(glGetUniformLocation(shader->ID, name.c_str()), value.x,value.y,value.z); 
+} 
 static void 
 setMat4fv(Shader * shader, const std::string &name, f32* value)
 { 

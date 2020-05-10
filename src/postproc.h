@@ -78,7 +78,7 @@ render_to_framebuffer0(f32 inverted = 0.f)
     glViewport(0, 0, global_platform.window_width, global_platform.window_height); //for some reason this is the only viewport called
     //glBindTexture(GL_TEXTURE_2D, color_buffer); //we use the color attachment texture as texture for our quad
     glDisable(GL_DEPTH_TEST);
-    glClearColor(0.4f,0.4f,0.4f, 1.0f); // set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
+    glClearColor(0.3f,0.3f,0.3f, 1.0f); // set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
     glClear(GL_COLOR_BUFFER_BIT);
     use_shader(&postproc_shader);
     glBindVertexArray(quad_vao);

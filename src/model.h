@@ -10,12 +10,27 @@ struct vertex
    vec3 normal;
    vec2 tex_coord;
 };
+struct Material
+{
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    f32 shininess;
+};
+struct Light {
+    vec3 position;
+  
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
 struct Model{
     GLuint vao;
     Shader s;
     std::vector<vertex> vertices;
     vec3 position;
     vec3 scale;
+    Material m;
     //quaternion rotation
 };
 
@@ -86,7 +101,7 @@ render_model(Model* m, mat4 mat)
     mat4 mvp = mul_mat4(mat, translate_mat4(m->position));
     setMat4fv(&m->s, "MVP", (GLfloat*)mvp.elements);
     glBindVertexArray(m->vao);
-    //int mode = (int)(global_platform.current_time) % 3;
+    //int mode = (int)(global_platform.current_time* 5) % 3;
     //if (mode == 2)mode = GL_TRIANGLES;
     //glDrawArrays( mode,0, m->vertices.size());
     glDrawArrays(GL_TRIANGLES,0, m->vertices.size());
@@ -96,6 +111,7 @@ render_model(Model* m, mat4 mat)
 static void 
 render_model(Model* m, mat4* projection, mat4* view, vec3 light_pos, vec3 camera_pos)
 {
+    Light light = {light_pos,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
     use_shader(&m->s);
     mat4 model = translate_mat4(m->position);
     model.elements[0][0] =0.1f;
@@ -104,7 +120,19 @@ render_model(Model* m, mat4* projection, mat4* view, vec3 light_pos, vec3 camera
     setMat4fv(&m->s, "proj", (GLfloat*)projection->elements);
     setMat4fv(&m->s, "view", (GLfloat*)view->elements);
     setMat4fv(&m->s, "model", (GLfloat*)model.elements);
-    glUniform3f(glGetUniformLocation(m->s.ID, "light_pos"), light_pos.x, light_pos.y, light_pos.z); 
+    {
+        setVec3(&m->s,"m.ambient", {0.2f, 0.2f, 0.2f});
+        setVec3(&m->s,"m.diffuse", {0.7f, 0.3f, 0.2f});
+        setVec3(&m->s,"m.specular", {0.1f, 0.1f, 0.1f});
+        setFloat(&m->s, "m.shininess", 3.f);
+    }
+    {
+        setVec3(&m->s,"light.ambient", light.ambient);
+        setVec3(&m->s,"light.diffuse", light.diffuse);
+        setVec3(&m->s,"light.specular", light.specular);
+        glUniform3f(glGetUniformLocation(m->s.ID, "light.position"), light_pos.x, light_pos.y, light_pos.z); 
+    }
+
     glUniform3f(glGetUniformLocation(m->s.ID, "view_pos"), camera_pos.x, camera_pos.y, camera_pos.z); 
 
     glBindVertexArray(m->vao);

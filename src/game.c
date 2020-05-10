@@ -51,6 +51,21 @@ static Box b4;
 
 Box hit_colliders[4];
 
+
+/*
+ TODO(ilias)
+ 
+ -fix fps issues in win32_main.cpp
+
+ -add particles to 2d renderer
+ 
+ -billboards to 2d renderer
+
+ -improve 3d rendering
+ 
+ 
+ */
+
 void init(void)
 {
 
@@ -68,9 +83,9 @@ void init(void)
 
         AnimationInfo info; 
         //init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
-        init_animation_info(&info,{0.0f,(1.f - 1.f/7.f)}, 7, 7, 7, 50, 0.005f, 0);
+        init_animation_info(&info,{0.0f,0.0f}, 6, 1, 2, 6, 0.1f, 0);
         //init_animation_info(&info,{0.0f,0.0f}, 1, 1, 1, 1, 300000.f, 0);
-        init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 7, 1.f, info);
+        init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 2, 1.f, info);
         //s.is_blinking = 1;
         s.box.hb = {{0.3f,0.0f}, 0.4f,0.6f};
         s.box.id = 1024;
@@ -135,42 +150,25 @@ void update(void)
         inverted = 0.f;
 
     {
-        if(global_platform.key_pressed[KEY_RIGHT])
+      if(global_platform.key_pressed[KEY_RIGHT])
         {
-            s.texture_unit = 7; 
-            s.info.bottom_leftOG = {0, 1 - 1/7.f};
             s.flip = 0;
-            s.info.dim = {1/7.f,1/7.f};
             if (s.box.velocity.x < 0.f)s.box.velocity.x += 6.f * global_platform.dt;
             s.box.velocity.x += 6.f* global_platform.dt; //constant must be speed
         }
         if (global_platform.key_pressed[KEY_LEFT])
         {
-                s.texture_unit = 8; 
-                s.flip = 1;
-            s.info.bottom_leftOG = {0, 1 - 1/7.f};
-                s.info.dim = {1/7.f,1/7.f};
+            s.flip = 1;
             if (s.box.velocity.x > 0.f)s.box.velocity.x -= 6.f * global_platform.dt;
             s.box.velocity.x -= 6.f * global_platform.dt;
         }
         if (global_platform.key_pressed[KEY_UP])
         {
-            if (!global_platform.key_pressed[KEY_LEFT] && !global_platform.key_pressed[KEY_RIGHT]){
-                s.texture_unit = 6; 
-                s.info.bottom_leftOG = {0, 1 - 1/7.f};
-                s.info.dim = {1/7.f,1/7.f};
-                //s.flip = 1;
-            }
             if (s.box.velocity.y < 0.f)s.box.velocity.y += 6.f * global_platform.dt;
             s.box.velocity.y += 6.f * global_platform.dt;
         }
         if (global_platform.key_pressed[KEY_DOWN])
         {
-            if (!global_platform.key_pressed[KEY_LEFT] && !global_platform.key_pressed[KEY_RIGHT]){
-                s.texture_unit = 9; 
-                s.info.bottom_leftOG = {0, 1.f - 1/7.f};
-                s.info.dim = {1/7.f,1/7.f};
-            }
             if (s.box.velocity.y > 0.f)s.box.velocity.y -= 6.f * global_platform.dt;
             s.box.velocity.y -= 6.f * global_platform.dt;
         }
