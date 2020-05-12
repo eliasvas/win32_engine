@@ -22,8 +22,7 @@ mat4 MVP;
 static Camera cam;
 static BitmapFont bmf;
 static Sprite s;
-static Sprite enemy;
-static Sprite king;
+static Cube c;
 static quad background;
 static Model m;
 static mat4 view_matrix;
@@ -36,8 +35,6 @@ f32 inverted = 0.f;
 static cs_context_t* ctx;
 
 static b32 DEATH = 0;
-static float time_of_death = 0.f;
-static float wait_of_death = 3.f;
 
 static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
@@ -63,7 +60,11 @@ Box hit_colliders[4];
 
  -improve 3d rendering
  
+ -support .mtl file reading
  
+ -SDF text
+
+ -Scenes!!
  */
 
 void init(void)
@@ -107,6 +108,11 @@ void init(void)
        b4.id = -1;
 
     }
+    //init debug cube
+    {
+        init_cube_textured(&c);
+        c.center = {2.f,0.f, -2.f};
+    }
     init_renderer(&rend);
 
 #if sound_on
@@ -140,7 +146,6 @@ void update(void)
     if (global_platform.key_pressed[KEY_D])
     {
         DEATH = 1;
-        if(time_of_death == 0.f)time_of_death = global_platform.current_time;
     }
 
 
@@ -190,7 +195,7 @@ void update(void)
     perspective_matrix = perspective_proj(43.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
     ortho_matrix = orthographic_proj(-6.f,6.f,-6.f,6.f, 0.1, 100.f);
 
-    render_sprite(&s, &rend);
+    render_sprite(&s, &rend); //move to render()
 }
 
 void render(HDC *DC)
@@ -230,7 +235,10 @@ void render(HDC *DC)
         m.position = {0,0, -5};
         render_model(&m,&perspective_matrix, &view_matrix, light_pos, cam.pos);
     }
-        //model_mat2 = HMM_MultiplyMat4(perspective_matrixh,model_mat2);
+    {
+        render_cube_textured(&c,&perspective_matrix, &view_matrix, light_pos, cam.pos);
+    }
+
 #endif
 
 #if colliders_on
@@ -245,6 +253,6 @@ void render(HDC *DC)
 
     render_to_framebuffer0(inverted);
 
-    SwapBuffers(*DC);
+    SwapBuffers(*DC); //swap buffers in win32_opengl????????
 
 }

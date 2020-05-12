@@ -111,8 +111,8 @@ render_model(Model* m, mat4 mat)
 static void 
 render_model(Model* m, mat4* projection, mat4* view, vec3 light_pos, vec3 camera_pos)
 {
-    Light light = {light_pos,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
     use_shader(&m->s);
+    Light light = {light_pos,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
     mat4 model = translate_mat4(m->position);
     model.elements[0][0] =0.1f;
     model.elements[1][1] =0.1f;
