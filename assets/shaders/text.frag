@@ -13,6 +13,7 @@ void main(){
 
 	color = texture( myTextureSampler, UV );
 	if (color.a > 0.01)color.a = 0.5;
+	else discard;
 	//color = vec4(1,1,1,1);
 	color.gb = vec2(fade);
 }

@@ -61,7 +61,7 @@ float vertices[] = {
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
     load_texture(&(c->diff),"../assets/dirt.png");
-    load_texture(&(c->spec),"../assets/ground_spec.png");
+    load_texture(&(c->spec),"../assets/noise.png");
         
     u32 vbo;
     glGenVertexArrays(1, &c->vao);

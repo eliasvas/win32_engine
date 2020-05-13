@@ -6,6 +6,7 @@ struct Material {
     float shininess;
 };
 struct Light {
+
     vec3 position;
   
     vec3 ambient;
@@ -32,7 +33,7 @@ void main()
 	float diff = max(dot(norm,light_dir),0.0);
 	vec3 diffuse =light.diffuse * diff * m.diffuse;
 	
-	vec3 view_dir = normalize(light.position - w_frag_pos);
+	vec3 view_dir = normalize(view_pos - w_frag_pos);
 	vec3 reflect_dir = reflect(-light_dir, norm);
 	float spec = pow(max(dot(view_dir, reflect_dir), 0.0), m.shininess);
 	

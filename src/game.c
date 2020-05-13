@@ -52,6 +52,10 @@ Box hit_colliders[4];
 /*
  TODO(ilias)
  
+ -see whats wrong with the OBJ loader
+
+ -add framebuffers to the renderer!!!!
+
  -fix fps issues in win32_main.cpp
 
  -add particles to 2d renderer
