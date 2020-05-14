@@ -85,7 +85,7 @@ char * read_file(const char *filename){
 }
 
 static b32 file_exists(const char* filename) {
-  bool ret;
+  b32 ret;
   FILE* fp = fopen(filename, "rb");
   if (fp) {
     ret = 1;
@@ -175,7 +175,7 @@ float cos_32(float x){
     i32 quad; // what quadrant are we in?
     x= fmod(x,(2.f*PI)); // Get rid of values > 2* pi
     if(x<0)x=-x; // cos(-x) = cos(x)
-    quad=i32(x/(PI/2.f)); // Get quadrant # (0 to 3) switch (quad){
+    quad=(int)(x/(PI/2.f)); // Get quadrant # (0 to 3) switch (quad){
     switch(quad){
         case 0: return cos_32s(x);
         case 1: return -cos_32s(PI-x);

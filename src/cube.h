@@ -109,12 +109,35 @@ render_cube_textured(Cube* c, mat4* projection, mat4* view, vec3 light_pos, vec3
         setVec3(&c->cube_shader,"m.ambient", {0.2f, 0.2f, 0.2f});
         setFloat(&c->cube_shader, "m.shininess", 3.f);
     }
+    //directional light
     {
-        setVec3(&c->cube_shader,"light.ambient", light.ambient);
-        setVec3(&c->cube_shader,"light.diffuse", light.diffuse);
-        setVec3(&c->cube_shader,"light.specular", light.specular);
-        glUniform3f(glGetUniformLocation(c->cube_shader.ID, "light.position"), light_pos.x, light_pos.y, light_pos.z); 
+        setVec3(&c->cube_shader,"dir_light.ambient", light.ambient);
+        setVec3(&c->cube_shader,"dir_light.diffuse", light.diffuse);
+        setVec3(&c->cube_shader,"dir_light.specular", light.specular);
+        setVec3(&c->cube_shader,"dir_light.direction", normalize_vec3({1.f,-1.f,0.f}));
     }
+    //point light
+    {
+        setVec3(&c->cube_shader,"point_lights[0].ambient", light.ambient);
+        setVec3(&c->cube_shader,"point_lights[0].diffuse", light.diffuse);
+        setVec3(&c->cube_shader,"point_lights[0].specular", light.specular);
+        glUniform3f(glGetUniformLocation(c->cube_shader.ID, "point_lights[0].position"), light_pos.x, light_pos.y, light_pos.z); 
+       setFloat(&c->cube_shader,"point_lights[0].constant",  1.0f);
+       setFloat(&c->cube_shader, "point_lights[0].linear",    0.022f);
+       setFloat(&c->cube_shader, "point_lights[0].quadratic", 0.0019f); 
+    }
+    {
+        setVec3(&c->cube_shader,"point_lights[1].ambient", light.ambient);
+        setVec3(&c->cube_shader,"point_lights[1].diffuse", light.diffuse);
+        setVec3(&c->cube_shader,"point_lights[1].specular", light.specular);
+        glUniform3f(glGetUniformLocation(c->cube_shader.ID, "point_lights[1].position"), 0.f, 0.f, 0.f); 
+       setFloat(&c->cube_shader,"point_lights[1].constant",  1.0f);
+       setFloat(&c->cube_shader, "point_lights[1].linear",    0.022f);
+       setFloat(&c->cube_shader, "point_lights[1].quadratic", 0.0019f); 
+    }
+
+
+
 
     glUniform3f(glGetUniformLocation(c->cube_shader.ID, "view_pos"), camera_pos.x, camera_pos.y, camera_pos.z); 
 

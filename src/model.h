@@ -24,6 +24,24 @@ struct Light {
     vec3 diffuse;
     vec3 specular;
 };
+struct DirLight {
+    vec3 direction;
+  
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};  
+struct PointLight {    
+    vec3 position;
+    
+    f32 constant;
+    f32 linear;
+    f32 quadratic;  
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};  
 struct Model{
     GLuint vao;
     Shader s;

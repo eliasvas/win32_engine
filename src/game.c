@@ -202,7 +202,7 @@ void update(void)
     render_sprite(&s, &rend); //move to render()
 }
 
-void render(HDC *DC)
+void render(void)
 {
     mat4 mat = mul_mat4(perspective_matrix, view_matrix);
     //rendering background 
@@ -257,6 +257,5 @@ void render(HDC *DC)
 
     render_to_framebuffer0(inverted);
 
-    SwapBuffers(*DC); //swap buffers in win32_opengl????????
 
 }

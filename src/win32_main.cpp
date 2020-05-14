@@ -200,7 +200,8 @@ WinMain(HINSTANCE Instance,
         global_platform.dt = dt;
         global_platform.current_time +=1.f/60;//dt;
         update();
-        render(&DC);
+        render();
+        SwapBuffers(GetDC(WND));
         QueryPerformanceCounter(&ft);
 
         if (global_platform.vsync){
