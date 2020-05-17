@@ -80,7 +80,7 @@ void init(void)
     init_camera(&cam);
 
     {
-        load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/utah_teapot.mtl");
+        load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/roket.mtl");
         init_model(&m, m.vertices);
     }
     //player initializiation

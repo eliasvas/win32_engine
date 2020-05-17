@@ -110,6 +110,7 @@ render_cube_textured(Cube* c, mat4* projection, mat4* view, vec3 light_pos, vec3
         setFloat(&c->cube_shader, "m.shininess", 3.f);
     }
     //directional light
+    if(0)
     {
         setVec3(&c->cube_shader,"dir_light.ambient", light.ambient);
         setVec3(&c->cube_shader,"dir_light.diffuse", light.diffuse);
@@ -126,6 +127,7 @@ render_cube_textured(Cube* c, mat4* projection, mat4* view, vec3 light_pos, vec3
        setFloat(&c->cube_shader, "point_lights[0].linear",    0.022f);
        setFloat(&c->cube_shader, "point_lights[0].quadratic", 0.0019f); 
     }
+    if(0)
     {
         setVec3(&c->cube_shader,"point_lights[1].ambient", light.ambient);
         setVec3(&c->cube_shader,"point_lights[1].diffuse", light.diffuse);
