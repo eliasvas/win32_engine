@@ -11,6 +11,7 @@
 #include "renderer.h"
 #include "sprite.h"
 #include "animation.h"
+#include "skybox.h"
 #include "model.h"
 #include "physics.h"
 #include "postproc.h"
@@ -30,6 +31,7 @@ static mat4 perspective_matrix;
 static mat4 ortho_matrix;
 static renderer rend;
 static vec3 light_pos;
+static skybox skybox;
 b32 debug_menu = 1;
 f32 inverted = 0.f;
 static cs_context_t* ctx;
@@ -40,6 +42,7 @@ static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
 #define sound_on 0
 #define colliders_on 1
+#define skybox_on 1
 
 static Box b1;
 static Box b2;
@@ -69,6 +72,10 @@ Box hit_colliders[4];
  -SDF text
 
  -Scenes!!
+
+ -procedural terrain
+
+ -marching cubes
  */
 
 void init(void)
@@ -111,6 +118,17 @@ void init(void)
        init_Box(&b4,{26.f,-26.f},1.f,55.f); 
        b4.id = -1;
 
+    }
+    //init the skybox
+    {
+        std::vector<std::string> faces;
+        faces.push_back("../assets/nebula/purplenebula_rt.tga");
+        faces.push_back("../assets/nebula/purplenebula_lf.tga");
+        faces.push_back("../assets/nebula/purplenebula_up.tga");
+        faces.push_back("../assets/nebula/purplenebula_dn.tga");
+        faces.push_back("../assets/nebula/purplenebula_bk.tga");
+        faces.push_back("../assets/nebula/purplenebula_ft.tga");
+        init_skybox(&skybox, faces);
     }
     //init debug cube
     {
@@ -204,6 +222,10 @@ void update(void)
 
 void render(void)
 {
+#if skybox_on
+    render_skybox(&skybox,perspective_matrix, view_matrix);
+#endif
+
     mat4 mat = mul_mat4(perspective_matrix, view_matrix);
     //rendering background 
     {
@@ -254,6 +276,7 @@ void render(void)
     glLineWidth(1);
     glEnable(GL_DEPTH_TEST);
 #endif
+
 
     render_to_framebuffer0(inverted);
 

@@ -8,6 +8,7 @@ static HWND WND;
 #include "win32_opengl.cpp"
 #include "game.c"
 #include "tb.h"
+#include "skybox.h"
 #include "text.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "ext/stb_image.h"
@@ -66,7 +67,12 @@ static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l
             {
                 key_input = KEY_DOWN;
             }
-            //handle more keys
+             else if (vkey_code == VK_CONTROL)
+            {
+                key_input = KEY_CTRL;
+            }
+
+           //handle more keys
         }
         if (is_down){
            if (!global_platform.key_down[key_input])

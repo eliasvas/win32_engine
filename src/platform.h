@@ -88,6 +88,7 @@ enum keyboard_keys
 
     KEY_BACKSPACE,
     KEY_TAB,
+    KEY_CTRL,
     KEY_RETURN,
     KEY_SPACE,
     KEY_LSHIFT,

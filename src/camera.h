@@ -54,6 +54,13 @@ update_cam(Camera* cam)
         cam->pos = add_vec3(cam->pos, mul_vec3f(cam->front,cam->camera_speed* global_platform.dt));
     if (global_platform.key_down[KEY_S])
         cam->pos = sub_vec3(cam->pos, mul_vec3f(cam->front,cam->camera_speed* global_platform.dt));
+    if (global_platform.key_down[KEY_SPACE])
+        cam->pos = sub_vec3(cam->pos, mul_vec3f(cam->up,(-1.f)*cam->camera_speed* global_platform.dt));
+    if (global_platform.key_down[KEY_CTRL])
+        cam->pos = sub_vec3(cam->pos, mul_vec3f(cam->up,cam->camera_speed* global_platform.dt));
+
+
+
 
     if(!global_platform.left_mouse_down){cam->first_mouse = 1;return;}
 
