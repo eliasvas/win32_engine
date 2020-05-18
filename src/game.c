@@ -42,7 +42,7 @@ static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
 #define sound_on 0
 #define colliders_on 1
-#define skybox_on 1
+#define skybox_on 0
 
 static Box b1;
 static Box b2;
@@ -87,10 +87,11 @@ void init(void)
     init_camera(&cam);
 
     {
-        load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/roket.mtl");
+        load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&m, m.vertices);
     }
     //player initializiation
+#if 0
     {
 
         AnimationInfo info; 
@@ -98,6 +99,19 @@ void init(void)
         init_animation_info(&info,{0.0f,0.0f}, 6, 1, 2, 6, 0.1f, 0);
         //init_animation_info(&info,{0.0f,0.0f}, 1, 1, 1, 1, 300000.f, 0);
         init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 2, 1.f, info);
+        //s.is_blinking = 1;
+        s.box.hb = {{0.3f,0.0f}, 0.4f,0.6f};
+        s.box.id = 1024;
+    }
+#endif
+
+    {
+
+        AnimationInfo info; 
+        //init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
+        init_animation_info(&info,{0.0f,1.f - 1.f/4.f}, 7, 4, 3, 27, 0.03f, 0);
+        //init_animation_info(&info,{0.0f,0.0f}, 1, 1, 1, 1, 300000.f, 0);
+        init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 3, 1.f, info);
         //s.is_blinking = 1;
         s.box.hb = {{0.3f,0.0f}, 0.4f,0.6f};
         s.box.id = 1024;

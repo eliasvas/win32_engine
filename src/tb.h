@@ -701,3 +701,29 @@ INLINE mat4 look_at(vec3 eye, vec3 center, vec3 fake_up)
     return res;
 }
 
+
+//dynamic array implementation
+
+struct DynamicArray
+{
+    char* data;
+    u32 size_of_data;
+    u32 size;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

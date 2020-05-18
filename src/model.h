@@ -80,6 +80,7 @@ load_model_data(std::vector<vertex>& vec, const char * obj_path, const char * mt
             vec.push_back(v);
         }
     }
+
 }
 static void
 load_model_dataOG(std::vector<vertex>& vec, const char * obj_path, const char *mtl_path)

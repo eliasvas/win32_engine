@@ -79,7 +79,7 @@ init_renderer(renderer* rend)
     rend->tex_count++;
     load_texture(&rend->tex[2],"../assets/runimation.png");
     rend->tex_count++;
-    load_texture(&rend->tex[3],"../assets/bat.png");
+    load_texture(&rend->tex[3],"../assets/braid.png");
     rend->tex_count++;
     load_texture(&rend->tex[4],"../assets/pandasheet.png");
     rend->tex_count++;
@@ -93,6 +93,9 @@ init_renderer(renderer* rend)
     rend->tex_count++;
    load_texture(&rend->tex[9],"../assets/pandafrontrunsheet.png");
     rend->tex_count++;
+   load_texture(&rend->tex[10],"../assets/braid.png");
+    rend->tex_count++;
+
 
 
 
