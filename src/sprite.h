@@ -2,12 +2,12 @@
 #include "animation.h"
 #include "quad.h"
 #include "renderer.h"
-#include "tb.h"
+#include "tools.h"
 
 //TODO(ilias): when physics engine is finished make flip be
 //set by velocity vector direction on the x-axis!
 
-struct Sprite
+typedef struct Sprite
 {
     vec2 pos;
     vec2 scale;
@@ -17,7 +17,7 @@ struct Sprite
     u32 flip;
     AnimationInfo info;
     b32 is_blinking = 0;
-};
+}Sprite;
 
 static void
 init_sprite(Sprite *s, vec2 pos, vec2 scale, GLuint tex_unit, GLfloat opacity, AnimationInfo info)

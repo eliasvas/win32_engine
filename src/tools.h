@@ -702,28 +702,201 @@ INLINE mat4 look_at(vec3 eye, vec3 center, vec3 fake_up)
 }
 
 
-//dynamic array implementation
-
-struct DynamicArray
-{
-    char* data;
-    u32 size_of_data;
-    u32 size;
+//TGA LIB
+enum {
+    TGA_ERROR_FILE_OPEN = 1,
+    TGA_ERROR_READING_FILE,
+    TGA_ERROR_INDEXED_COLOR, 
+    TGA_ERROR_MEMORY,
+    TGA_ERROR_COMPRESSED_FILE, 
+    TGA_OK
 };
 
+typedef struct TGAInfo
+{
+    i32 status;
+    u8 type, pixel_depth;
+    i16 width, height;
+    u8 *image_data;
+}TGAInfo;
+
+static void 
+tga_load_header(FILE *file, TGAInfo *info) {
+
+	u8 c_garbage;
+	i16 i_garbage;
+
+	fread(&c_garbage, sizeof(u8), 1, file);
+	fread(&c_garbage, sizeof(u8), 1, file);
+
+    // type must be 2 or 3
+	fread(&info->type, sizeof(u8), 1, file);
+
+	fread(&i_garbage, sizeof(i16), 1, file);
+	fread(&i_garbage, sizeof(i16), 1, file);
+	fread(&c_garbage, sizeof(u8), 1, file);
+	fread(&i_garbage, sizeof(i16), 1, file);
+	fread(&i_garbage, sizeof(i16), 1, file);
+
+	fread(&info->width, sizeof(i16), 1, file);
+	fread(&info->height, sizeof(i16), 1, file);
+	fread(&info->pixel_depth, sizeof(u8), 1, file);
+
+	fread(&c_garbage, sizeof(u8), 1, file);
+}
+void tga_load_image_data(FILE *file, TGAInfo *info) {
+
+	i32 mode,total,i;
+	u8 aux;
+
+    // mode equal the number of components for each pixel
+	mode = info->pixel_depth / 8;
+    // total is the number of bytes we'll have to read
+	total = info->height * info->width * mode;
+	
+	fread(info->image_data,sizeof(u8),total,file);
+
+    // mode=3 or 4 implies that the image is RGB(A). However TGA
+    // stores it as BGR(A) so we'll have to swap R and B.
+	if (mode >= 3)
+		for (i=0; i < total; i+= mode) {
+			aux = info->image_data[i];
+			info->image_data[i] = info->image_data[i+2];
+			info->image_data[i+2] = aux;
+		}
+}
+
+static TGAInfo* 
+tga_load(const char * filename)
+{
+    TGAInfo *info;
+    FILE* file;
+    i32 mode,total;
+
+    //allocate memory for TGAInfo
+    info = (TGAInfo*)malloc(sizeof(TGAInfo));
+    if(info == NULL)return(NULL);
+
+    //open file for binary reading
+    file = fopen(filename, "rb");
+    if (file == NULL)
+    {
+        info->status = TGA_ERROR_FILE_OPEN;
+        //fclose(file);
+        return info;
+    }
+
+    //we load the header and fill out neccesary info
+    tga_load_header(file, info);
+
+    //check if color indexed
+    if (info->type == 1)
+    {
+        info->status = TGA_ERROR_INDEXED_COLOR;
+        fclose(file);
+        return info;
+    }
+
+    //check if compressed
+    if ((info->type != 2) && (info->type != 3))
+    {
+       info->status = TGA_ERROR_COMPRESSED_FILE; 
+    }
+
+    mode = info->pixel_depth / 8;
+    total =info->height * info->width * mode;
+    info->image_data = (u8*)malloc(total * sizeof(u8));
+
+    //check if memory is ok
+    if (info->image_data == NULL)
+    {
+        info->status = TGA_ERROR_MEMORY;
+        fclose(file);
+        return info;
+    }
+
+    //load the fucking image
+    tga_load_image_data(file, info);
+    if (ferror(file))
+    {
+        info->status = TGA_ERROR_READING_FILE;
+        fclose(file);
+        info->status = TGA_OK;
+        return info;
+    }
+    fclose(file);
+    info->status = TGA_OK;
+
+    return info;
+}
 
 
+static i16 
+tga_save(const char *filename, i16 width, i16 height, u8 pixel_depth, u8 *image_data)
+{
+    u8 c_garbage = 0, type,mode, aux;
+    i16 i_garbage;
+    i32 i;
+    FILE* file;
+    file = fopen(filename, "wb");
+    if (file == NULL)
+        return TGA_ERROR_FILE_OPEN;
+    mode = pixel_depth / 8;
+    if ((pixel_depth == 24) || (pixel_depth == 32))
+        type = 2;
+    else
+        type = 3;
 
 
+    for (int i = 0; i < width * height * (pixel_depth/8); ++i)
+    {
+        image_data[i] /= 2;
+    }
+
+    // write the header
+	fwrite(&c_garbage, sizeof(u8), 1, file);
+	fwrite(&c_garbage, sizeof(u8), 1, file);
+
+	fwrite(&type, sizeof(u8), 1, file);
+
+	fwrite(&i_garbage, sizeof(i16), 1, file);
+	fwrite(&i_garbage, sizeof(i16), 1, file);
+	fwrite(&c_garbage, sizeof(u8), 1, file);
+	fwrite(&i_garbage, sizeof(i16), 1, file);
+	fwrite(&i_garbage, sizeof(i16), 1, file);
+
+	fwrite(&width, sizeof(i16), 1, file);
+	fwrite(&height, sizeof(i16), 1, file);
+	fwrite(&pixel_depth, sizeof(u8), 1, file);
+
+	fwrite(&c_garbage, sizeof(u8), 1, file);
 
 
+    // convert the image data from RGB(a) to BGR(A)
+	if (mode >= 3)
+        for (i=0; i < width * height * mode ; i+= mode) {
+            aux = image_data[i];
+            image_data[i] = image_data[i+2];
+            image_data[i+2] = aux;
+        }
 
+    // save the image data
+	fwrite(image_data, sizeof(u8), width * height * mode, file);
+	fclose(file);
+	//free(image_data);
+    //image_data = NULL;
 
+	return TGA_OK;
+}
 
-
-
-
-
-
-
-
+static void
+tga_destroy(TGAInfo * info)
+{
+    if (info != NULL)
+    {
+        if (info->image_data != NULL)
+            free(info->image_data);
+        free(info);
+    }
+    
+}

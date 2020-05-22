@@ -1,10 +1,10 @@
 #pragma once
-#include "tb.h"
+#include "tools.h"
 #include "shader.h"
 #include "physics.h"
 #include "texture.h"
 
-struct AnimationInfo
+typedef struct AnimationInfo
 { 
     vec2 bottom_left;
     vec2 dim;
@@ -20,7 +20,7 @@ struct AnimationInfo
 
 
     vec2 bottom_leftOG; //hmmm...
-};
+}AnimationInfo;
 
 static void
 init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)

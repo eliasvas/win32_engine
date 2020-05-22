@@ -5,12 +5,12 @@
 #include "Texture.h"
 
 
-struct BitmapFont 
+typedef struct BitmapFont 
 {
     GLuint VAO, vertex_buffer, uv_buffer;
     Texture tex;
     Shader s;
-};
+}BitmapFont;
 
 static void 
 init_text(BitmapFont* f, const char * Texture_path)

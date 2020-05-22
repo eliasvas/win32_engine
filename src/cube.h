@@ -2,16 +2,16 @@
 #include "ext/HandmadeMath.h" 
 #include "shader.h"
 #include "Model.h"
-#include "tb.h"
+#include "tools.h"
 
-struct Cube
+typedef struct Cube
 {
     GLuint vao;
     vec3 center;
     Shader cube_shader; //maybe put it ouside the struct or make it static(???)
     Texture diff;
     Texture spec;
-};
+}Cube;
 static void 
 init_cube_textured(Cube* c)
 {

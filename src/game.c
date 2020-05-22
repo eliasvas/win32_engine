@@ -1,5 +1,5 @@
 #include "ext/HandmadeMath.h"
-#include "tb.h"
+#include "tools.h"
 
 #include "shader.h"
 #include "platform.h"
@@ -15,6 +15,7 @@
 #include "model.h"
 #include "physics.h"
 #include "postproc.h"
+#include "terrain.h"
 #define CUTE_SOUND_IMPLEMENTATION
 #include "ext/cute_sound.h"
 #include <string>  //just for to_string
@@ -24,6 +25,7 @@ static Camera cam;
 static BitmapFont bmf;
 static Sprite s;
 static Cube c;
+static Terrain terrain;
 static quad background;
 static Model m;
 static mat4 view_matrix;
@@ -31,7 +33,7 @@ static mat4 perspective_matrix;
 static mat4 ortho_matrix;
 static renderer rend;
 static vec3 light_pos;
-static skybox skybox;
+static Skybox skybox;
 b32 debug_menu = 1;
 f32 inverted = 0.f;
 static cs_context_t* ctx;
@@ -42,7 +44,7 @@ static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
 #define sound_on 0
 #define colliders_on 1
-#define skybox_on 0
+#define skybox_on 1
 
 static Box b1;
 static Box b2;
@@ -86,6 +88,7 @@ void init(void)
 
     init_camera(&cam);
 
+    init_terrain(&terrain,"../assets/noise.png");
     {
         load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&m, m.vertices);
@@ -151,6 +154,21 @@ void init(void)
     }
     init_renderer(&rend);
 
+
+#if 0
+    TGAInfo* info;
+    info = tga_load("../assets/fern.tga");
+    if (info->status != TGA_OK)exit(1);
+    int status = tga_save("image.tga", info->width, info->height, info->pixel_depth, info->image_data);
+    tga_destroy(info);
+#endif
+
+
+
+
+
+
+
 #if sound_on
     ctx =cs_make_context(WND,44000,8192,0,0);
     loaded = cs_load_wav("../assets/background_music.wav");
@@ -185,7 +203,7 @@ void update(void)
     }
 
 
-    if (global_platform.key_pressed[KEY_SPACE])
+    if (global_platform.key_pressed[KEY_P])
         inverted = 1.f;
     else
         inverted = 0.f;
@@ -228,7 +246,7 @@ void update(void)
     light_pos = {sin(global_platform.current_time)* 10, 5,0};
 
     view_matrix = get_view_mat(&cam);
-    perspective_matrix = perspective_proj(43.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
+    perspective_matrix = perspective_proj(45.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
     ortho_matrix = orthographic_proj(-6.f,6.f,-6.f,6.f, 0.1, 100.f);
 
     render_sprite(&s, &rend); //move to render()
@@ -246,6 +264,8 @@ void render(void)
         //render_quad(&background, mat);
     }
     renderer_render(&rend, (float*)mat.elements);
+
+    render_terrain(&terrain, perspective_matrix, view_matrix);
 
     if (debug_menu){ 
         print_text(&bmf,"|console|",0,570, 20);

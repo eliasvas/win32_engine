@@ -1,5 +1,5 @@
 #pragma once
-#include "tb.h"
+#include "tools.h"
 #include "shader.h"
 
 
@@ -18,13 +18,13 @@ static u32 quad_indices[] = {  // note that we start from 0!
 };
 
  
-struct quad
+typedef struct quad
 {
     vec3 pos;
     u32 VAO;
     Texture t;
     Shader s;
-};
+}quad;
 
 static void 
 init_quad(quad* q, const char * tex)

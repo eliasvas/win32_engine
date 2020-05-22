@@ -1,9 +1,9 @@
 #pragma once
-#include "tb.h" //TODO(ilias): maybe make a types.h ??
+#include "tools.h" //TODO(ilias): maybe make a types.h ??
 #define KEY_MAX 100
 
 
-struct Platform
+typedef struct Platform
 {
     i32 window_width;
     i32 window_height;
@@ -23,7 +23,7 @@ struct Platform
     i32 last_key;
     b32 keyboard_used;
     f32 dt;
-};
+}Platform;
 
 enum keyboard_keys
 {

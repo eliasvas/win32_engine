@@ -1,5 +1,5 @@
 #pragma once
-#include "tb.h"
+#include "tools.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -39,17 +39,17 @@ load_cubemap(std::vector<std::string> faces)
 }
 
 
-struct skybox {
+typedef struct Skybox {
 	
 	u32 vao;
 	u32 vbo; //remove this boi
     u32 tex_id;
     std::vector<std::string> faces; //names??
     Shader shader;
-};
+}Skybox;
 
 static void 
-load_skybox(skybox *skybox,const std::vector<std::string>& faces) {
+load_skybox(Skybox *skybox,const std::vector<std::string>& faces) {
     skybox->faces = faces;
     skybox->tex_id = load_cubemap(faces);
     //make a cubemap_texture 
@@ -58,7 +58,7 @@ load_skybox(skybox *skybox,const std::vector<std::string>& faces) {
 }
 
 static void
-init_skybox(skybox* skybox, std::vector<std::string>& faces) {
+init_skybox(Skybox* skybox, std::vector<std::string>& faces) {
     shader_load(&skybox->shader,"../assets/shaders/skybox_rendering.vert", "../assets/shaders/skybox_rendering.frag");
     load_skybox(skybox,faces);
     f32 skybox_vertices[] = {
@@ -116,7 +116,7 @@ init_skybox(skybox* skybox, std::vector<std::string>& faces) {
 }
 
 static void 
-render_skybox(skybox* skybox,mat4 projection, mat4 view) {
+render_skybox(Skybox* skybox,mat4 projection, mat4 view) {
     use_shader(&skybox->shader);
     //this render must be done at the beginning of the scene rendering process
     //because we disabled depth testing and basically only the color buffer gets updated

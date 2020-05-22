@@ -9,4 +9,5 @@ uniform float flag;
 void main()
 {
     FragColor = texture(screenTexture, TexCoords);
+	FragColor.y = FragColor.y * (1 - flag);
 }

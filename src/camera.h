@@ -1,7 +1,7 @@
-#include "tb.h"
+#include "tools.h"
 
 static const f32 MAX_DISTANCE = 5.f;
-struct Camera
+typedef struct Camera
 {
     vec3 pos;
     vec3 front;
@@ -14,7 +14,7 @@ struct Camera
     f32 last_x;
     f32 last_y;
     b32 first_mouse = 0;
-};
+}Camera;
 
 static void 
 turn_camera_around_center(Camera* cam, f32 degrees)

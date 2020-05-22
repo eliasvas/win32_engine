@@ -1,13 +1,13 @@
 #pragma once
-#include "tb.h"
+#include "tools.h"
 #include "ext/stb_image.h"
 
-struct Texture 
+typedef struct Texture 
 {
     GLuint id;
     u32 width;
     u32 height;
-};
+}Texture;
 
 static b32 load_texture(Texture* tex,const char *filename)
 {
@@ -33,4 +33,20 @@ static b32 load_texture(Texture* tex,const char *filename)
     tex->width = width;
     tex->height = height;
     return result;
+}
+
+typedef struct Image 
+{
+    unsigned char *data;
+    i32 width;
+    i32 height;
+}Image;
+
+static Image 
+load_image_bytes(const char *filename)
+{
+    i32 width = 0, height = 0, nrChannels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char *data = stbi_load(filename, &width, &height, &nrChannels,STBI_rgb_alpha);
+    return {data, width, height};
 }

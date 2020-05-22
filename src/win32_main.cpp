@@ -7,7 +7,7 @@ static HWND WND;
 #include <windows.h>
 #include "win32_opengl.cpp"
 #include "game.c"
-#include "tb.h"
+#include "tools.h"
 #include "skybox.h"
 #include "text.h"
 #define STB_IMAGE_IMPLEMENTATION

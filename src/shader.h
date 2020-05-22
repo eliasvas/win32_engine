@@ -1,5 +1,5 @@
 #pragma once
-#include "tb.h"
+#include "tools.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <malloc.h>
@@ -11,12 +11,12 @@
 #pragma once
 
 //char infoLog[512];
-struct Shader
+typedef struct Shader
 {
     GLuint ID;   
     const char* vertex_str;
     const char* fragment_str;
-};
+}Shader;
 
 void use_shader(Shader* shader)
 {
