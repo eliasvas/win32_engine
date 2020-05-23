@@ -720,6 +720,19 @@ typedef struct TGAInfo
     u8 *image_data;
 }TGAInfo;
 
+TGAInfo* tga_init_image_RGB(i16 width, i16 height)
+{
+    TGAInfo* info;
+    info = (TGAInfo*)malloc(sizeof(TGAInfo));
+    info->width = width;
+    info->height = height;
+    info->pixel_depth = 24;
+    info->type = 2; 
+    info->status = TGA_OK;
+    info->image_data = (u8*)malloc(sizeof(u8) * width * height * (info->pixel_depth / 8));
+    return info;
+}
+
 static void 
 tga_load_header(FILE *file, TGAInfo *info) {
 
@@ -846,12 +859,6 @@ tga_save(const char *filename, i16 width, i16 height, u8 pixel_depth, u8 *image_
         type = 2;
     else
         type = 3;
-
-
-    for (int i = 0; i < width * height * (pixel_depth/8); ++i)
-    {
-        image_data[i] /= 2;
-    }
 
     // write the header
 	fwrite(&c_garbage, sizeof(u8), 1, file);

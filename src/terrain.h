@@ -53,89 +53,66 @@ init_terrain(Terrain *terrain,const char *filename)
             normals[vp*3 + 2] = 0;
             tex_coords[vp*2] = ( (f32)j / (f32)(VERTEX_COUNT - 1) );
             tex_coords[vp*2 + 1] = ( (f32)i / (f32)(VERTEX_COUNT - 1) );
+            vp++;
         }
     }
     i32 indices[6*(VERTEX_COUNT-1)*(VERTEX_COUNT-1)]; //the indices of all the triangles that should be drawn
     vertex pack[VERTEX_COUNT -1]; //here are packs of {pos, normal, texcoord}
-    float data[24] = {0.0,0.0,0.0,   0.0,0.0,1.0,   1.0,0.0,0.0,  0.0,0.0,1.0,  0.0,0.0,1.0,   0.0,0.0,1.0,    1.0,0.0,1.0,    0.0,0.0,1.0};
+    //float data[24] = {0.0,0.0,0.0,   0.0,0.0,1.0,   1.0,0.0,0.0,  0.0,0.0,1.0,  0.0,0.0,1.0,   0.0,0.0,1.0,    1.0,0.0,1.0,    0.0,0.0,1.0};
 
 
     //we fill the element buffer
 
+    int index = 0;
     for (i32 z = 0; z <VERTEX_COUNT-1; ++z)
     {
         for (i32 x = 0; x < VERTEX_COUNT-1; ++x)
         {
-            //vec3 bl =  {vertices[z * VERTEX_COUNT + x], vertices[z * VERTEX_COUNT + x + 1], vertices[z * VERTEX_COUNT + x + 2]};
+            i32 topleft = (VERTEX_COUNT*z) + x;
+            i32 topright = topleft + 1;
+            i32 bottomleft = ((z + 1)*VERTEX_COUNT) + x;
+            i32 bottomright = bottomleft + 1;
 
+            indices[index++] = topleft;
+            indices[index++] = bottomleft;
+            indices[index++] = topright;
+            indices[index++] = topright;
+            indices[index++] = bottomleft;
+            indices[index++] = bottomright;
         }
     }
      
 
-    GLuint vbo, ebo;
+    GLuint vbo1, vbo2, ebo;
     glGenVertexArrays(1, &terrain->vao);
-    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &vbo1);
+    glGenBuffers(1, &vbo2);
     glGenBuffers(1, &ebo);
     glBindVertexArray(terrain->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo1);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE, 6* sizeof(float), (void*)(3 * sizeof(float)));
+    glBindBuffer(GL_ARRAY_BUFFER, vbo2);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
+    glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE, 0* sizeof(float), (void*)(0 * sizeof(float)));
     glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 
 }
 
-#if 0
-static void
-generateTerrain(){
-    int count = VERTEX_COUNT * VERTEX_COUNT;
-    float[] vertices = new float[count * 3];
-    float[] normals = new float[count * 3];
-    float[] textureCoords = new float[count*2];
-    int[] indices = new int[6*(VERTEX_COUNT-1)*(VERTEX_COUNT-1)];
-    int vertexPointer = 0;
-    for(int i=0;i<VERTEX_COUNT;i++){
-        for(int j=0;j<VERTEX_COUNT;j++){
-            vertices[vertexPointer*3] = (float)j/((float)VERTEX_COUNT - 1) * MAX_HEIGHT;
-            vertices[vertexPointer*3+1] = 0;
-            vertices[vertexPointer*3+2] = (float)i/((float)VERTEX_COUNT - 1) * MAX_HEIGHT;
-            normals[vertexPointer*3] = 0;
-            normals[vertexPointer*3+1] = 1;
-            normals[vertexPointer*3+2] = 0;
-            textureCoords[vertexPointer*2] = (float)j/((float)VERTEX_COUNT - 1);
-            textureCoords[vertexPointer*2+1] = (float)i/((float)VERTEX_COUNT - 1);
-            vertexPointer++;
-        }
-    }
-    int pointer = 0;
-    for(int gz=0;gz<VERTEX_COUNT-1;gz++){
-        for(int gx=0;gx<VERTEX_COUNT-1;gx++){
-            int topLeft = (gz*VERTEX_COUNT)+gx;
-            int topRight = topLeft + 1;
-            int bottomLeft = ((gz+1)*VERTEX_COUNT)+gx;
-            int bottomRight = bottomLeft + 1;
-            indices[pointer++] = topLeft;
-            indices[pointer++] = bottomLeft;
-            indices[pointer++] = topRight;
-            indices[pointer++] = topRight;
-            indices[pointer++] = bottomLeft;
-            indices[pointer++] = bottomRight;
-        }
-    }
-}
-#endif
-
 static void
 render_terrain(Terrain *terrain, mat4 proj, mat4 view)
 {
-    glBindVertexArray(terrain->vao);
     use_shader(&terrain->shader);
+    glBindVertexArray(terrain->vao);
+    //glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_2D, terrain->tex.id);
     mat4 MVP = mul_mat4(proj, view);
     setMat4fv(&terrain->shader, "MVP", (GLfloat*)MVP.elements);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0,VERTEX_COUNT - 1);
+    glDrawElements(GL_LINES, VERTEX_COUNT * VERTEX_COUNT - 1, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+
 }

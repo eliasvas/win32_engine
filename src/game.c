@@ -157,7 +157,12 @@ void init(void)
 
 #if 0
     TGAInfo* info;
-    info = tga_load("../assets/fern.tga");
+    //info = tga_load("../assets/fern.tga");
+    info = tga_init_image_RGB(600,600);
+    for (int i = 0; i < 600 * 600 * info->pixel_depth / 8;++i)
+    {
+        info->image_data[i] = 255;
+    }
     if (info->status != TGA_OK)exit(1);
     int status = tga_save("image.tga", info->width, info->height, info->pixel_depth, info->image_data);
     tga_destroy(info);
@@ -285,10 +290,6 @@ void render(void)
         print_text(&bmf,mouse_info.c_str(),0,450, 15);
 
     }
-
-    std::string g_t = std::to_string(global_platform.current_time);
-    g_t.resize(4);
-    print_text(&bmf,g_t.c_str(),790/2.f,570, 20);
 
 #if 1
     {
