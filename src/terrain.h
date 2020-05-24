@@ -4,10 +4,10 @@
 #include "texture.h"
 #include "model.h" //for vertex struct definition only!!
 
-#define VERTEX_COUNT 128
-#define MAX_HEIGHT 40
+#define VERTEX_COUNT 128 
+#define MAX_HEIGHT 20
 #define MIN_HEIGHT 0
-#define MAX_WIDTH 40
+#define MAX_WIDTH 20
 #define MIN_WIDTH 0
 
 
@@ -23,7 +23,9 @@ struct Terrain
 static f32 
 get_height_from_heightmap(Terrain* terrain, u32 x, u32 z)
 {
-    return 0.0f;
+    int dx = (terrain->image.width*x)/VERTEX_COUNT;
+    int dz = (terrain->image.height*z*2)/VERTEX_COUNT;
+    return ((float)terrain->image.data[(dx + dz * VERTEX_COUNT)*4]) / 255.f;
 }
 
 static void
@@ -46,7 +48,7 @@ init_terrain(Terrain *terrain,const char *filename)
         for (u32 j = 0; j < VERTEX_COUNT; ++j)
         {
             vertices[vp*3] = ( (f32)j / (f32)(VERTEX_COUNT - 1) )* MAX_WIDTH; 
-            vertices[vp*3 + 1] = 0; 
+            vertices[vp*3 + 1] = get_height_from_heightmap(terrain, i, j)* 2; 
             vertices[vp*3 + 2] = ( (f32)i / (f32)(VERTEX_COUNT - 1) )* MAX_HEIGHT; 
             normals[vp*3] = 0;
             normals[vp*3 + 1] = 1;
@@ -112,7 +114,8 @@ render_terrain(Terrain *terrain, mat4 proj, mat4 view)
     //glBindTexture(GL_TEXTURE_2D, terrain->tex.id);
     mat4 MVP = mul_mat4(proj, view);
     setMat4fv(&terrain->shader, "MVP", (GLfloat*)MVP.elements);
-    glDrawElements(GL_LINES, VERTEX_COUNT * VERTEX_COUNT - 1, GL_UNSIGNED_INT, 0);
+    //glDrawElements(GL_LINES, (VERTEX_COUNT-1) * (VERTEX_COUNT-1)*6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_LINES, (VERTEX_COUNT-1) * (VERTEX_COUNT-1)*6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
 }

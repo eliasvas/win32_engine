@@ -88,7 +88,7 @@ void init(void)
 
     init_camera(&cam);
 
-    init_terrain(&terrain,"../assets/noise.png");
+    init_terrain(&terrain,"../assets/test.png");
     {
         load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&m, m.vertices);
