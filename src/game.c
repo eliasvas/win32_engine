@@ -166,12 +166,14 @@ void init(void)
     if (info->status != TGA_OK)exit(1);
     int status = tga_save("image.tga", info->width, info->height, info->pixel_depth, info->image_data);
     tga_destroy(info);
+    PPMInfo* info;
+    info = ppm_init(40,40);
+    for (int i = 0; i < 1600* 3; ++i)
+    {
+        info->image_data[i] = 0.5f;
+    }
+    ppm_write(info, "image.ppm");
 #endif
-
-
-
-
-
 
 
 #if sound_on

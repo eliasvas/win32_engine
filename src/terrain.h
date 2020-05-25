@@ -4,7 +4,7 @@
 #include "texture.h"
 #include "model.h" //for vertex struct definition only!!
 
-#define VERTEX_COUNT 128 
+#define VERTEX_COUNT 64 
 #define MAX_HEIGHT 20
 #define MIN_HEIGHT 0
 #define MAX_WIDTH 20
@@ -24,7 +24,7 @@ static f32
 get_height_from_heightmap(Terrain* terrain, u32 x, u32 z)
 {
     int dx = (terrain->image.width*x)/VERTEX_COUNT;
-    int dz = (terrain->image.height*z*2)/VERTEX_COUNT;
+    int dz = (terrain->image.height*z*4)/VERTEX_COUNT;
     return ((float)terrain->image.data[(dx + dz * VERTEX_COUNT)*4]) / 255.f;
 }
 
@@ -48,7 +48,7 @@ init_terrain(Terrain *terrain,const char *filename)
         for (u32 j = 0; j < VERTEX_COUNT; ++j)
         {
             vertices[vp*3] = ( (f32)j / (f32)(VERTEX_COUNT - 1) )* MAX_WIDTH; 
-            vertices[vp*3 + 1] = get_height_from_heightmap(terrain, i, j)* 2; 
+            vertices[vp*3 + 1] = get_height_from_heightmap(terrain, i, j) * 2; 
             vertices[vp*3 + 2] = ( (f32)i / (f32)(VERTEX_COUNT - 1) )* MAX_HEIGHT; 
             normals[vp*3] = 0;
             normals[vp*3 + 1] = 1;

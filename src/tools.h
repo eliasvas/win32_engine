@@ -907,3 +907,161 @@ tga_destroy(TGAInfo * info)
     }
     
 }
+
+
+
+//PPM LIB
+
+typedef struct PPMInfo
+{
+    i32 status;
+    i32 width, height;
+    i32 max_color;
+    char type[3];
+    f32 *image_data;
+}PPMInfo;
+
+enum {
+    PPM_ERROR_FILE_OPEN = 1,
+    PPM_ERROR_READING_FILE,
+    PPM_ERROR_INDEXED_COLOR, 
+    PPM_ERROR_MEMORY,
+    PPM_ERROR_UNSUPPORTED_FILE, 
+    PPM_OK
+};
+
+static PPMInfo*
+ppm_init(i32 width, i32 height)
+{
+    PPMInfo* info;
+    info = (PPMInfo*)malloc(sizeof(PPMInfo));
+    if (info == NULL)return NULL;
+    info->type[0] = 'P';
+    info->type[1] = '3';
+    info->type[2] = 0;
+    info->width = width;
+    info->height = height;
+    info->max_color = 255;
+    info->image_data = (f32*)malloc(sizeof(f32) * info->width * info->height * 3); 
+    if (info->image_data == NULL)return NULL;
+    //info->image_data = {0};
+    return info;
+}
+static void 
+ppm_load_header(FILE* file, PPMInfo* info)
+{
+	i32 i_garbage;
+    char buff;
+
+    info->type[0] = fgetc(file);
+    info->type[1] = fgetc(file);
+    info->type[2] = 0;
+
+    fscanf (file, "%d", &i_garbage);
+    info->width = i_garbage;
+    fscanf (file, "%d", &i_garbage);
+    info->height = i_garbage;
+    fscanf (file, "%d", &i_garbage);
+    info->max_color = i_garbage;
+
+
+}
+static void ppm_load_P3_data(FILE* file, PPMInfo* info)
+{
+    i32 garbage[3];
+    u32 iter = 0;
+    for(i32 i = 0; i < info->width * info->height; ++i)
+    {
+        fscanf (file, "%d %d %d", &garbage[0], &garbage[1], &garbage[2]);
+        info->image_data[iter++] = ((f32)garbage[0]) / (f32)info->max_color;
+        info->image_data[iter++] = ((f32)garbage[1]) / (f32)info->max_color;
+        info->image_data[iter++] = ((f32)garbage[2]) / (f32)info->max_color;
+    }
+}
+static PPMInfo*
+ppm_read(const char *filename)
+{
+    PPMInfo *info;
+    FILE* file;
+
+    //allocate memory for PPMInfo
+    info = (PPMInfo*)malloc(sizeof(PPMInfo));
+    if(info == NULL)return(NULL);
+
+    file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        info->status = PPM_ERROR_FILE_OPEN;
+        //fclose(file);
+        return info;
+    }
+
+    //we load the header and fill out neccesary info
+    ppm_load_header(file, info);
+
+    info->image_data = (f32*)malloc(sizeof(f32) * info->width * info->height * 3);
+    if (info->image_data == NULL)
+    {
+        info->status = PPM_ERROR_MEMORY;
+        fclose(file);
+        return info;
+    }
+
+    if (strcmp(info->type, "P3") == 0)ppm_load_P3_data(file, info);
+    else
+    {
+        info->status = PPM_ERROR_UNSUPPORTED_FILE;
+        fclose(file);
+        return info;
+    }
+
+    //tga_load_image_data(file, info);
+    if (ferror(file))
+    {
+        info->status = PPM_ERROR_READING_FILE;
+        fclose(file);
+        //info->status = TGA_OK;
+        return info;
+    }
+    fclose(file);
+    info->status = PPM_OK;
+
+    return info;
+}
+
+static i32
+ppm_write(PPMInfo* info, const char *filename)
+{
+    FILE* file;
+    file = fopen(filename, "w");
+    if (file == NULL)
+    {
+        fclose(file);
+        return 0;//PPM_ERROR_FILE_OPEN;
+    }
+    if (strcmp(info->type, "P3") != 0)
+    {
+       fclose(file);
+       return PPM_ERROR_UNSUPPORTED_FILE;
+    }
+    fputc(info->type[0], file);
+    fputc(info->type[1], file);
+    fputc('\n', file);
+    fprintf(file, "%d\n", info->width);
+    fprintf(file, "%d\n", info->height);
+    fprintf(file, "%d\n", info->max_color);
+
+    for (int i = 0; i < info->width * info->height; ++i)
+    {
+        i32 cmp[3];
+        cmp[0]= (i32)(info->image_data[i*3] * info->max_color);
+        cmp[1]= (i32)(info->image_data[i*3+1] * info->max_color);
+        cmp[2]= (i32)(info->image_data[i*3+2] * info->max_color);
+        fprintf(file, "%d ", cmp[0]);
+        fprintf(file, "%d ", cmp[1]);
+        fprintf(file, "%d", cmp[2]);
+        fputc('\n', file);
+    }
+    return PPM_OK;
+
+}
