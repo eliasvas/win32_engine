@@ -253,6 +253,8 @@ void update(void)
     renderer_push_dir_light(&rend,&dir_light);
     renderer_push_point_light(&rend,&point_light);
     renderer_push_mesh(&rend,&m, m.vertices.size());
+    renderer_set_projection_matrix(&rend, perspective_matrix);
+    renderer_set_view_matrix(&rend, view_matrix);
 
 }
 

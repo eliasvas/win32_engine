@@ -84,7 +84,7 @@ struct Renderer
     u32 point_light_count;
 
 
-    mat4 view_projection;
+    mat4 view_matrix;
     mat4 orthographic_projection;
     mat4 perspective_projection;
 };

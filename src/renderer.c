@@ -70,8 +70,7 @@ init_renderer(Renderer* rend)
         glBindVertexArray(0);
     }
 
-    //this is for testing purposes.. make it normal.. god
-
+    //this is for testing purposes.. make it normal..
     shader_load(&rend->shaders[0], "../assets/shaders/batch.vert", "../assets/shaders/batch.frag");
     shader_load(&rend->shaders[1],"../assets/shaders/phong_tex.vert", "../assets/shaders/phong_tex.frag");
 
@@ -145,8 +144,9 @@ renderer_render(Renderer* rend,float* proj)
     //NOTE(ilias):drawing models here!!!!
     use_shader(&rend->shaders[1]);
     setMat4fv(&rend->shaders[1],"proj", (f32*)rend->perspective_projection.elements);
-    setMat4fv(&rend->shaders[1],"view", (f32*)rend->view_projection.elements);
+    setMat4fv(&rend->shaders[1],"view", (f32*)rend->view_matrix.elements);
     //setting all the directional lights
+    //MEMORY lEAK --TODO fix
     char dir_attr[4][64] = {
         "dir_lights[x].ambient",
         "dir_lights[x].diffuse",
@@ -199,7 +199,6 @@ renderer_render(Renderer* rend,float* proj)
 
     for (u32 i = 0; i < rend->mesh_count;++i)
     {
-        glBindVertexArray(rend->meshes[i].vao);
         setMat4fv(&rend->shaders[1], "model", (f32*)rend->meshes[i].model_matrix.elements);
 
         {
@@ -214,6 +213,7 @@ renderer_render(Renderer* rend,float* proj)
         setInt(&rend->shaders[1], "dir_light_count", rend->dir_light_count); 
 
 
+        glBindVertexArray(rend->meshes[i].vao);
         glDrawArrays(GL_TRIANGLES,0, rend->meshes[i].count);
     }
 
@@ -320,11 +320,11 @@ renderer_push_mesh(Renderer* rend,Model* model, i32 triangle_count)
 {
     ModelInfo info;
     info.vao = model->vao;
-    vec3 arbitrary_position = {0,2,0};
+    vec3 arbitrary_position = {0,4,0};
     mat4 model_mat = translate_mat4(arbitrary_position);
-    model_mat.elements[0][0] = model->scale.x; 
-    model_mat.elements[1][1] = model->scale.y; 
-    model_mat.elements[2][2] = model->scale.z; 
+    //model_mat.elements[0][0] = model->scale.x; 
+    //model_mat.elements[1][1] = model->scale.y; 
+    //model_mat.elements[2][2] = model->scale.z; 
     //TODO(ilias): also add rotation info..
     info.model_matrix = model_mat;
     info.count = triangle_count;
@@ -340,4 +340,14 @@ renderer_push_mesh_vao(Renderer* rend,GLuint vao, mat4 model, i32 triangle_count
    rend->meshes[rend->mesh_count++] = info;
 }
 
+static void 
+renderer_set_projection_matrix(Renderer* rend, mat4 projection)
+{
+    rend->perspective_projection = projection;
+   
+}
 
+static void renderer_set_view_matrix(Renderer* rend, mat4 view)
+{
+    rend->view_matrix = view;
+}
