@@ -25,11 +25,13 @@ struct PointLight {
     vec3 diffuse;
     vec3 specular;
 };  
-#define NR_POINT_LIGHTS 10
-#define NR_DIR_LIGHTS 10
-uniform PointLight point_lights[NR_POINT_LIGHTS];
+#define MAX_POINT_LIGHTS 1
+#define MAX_DIR_LIGHTS 10
+uniform PointLight point_lights[MAX_POINT_LIGHTS];
 uniform DirLight dir_light;
-uniform DirLight dir_lights[NR_DIR_LIGHTS];
+uniform DirLight dir_lights[MAX_DIR_LIGHTS];
+uniform int point_light_count;
+uniform int dir_light_count;
 
 out vec4 FragColor;
   
@@ -87,7 +89,7 @@ void main()
 	//calculate ambient light contribution
 	output_color = calculate_directional_light(dir_light, norm, view_dir);
 	//calculate point light contributions
-	for(int i = 0; i < NR_POINT_LIGHTS; ++i)
+	for(int i = 0; i < point_light_count; ++i)
 		output_color += calculate_point_light(point_lights[i], norm, w_frag_pos, view_dir);
 	//calculatte spot light contributions
 	//for(int i = 0; i < NR_SPOT_LIGHTS; ++i)

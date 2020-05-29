@@ -203,23 +203,28 @@ renderer_render(Renderer* rend,float* proj)
         setMat4fv(&rend->shaders[1], "model", (f32*)rend->meshes[i].model_matrix.elements);
 
         {
+            //diffuse and spec should be samplers to textures
             setVec3(&rend->shaders[1],"m.ambient", {0.2f, 0.2f, 0.2f});
-            setVec3(&rend->shaders[1],"m.diffuse", {0.7f, 0.3f, 0.2f});
-            setVec3(&rend->shaders[1],"m.specular", {0.1f, 0.1f, 0.1f});
+            setInt(&rend->shaders[1],"m.diffuse", 0);
+            setInt(&rend->shaders[1],"m.specular", 1);
+            //TextureManager^^^
             setFloat(&rend->shaders[1], "m.shininess", 3.f);
         }
+        setInt(&rend->shaders[1], "point_light_count", rend->point_light_count); 
+        setInt(&rend->shaders[1], "dir_light_count", rend->dir_light_count); 
+
 
         glDrawArrays(GL_TRIANGLES,0, rend->meshes[i].count);
     }
 
-    //zeroing out other lights    ----OPTIONAL  
+    //zeroing out other lights    ----OPTIONAL just for debugging  
     for(int i = 0; i < rend->dir_light_count; ++i)
     {
-        //rend->dir_lights[i] = {0};
+        rend->dir_lights[i] = {0};
     }
     for(int i = 0; i < rend->point_light_count; ++i)
     {
-        //rend->point_lights[i] = {0};
+        rend->point_lights[i] = {0};
     }
     glBindVertexArray(0);
 

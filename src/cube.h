@@ -119,10 +119,10 @@ render_cube_textured(Cube* c, mat4* projection, mat4* view, vec3 light_pos, vec3
     }
     //point light
     {
-        setVec3(&c->cube_shader,"point_lights[0].ambient", light.ambient);
-        setVec3(&c->cube_shader,"point_lights[0].diffuse", light.diffuse);
-        setVec3(&c->cube_shader,"point_lights[0].specular", light.specular);
-        glUniform3f(glGetUniformLocation(c->cube_shader.ID, "point_lights[0].position"), light_pos.x, light_pos.y, light_pos.z); 
+       setVec3(&c->cube_shader,"point_lights[0].ambient", light.ambient);
+       setVec3(&c->cube_shader,"point_lights[0].diffuse", light.diffuse);
+       setVec3(&c->cube_shader,"point_lights[0].specular", light.specular);
+       glUniform3f(glGetUniformLocation(c->cube_shader.ID, "point_lights[0].position"), light_pos.x, light_pos.y, light_pos.z); 
        setFloat(&c->cube_shader,"point_lights[0].constant",  1.0f);
        setFloat(&c->cube_shader, "point_lights[0].linear",    0.022f);
        setFloat(&c->cube_shader, "point_lights[0].quadratic", 0.0019f); 
@@ -143,6 +143,8 @@ render_cube_textured(Cube* c, mat4* projection, mat4* view, vec3 light_pos, vec3
 
     glUniform3f(glGetUniformLocation(c->cube_shader.ID, "view_pos"), camera_pos.x, camera_pos.y, camera_pos.z); 
 
+    setInt(&c->cube_shader, "point_light_count", 1); 
+    setInt(&c->cube_shader, "dir_light_count", 1); 
     glBindVertexArray(c->vao);
     glDrawArrays(GL_TRIANGLES,0, 36);
     glBindVertexArray(0);
