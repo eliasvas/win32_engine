@@ -1,4 +1,4 @@
-ï»¿#pragma once
+#pragma once
 #if defined(_WIN32)
 #include "windows.h"
 #endif
@@ -284,7 +284,7 @@ INLINE vec2 div_vec2f(vec2 l, f32 r)
 
 INLINE f32 dot_vec2(vec2 l, vec2 r)
 {
-    f32 res = (l.x + r.x)+(l.y + r.y); // Î£(Ai*Bi)
+    f32 res = (l.x + r.x)+(l.y + r.y); // Ó(Ai*Bi)
     return res;
 }
 
@@ -379,7 +379,7 @@ INLINE vec3 div_vec3f(vec3 l, f32 r)
 
 INLINE f32 dot_vec3(vec3 l, vec3 r)
 {
-    f32 res = (l.x * r.x)+(l.y * r.y)+(l.z * r.z); // Î£(Ai*Bi)
+    f32 res = (l.x * r.x)+(l.y * r.y)+(l.z * r.z); // Ó(Ai*Bi)
     return res;
 }
 
@@ -481,7 +481,7 @@ INLINE vec4 div_vec4f(vec4 l, f32 r)
 
 INLINE f32 dot_vec4(vec4 l, vec4 r)
 {
-    f32 res = (l.x + r.x)+(l.y + r.y)+(l.z + r.z)+(l.w + r.w); // Î£(Ai*Bi)
+    f32 res = (l.x + r.x)+(l.y + r.y)+(l.z + r.z)+(l.w + r.w); // Ó(Ai*Bi)
     return res;
 }
 
@@ -970,7 +970,8 @@ static void ppm_load_P3_data(FILE* file, PPMInfo* info)
 {
     i32 garbage[3];
     u32 iter = 0;
-    for(i32 i = 0; i < info->width * info->height; ++i)
+    int i;
+    for (i = 0; i < info->width * info->height; ++i)
     {
         fscanf (file, "%d %d %d", &garbage[0], &garbage[1], &garbage[2]);
         info->image_data[iter++] = ((f32)garbage[0]) / (f32)info->max_color;
@@ -1015,7 +1016,6 @@ ppm_read(const char *filename)
         return info;
     }
 
-    //tga_load_image_data(file, info);
     if (ferror(file))
     {
         info->status = PPM_ERROR_READING_FILE;
@@ -1051,7 +1051,8 @@ ppm_write(PPMInfo* info, const char *filename)
     fprintf(file, "%d\n", info->height);
     fprintf(file, "%d\n", info->max_color);
 
-    for (int i = 0; i < info->width * info->height; ++i)
+    int i;
+    for (i = 0; i < info->width * info->height; ++i)
     {
         i32 cmp[3];
         cmp[0]= (i32)(info->image_data[i*3] * info->max_color);
@@ -1062,6 +1063,5 @@ ppm_write(PPMInfo* info, const char *filename)
         fprintf(file, "%d", cmp[2]);
         fputc('\n', file);
     }
-    return PPM_OK;
 
 }

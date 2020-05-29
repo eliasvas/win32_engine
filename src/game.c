@@ -31,8 +31,9 @@ static Model m;
 static mat4 view_matrix;
 static mat4 perspective_matrix;
 static mat4 ortho_matrix;
-static renderer rend;
-static vec3 light_pos;
+static Renderer rend;
+static DirLight dir_light;
+static PointLight point_light;
 static Skybox skybox;
 b32 debug_menu = 1;
 f32 inverted = 0.f;
@@ -44,7 +45,7 @@ static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
 #define sound_on 0
 #define colliders_on 1
-#define skybox_on 1
+#define skybox_on 0
 
 static Box b1;
 static Box b2;
@@ -94,20 +95,6 @@ void init(void)
         init_model(&m, m.vertices);
     }
     //player initializiation
-#if 0
-    {
-
-        AnimationInfo info; 
-        //init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
-        init_animation_info(&info,{0.0f,0.0f}, 6, 1, 2, 6, 0.1f, 0);
-        //init_animation_info(&info,{0.0f,0.0f}, 1, 1, 1, 1, 300000.f, 0);
-        init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 2, 1.f, info);
-        //s.is_blinking = 1;
-        s.box.hb = {{0.3f,0.0f}, 0.4f,0.6f};
-        s.box.id = 1024;
-    }
-#endif
-
     {
 
         AnimationInfo info; 
@@ -151,6 +138,13 @@ void init(void)
     {
         init_cube_textured(&c);
         c.center = {2.f,0.f, -2.f};
+    }
+    //init lights
+    {
+     point_light = {{0,1,1},1.f,0.022f,0.0019f,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
+
+     dir_light = {normalize_vec3({1.f,-1.f,0.f}),{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
+
     }
     init_renderer(&rend);
 
@@ -250,17 +244,21 @@ void update(void)
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
 
-    light_pos = {sin(global_platform.current_time)* 10, 5,0};
+    point_light.position = {sin(global_platform.current_time)* 10, 5,0};
 
     view_matrix = get_view_mat(&cam);
     perspective_matrix = perspective_proj(45.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
     ortho_matrix = orthographic_proj(-6.f,6.f,-6.f,6.f, 0.1, 100.f);
 
-    render_sprite(&s, &rend); //move to render()
+    renderer_push_dir_light(&rend,&dir_light);
+    renderer_push_point_light(&rend,&point_light);
+    renderer_push_mesh(&rend,&m, m.vertices.size());
+
 }
 
 void render(void)
 {
+    render_sprite(&s, &rend); 
 #if skybox_on
     render_skybox(&skybox,perspective_matrix, view_matrix);
 #endif
@@ -296,10 +294,11 @@ void render(void)
 #if 1
     {
         m.position = {0,0, -5};
-        render_model(&m,&perspective_matrix, &view_matrix, light_pos, cam.pos);
+        render_model(&m,&perspective_matrix, &view_matrix, point_light.position, cam.pos);
     }
+
     {
-        render_cube_textured(&c,&perspective_matrix, &view_matrix, light_pos, cam.pos);
+        render_cube_textured(&c,&perspective_matrix, &view_matrix, point_light.position, cam.pos);
     }
 
 #endif

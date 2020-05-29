@@ -150,11 +150,6 @@ render_cube_textured(Cube* c, mat4* projection, mat4* view, vec3 light_pos, vec3
 
 
 
-
-
-
-
-
 //DEPRECATED.. JUST FOR TESTING!!
 static void 
 init_cube(Cube* c)

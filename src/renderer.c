@@ -1,4 +1,4 @@
-#include "renderer.h"
+#include "Renderer.h"
 
 void* get_array_buffer_ptr()
 {
@@ -6,9 +6,11 @@ void* get_array_buffer_ptr()
 }
 
 static void 
-init_renderer(renderer* rend)
+init_renderer(Renderer* rend)
 {
     rend->tex_count = 0;
+    rend->point_light_count = 0;
+    rend-> dir_light_count = 0;
    
     {//initializing renderable VAO
         glGenVertexArrays(1, &rend->renderable_vao);    
@@ -33,31 +35,31 @@ init_renderer(renderer* rend)
         glBufferData(GL_ARRAY_BUFFER, sizeof(rend->renderable_instance_data),  rend->renderable_instance_data,GL_DYNAMIC_DRAW);
         //position (per-instance)
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Renderable), (GLvoid*)0);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Quad2D), (GLvoid*)0);
         glVertexAttribDivisor(2, 1);
         //scale (per-instance)
         glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Renderable), (GLvoid*)(2* sizeof(GLfloat)));
+        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Quad2D), (GLvoid*)(2* sizeof(GLfloat)));
         glVertexAttribDivisor(3, 1);
         //texture unit (per-instance)
         glEnableVertexAttribArray(4);
-        glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT, sizeof(Renderable), (GLvoid*)(4 * sizeof(GLfloat)));
+        glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT, sizeof(Quad2D), (GLvoid*)(4 * sizeof(GLfloat)));
         glVertexAttribDivisor(4, 1);
         //opacity (per-instance)
         glEnableVertexAttribArray(5);
-        glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Renderable), (GLvoid*)(5 * sizeof(GLfloat)));
+        glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Quad2D), (GLvoid*)(5 * sizeof(GLfloat)));
         glVertexAttribDivisor(5, 1);
         //bottom_left coord
         glEnableVertexAttribArray(6);
-        glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(Renderable), (GLvoid*)(6 * sizeof(GLfloat)));
+        glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(Quad2D), (GLvoid*)(6 * sizeof(GLfloat)));
         glVertexAttribDivisor(6, 1);
         //tex_dim
         glEnableVertexAttribArray(7);
-        glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(Renderable), (GLvoid*)(8 * sizeof(GLfloat)));
+        glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(Quad2D), (GLvoid*)(8 * sizeof(GLfloat)));
         glVertexAttribDivisor(7, 1);
         //flip
         glEnableVertexAttribArray(8);
-        glVertexAttribIPointer(8, 1, GL_UNSIGNED_INT, sizeof(Renderable), (GLvoid*)(10 * sizeof(GLfloat)));
+        glVertexAttribIPointer(8, 1, GL_UNSIGNED_INT, sizeof(Quad2D), (GLvoid*)(10 * sizeof(GLfloat)));
         glVertexAttribDivisor(8, 1);
 
 
@@ -71,6 +73,7 @@ init_renderer(renderer* rend)
     //this is for testing purposes.. make it normal.. god
 
     shader_load(&rend->shaders[0], "../assets/shaders/batch.vert", "../assets/shaders/batch.frag");
+    shader_load(&rend->shaders[1],"../assets/shaders/phong_tex.vert", "../assets/shaders/phong_tex.frag");
 
     //TODO make texture loading dynamic!!!!!!!!!! <---
     load_texture(&rend->tex[0],"../assets/KING.png");
@@ -93,21 +96,13 @@ init_renderer(renderer* rend)
     rend->tex_count++;
    load_texture(&rend->tex[9],"../assets/pandafrontrunsheet.png");
     rend->tex_count++;
-   load_texture(&rend->tex[10],"../assets/braid.png");
-    rend->tex_count++;
-
-
-
-
-
-
 
 
 
 }
 
 static void
-renderer_render(renderer* rend,float* proj)
+renderer_render(Renderer* rend,float* proj)
 {
     vec2 texture_sizes[TEXTURE_MAX];
 
@@ -143,48 +138,201 @@ renderer_render(renderer* rend,float* proj)
     //glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->renderable_alloc_pos); // 10 diamonds, 4 vertices per instance
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->renderable_alloc_pos); // 10 diamonds, 4 vertices per instance
     glBindVertexArray(0);
+
+    
+
+
+    //NOTE(ilias):drawing models here!!!!
+    use_shader(&rend->shaders[1]);
+    setMat4fv(&rend->shaders[1],"proj", (f32*)rend->perspective_projection.elements);
+    setMat4fv(&rend->shaders[1],"view", (f32*)rend->view_projection.elements);
+    //setting all the directional lights
+    char dir_attr[4][64] = {
+        "dir_lights[x].ambient",
+        "dir_lights[x].diffuse",
+        "dir_lights[x].specular",
+        "dir_lights[x].direction"
+    };
+    char point_attr[7][64] = {
+        "point_lights[x].ambient",
+        "point_lights[x].diffuse",
+        "point_lights[x].specular",
+        "point_lights[x].position"
+
+        "point_lights[x].constant",
+        "point_lights[x].linear",
+        "point_lights[x].quadratic"
+    };
+    for(int i = 0; i < rend->dir_light_count; ++i)
+    {
+        //NOTE(ilias): this shouls also be an array in the glsl shader
+        dir_attr[0][11] = '0'+i;
+        dir_attr[1][11] = '0'+i;
+        dir_attr[2][11] = '0'+i;
+        dir_attr[3][11] = '0'+i;
+        
+        setVec3(&rend->shaders[1],dir_attr[0], rend->dir_lights[i].ambient);
+        setVec3(&rend->shaders[1],dir_attr[1], rend->dir_lights[i].diffuse);
+        setVec3(&rend->shaders[1],dir_attr[2], rend->dir_lights[i].specular);
+        setVec3(&rend->shaders[1],dir_attr[3], rend->dir_lights[i].direction);
+    }
+    for(int i = 0; i < rend->point_light_count; ++i)
+    {
+        point_attr[0][13] = '0' + i;
+        point_attr[1][13] = '0' + i;
+        point_attr[2][13] = '0' + i;
+        point_attr[3][13] = '0' + i;
+        point_attr[4][13] = '0' + i;
+        point_attr[5][13] = '0' + i;
+        point_attr[6][13] = '0' + i;
+
+
+        setVec3(&rend->shaders[1],point_attr[0], rend->point_lights[i].ambient);
+        setVec3(&rend->shaders[1],point_attr[1], rend->point_lights[i].diffuse);
+        setVec3(&rend->shaders[1],point_attr[2], rend->point_lights[i].specular);
+        setVec3(&rend->shaders[1],point_attr[3], rend->point_lights[i].position);
+        setFloat(&rend->shaders[1],dir_attr[4], rend->point_lights[i].constant);
+        setFloat(&rend->shaders[1],dir_attr[5], rend->point_lights[i].linear);
+        setFloat(&rend->shaders[1],dir_attr[6], rend->point_lights[i].quadratic);
+
+    }
+
+    for (u32 i = 0; i < rend->mesh_count;++i)
+    {
+        glBindVertexArray(rend->meshes[i].vao);
+        setMat4fv(&rend->shaders[1], "model", (f32*)rend->meshes[i].model_matrix.elements);
+
+        {
+            setVec3(&rend->shaders[1],"m.ambient", {0.2f, 0.2f, 0.2f});
+            setVec3(&rend->shaders[1],"m.diffuse", {0.7f, 0.3f, 0.2f});
+            setVec3(&rend->shaders[1],"m.specular", {0.1f, 0.1f, 0.1f});
+            setFloat(&rend->shaders[1], "m.shininess", 3.f);
+        }
+
+        glDrawArrays(GL_TRIANGLES,0, rend->meshes[i].count);
+    }
+
+    //zeroing out other lights    ----OPTIONAL  
+    for(int i = 0; i < rend->dir_light_count; ++i)
+    {
+        //rend->dir_lights[i] = {0};
+    }
+    for(int i = 0; i < rend->point_light_count; ++i)
+    {
+        //rend->point_lights[i] = {0};
+    }
+    glBindVertexArray(0);
+
 }
 
 static void
-renderer_begin(renderer* rend, i32 w, i32 h)
+renderer_begin(Renderer* rend, i32 w, i32 h)
 {
     rend->render_width = w;
     rend->render_height = h;
     rend->rect_alloc_pos = 0;
     rend->renderable_alloc_pos = 0;
+    rend->dir_light_count = 0;
+    rend->point_light_count = 0;
+    rend->mesh_count = 0;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.1f, 0.1f, 0.1f, 1);
     //glViewport(0, 0, (GLsizei)rend->render_width, (GLsizei)(rend->render_height)); //for some reason this is the only viewport called
     //glViewport(0, 0, (GLsizei)rend->render_width, (GLsizei)(rend->render_height*(w/(float)h))); //this is the holy saviour???
-    //NOTE(ilias): projection matrix should be provided at initialization..
 }
 
 static void
-renderer_push(renderer* rend, vec2 offset,vec2 scale, GLuint unit, GLuint flip = 0)
+renderer_push(Renderer* rend, vec2 offset,vec2 scale, GLuint unit, GLuint flip = 0)
 {
 
-    Renderable to_add = {offset,scale, unit,1.0f,{0.0f,0.0f},{1.0f,1.0f}, flip};
+    Quad2D to_add = {offset,scale, unit,1.0f,{0.0f,0.0f},{1.0f,1.0f}, flip};
     rend->renderable_instance_data[rend->renderable_alloc_pos] = to_add; //NOTE(ilias): maybe memcpy
     rend->renderable_alloc_pos++; 
 }
 
 
 static void
-renderer_push(renderer* rend, vec2 offset,vec2 scale, GLuint unit, vec2 bl, vec2 dim, GLuint flip = 0)
+renderer_push(Renderer* rend, vec2 offset,vec2 scale, GLuint unit, vec2 bl, vec2 dim, GLuint flip = 0)
 {
-    Renderable to_add = {offset,scale, unit,1.0f,bl,dim, flip};
-    //rend->renderable_instance_data[rend->renderable_alloc_pos/sizeof(Renderable)] = to_add; //NOTE(ilias): maybe memcpy
+    Quad2D to_add = {offset,scale, unit,1.0f,bl,dim, flip};
+    //rend->renderable_instance_data[rend->renderable_alloc_pos/sizeof(Quad2D)] = to_add; //NOTE(ilias): maybe memcpy
     rend->renderable_instance_data[rend->renderable_alloc_pos] = to_add; //NOTE(ilias): maybe memcpy
     rend->renderable_alloc_pos++; 
 }
 
 static void
-renderer_push(renderer* rend, vec2 offset,vec2 scale, GLuint unit, vec2 bl, vec2 dim, GLuint flip, f32 opacity)
+renderer_push(Renderer* rend, vec2 offset,vec2 scale, GLuint unit, vec2 bl, vec2 dim, GLuint flip, f32 opacity)
 {
-    Renderable to_add = {offset,scale, unit,opacity,bl,dim, flip};
-    //rend->renderable_instance_data[rend->renderable_alloc_pos/sizeof(Renderable)] = to_add; //NOTE(ilias): maybe memcpy
+    Quad2D to_add = {offset,scale, unit,opacity,bl,dim, flip};
+    //rend->renderable_instance_data[rend->renderable_alloc_pos/sizeof(Quad2D)] = to_add; //NOTE(ilias): maybe memcpy
     rend->renderable_instance_data[rend->renderable_alloc_pos] = to_add; //NOTE(ilias): maybe memcpy
     rend->renderable_alloc_pos++; 
+}
+
+static void
+renderer_push_dir_light(Renderer* rend,DirLight* light)
+{
+    rend->dir_lights[rend->dir_light_count++] = *light;
+}
+
+static void
+renderer_push_dir_light_info(Renderer* rend,vec3 direction, vec3 ambient, vec3 diffuse, vec3 specular)
+{
+    DirLight light;
+    light.direction = direction;
+    light.ambient = ambient;
+    light.diffuse = diffuse;
+    light.specular = specular;
+
+    rend->dir_lights[rend->dir_light_count++] = light;
+}
+
+
+
+static void
+renderer_push_point_light(Renderer* rend,PointLight* light)
+{
+    rend->point_lights[rend->point_light_count++] = *light;
+}
+
+static void
+renderer_push_point_light_info(Renderer* rend,vec3 ambient, vec3 diffuse, vec3 specular)
+{
+    PointLight light;
+    light.ambient = ambient;
+    light.diffuse = diffuse;
+    light.specular = specular;
+    light.constant = 1.f;
+    light.linear = 0.022f;
+    light.quadratic = 0.0019f;
+
+    rend->point_lights[rend->point_light_count++] = light;
+}
+
+
+static void 
+renderer_push_mesh(Renderer* rend,Model* model, i32 triangle_count)
+{
+    ModelInfo info;
+    info.vao = model->vao;
+    vec3 arbitrary_position = {0,2,0};
+    mat4 model_mat = translate_mat4(arbitrary_position);
+    model_mat.elements[0][0] = model->scale.x; 
+    model_mat.elements[1][1] = model->scale.y; 
+    model_mat.elements[2][2] = model->scale.z; 
+    //TODO(ilias): also add rotation info..
+    info.model_matrix = model_mat;
+    info.count = triangle_count;
+
+    rend->meshes[rend->mesh_count++] = info;
+}
+
+static void 
+renderer_push_mesh_vao(Renderer* rend,GLuint vao, mat4 model, i32 triangle_count)
+{
+   ModelInfo info = {vao, model, triangle_count};     
+
+   rend->meshes[rend->mesh_count++] = info;
 }
 
 

@@ -12,7 +12,7 @@ struct DirLight {
     vec3 diffuse;
     vec3 specular;
 };  
-uniform DirLight dir_light;
+
 
 struct PointLight {    
     vec3 position;
@@ -25,8 +25,11 @@ struct PointLight {
     vec3 diffuse;
     vec3 specular;
 };  
-#define NR_POINT_LIGHTS 1
+#define NR_POINT_LIGHTS 10
+#define NR_DIR_LIGHTS 10
 uniform PointLight point_lights[NR_POINT_LIGHTS];
+uniform DirLight dir_light;
+uniform DirLight dir_lights[NR_DIR_LIGHTS];
 
 out vec4 FragColor;
   

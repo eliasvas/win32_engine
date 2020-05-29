@@ -40,7 +40,7 @@ update_sprite(Sprite* s)
 }
 
 static void 
-render_sprite(Sprite* s, renderer* rend) //maybe make the renderer static
+render_sprite(Sprite* s, Renderer* rend) //maybe make the renderer static
 {
     //renderer_push(renderer* rend, vec2 offset,vec2 scale, GLuint unit, GLuint flip,f32 opacity)
     if (s->is_blinking)
