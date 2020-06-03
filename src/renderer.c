@@ -72,11 +72,9 @@ init_renderer(Renderer* rend)
 
     //this is for testing purposes.. make it normal..
     shader_load(&rend->shaders[0], "../assets/shaders/batch.vert", "../assets/shaders/batch.frag");
-    shader_load(&rend->shaders[1],"../assets/shaders/phong_tex.vert", "../assets/shaders/phong_tex.frag");
+    shader_load(&rend->shaders[1],"../assets/shaders/batch_phong_tex.vert", "../assets/shaders/batch_phong_tex.frag");
 
     //TODO make texture loading dynamic!!!!!!!!!! <---
-    load_texture(&rend->tex[0],"../assets/KING.png");
-    rend->tex_count++;
     load_texture(&rend->tex[1],"../assets/panda.png");
     rend->tex_count++;
     load_texture(&rend->tex[2],"../assets/runimation.png");
@@ -85,18 +83,10 @@ init_renderer(Renderer* rend)
     rend->tex_count++;
     load_texture(&rend->tex[4],"../assets/pandasheet.png");
     rend->tex_count++;
-    load_texture(&rend->tex[5],"../assets/corona.png");
+    load_texture(&rend->tex[5],"../assets/red.png");
     rend->tex_count++;
-   load_texture(&rend->tex[6],"../assets/pandabackrunsheet.png");
+    load_texture(&rend->tex[6],"../assets/white.png");
     rend->tex_count++;
-   load_texture(&rend->tex[7],"../assets/pandaleftrunsheet.png");
-    rend->tex_count++;
-   load_texture(&rend->tex[8],"../assets/pandarightrunsheet.png");
-    rend->tex_count++;
-   load_texture(&rend->tex[9],"../assets/pandafrontrunsheet.png");
-    rend->tex_count++;
-
-
 
 }
 
@@ -151,17 +141,17 @@ renderer_render(Renderer* rend,float* proj)
         "dir_lights[x].ambient",
         "dir_lights[x].diffuse",
         "dir_lights[x].specular",
-        "dir_lights[x].direction"
+        "dir_lights[x].direction",
     };
     char point_attr[7][64] = {
         "point_lights[x].ambient",
         "point_lights[x].diffuse",
         "point_lights[x].specular",
-        "point_lights[x].position"
+        "point_lights[x].position",
 
         "point_lights[x].constant",
         "point_lights[x].linear",
-        "point_lights[x].quadratic"
+        "point_lights[x].quadratic",
     };
     for(int i = 0; i < rend->dir_light_count; ++i)
     {
@@ -202,12 +192,20 @@ renderer_render(Renderer* rend,float* proj)
         setMat4fv(&rend->shaders[1], "model", (f32*)rend->meshes[i].model_matrix.elements);
 
         {
+       
             //diffuse and spec should be samplers to textures
             setVec3(&rend->shaders[1],"m.ambient", {0.2f, 0.2f, 0.2f});
-            setInt(&rend->shaders[1],"m.diffuse", 0);
-            setInt(&rend->shaders[1],"m.specular", 1);
-            //TextureManager^^^
+            //setVec3(&rend->shaders[1],"m.diffuse", {0.7f, 0.3f, 0.2f});
+            //setVec3(&rend->shaders[1],"m.specular", {0.1f, 0.1f, 0.1f});
             setFloat(&rend->shaders[1], "m.shininess", 3.f);
+            glActiveTexture(GL_TEXTURE0);
+            setInt(&rend->shaders[1],"m.diffuse", 0);
+            glBindTexture(GL_TEXTURE_2D, rend->tex[5].id);
+            setInt(&rend->shaders[1],"m.specular", 1);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, rend->tex[6].id);
+
+            //TextureManager^^^
         }
         setInt(&rend->shaders[1], "point_light_count", rend->point_light_count); 
         setInt(&rend->shaders[1], "dir_light_count", rend->dir_light_count); 
@@ -301,12 +299,13 @@ renderer_push_point_light(Renderer* rend,PointLight* light)
 }
 
 static void
-renderer_push_point_light_info(Renderer* rend,vec3 ambient, vec3 diffuse, vec3 specular)
+renderer_push_point_light_info(Renderer* rend,vec3 position, vec3 ambient, vec3 diffuse, vec3 specular)
 {
     PointLight light;
     light.ambient = ambient;
     light.diffuse = diffuse;
     light.specular = specular;
+    light.position = position;
     light.constant = 1.f;
     light.linear = 0.022f;
     light.quadratic = 0.0019f;
@@ -320,11 +319,11 @@ renderer_push_mesh(Renderer* rend,Model* model, i32 triangle_count)
 {
     ModelInfo info;
     info.vao = model->vao;
-    vec3 arbitrary_position = {0,4,0};
+    vec3 arbitrary_position = {0,0,-3};
     mat4 model_mat = translate_mat4(arbitrary_position);
-    //model_mat.elements[0][0] = model->scale.x; 
-    //model_mat.elements[1][1] = model->scale.y; 
-    //model_mat.elements[2][2] = model->scale.z; 
+    model_mat.elements[0][0] = 0.01f;//model->scale.x; 
+    model_mat.elements[1][1] = 0.01f;//model->scale.y; 
+    model_mat.elements[2][2] = 0.01f;//model->scale.z; 
     //TODO(ilias): also add rotation info..
     info.model_matrix = model_mat;
     info.count = triangle_count;

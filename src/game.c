@@ -28,6 +28,7 @@ static Cube c;
 static Terrain terrain;
 static quad background;
 static Model m;
+static Model MrHumpty;
 static mat4 view_matrix;
 static mat4 perspective_matrix;
 static mat4 ortho_matrix;
@@ -94,6 +95,11 @@ void init(void)
         load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&m, m.vertices);
     }
+    {
+        load_model_data(MrHumpty.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
+        init_model(&MrHumpty, MrHumpty.vertices);
+    }
+
     //player initializiation
     {
 
@@ -143,28 +149,18 @@ void init(void)
     {
      point_light = {{0,1,1},1.f,0.022f,0.0019f,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
 
-     dir_light = {normalize_vec3({1.f,-1.f,0.f}),{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
+     dir_light = {normalize_vec3({0.5f,-0.7f,0.f}),{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
 
     }
     init_renderer(&rend);
 
 
 #if 0
-    TGAInfo* info;
-    //info = tga_load("../assets/fern.tga");
-    info = tga_init_image_RGB(600,600);
-    for (int i = 0; i < 600 * 600 * info->pixel_depth / 8;++i)
-    {
-        info->image_data[i] = 255;
-    }
-    if (info->status != TGA_OK)exit(1);
-    int status = tga_save("image.tga", info->width, info->height, info->pixel_depth, info->image_data);
-    tga_destroy(info);
     PPMInfo* info;
     info = ppm_init(40,40);
-    for (int i = 0; i < 1600* 3; ++i)
+    for (int i = 0; i < 1600* 2; ++i)
     {
-        info->image_data[i] = 0.5f;
+        //info->image_data[i] = 0.5f;
     }
     ppm_write(info, "image.ppm");
 #endif
@@ -251,7 +247,9 @@ void update(void)
     ortho_matrix = orthographic_proj(-6.f,6.f,-6.f,6.f, 0.1, 100.f);
 
     renderer_push_dir_light(&rend,&dir_light);
-    renderer_push_point_light(&rend,&point_light);
+    //renderer_push_point_light(&rend,&point_light);
+    renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
+    renderer_push_mesh(&rend,&MrHumpty, MrHumpty.vertices.size());
     renderer_push_mesh(&rend,&m, m.vertices.size());
     renderer_set_projection_matrix(&rend, perspective_matrix);
     renderer_set_view_matrix(&rend, view_matrix);

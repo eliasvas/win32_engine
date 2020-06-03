@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
@@ -129,6 +130,9 @@ typedef union vec3
     };
     f32 elements[3];
 }vec3;
+
+typedef vec3 color3;
+typedef vec3 float3;
 
 typedef union vec4
 {
@@ -908,8 +912,6 @@ tga_destroy(TGAInfo * info)
     
 }
 
-
-
 //PPM LIB
 
 typedef struct PPMInfo
@@ -930,6 +932,30 @@ enum {
     PPM_OK
 };
 
+
+static color3
+ppm_get_pixel(i32 i, i32 j, PPMInfo* info)
+{
+    assert(i + j * info->height < info->width * info->height);
+    f32 x = info->image_data[(i + (info->height -1- j) * info->height)*3]; 
+    f32 y = info->image_data[(i + (info->height -1- j)* info->height)*3 + 1]; 
+    f32 z = info->image_data[(i + (info->height -1- j)* info->height)*3 + 2]; 
+
+    vec3 ret = {x,y,z};
+    return ret;
+}
+
+static color3
+ppm_set_pixel(i32 i, i32 j, PPMInfo* info, color3 col)
+{
+    assert(i + j * info->height < info->width * info->height);
+    info->image_data[(i + (info->height -1- j) * info->height)*3] = col.x; 
+    info->image_data[(i + (info->height -1- j)* info->height)*3 + 1] = col.y; 
+    info->image_data[(i + (info->height -1- j)* info->height)*3 + 2] = col.z; 
+    return col;
+}
+
+
 static PPMInfo*
 ppm_init(i32 width, i32 height)
 {
@@ -944,7 +970,21 @@ ppm_init(i32 width, i32 height)
     info->max_color = 255;
     info->image_data = (f32*)malloc(sizeof(f32) * info->width * info->height * 3); 
     if (info->image_data == NULL)return NULL;
-    //info->image_data = {0};
+    i32 i;
+    for (i = 0; i < info->width * info->height*3; ++i)
+    {
+        info->image_data[i] = 0; 
+    }
+#if 0
+    for (i = 0; i < info->width * info->height; ++i)
+    {
+        i32 x = i % info->width;
+        i32 y = i / info->height;
+        if (x == y)
+            ppm_set_pixel(x,y,info, {1,1,1});
+    }
+#endif
+ 
     return info;
 }
 static void 
@@ -1026,18 +1066,20 @@ ppm_read(const char *filename)
     fclose(file);
     info->status = PPM_OK;
 
+    //flip_image_horizontally(info->width, info->height, info->image_data);
     return info;
 }
 
 static i32
 ppm_write(PPMInfo* info, const char *filename)
 {
+    //flip_image_horizontally(info->width, info->height, info->image_data);
     FILE* file;
     file = fopen(filename, "w");
     if (file == NULL)
     {
         fclose(file);
-        return 0;//PPM_ERROR_FILE_OPEN;
+        return PPM_ERROR_FILE_OPEN;
     }
     if (strcmp(info->type, "P3") != 0)
     {
@@ -1063,5 +1105,5 @@ ppm_write(PPMInfo* info, const char *filename)
         fprintf(file, "%d", cmp[2]);
         fputc('\n', file);
     }
-
+    return PPM_OK;
 }
