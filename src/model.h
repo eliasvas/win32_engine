@@ -112,6 +112,7 @@ init_model_textured(Model* m, std::vector<vertex>& vertices)
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 6));
     glBindVertexArray(0);
 
+
     shader_load(&m->s,"../assets/shaders/phong_tex.vert","../assets/shaders/phong_tex.frag");
     load_texture(&(m->diff),"../assets/corona.png");
     load_texture(&(m->spec),"../assets/noise.png");
@@ -140,7 +141,7 @@ render_model_textured(Model* m, mat4* projection, mat4* view, vec3 light_pos, ve
     setMat4fv(&m->s, "model", (GLfloat*)model.elements);
     {
         setVec3(&m->s,"m.ambient", {0.2f, 0.2f, 0.2f});
-        setVec3(&m->s,"m.diffuse", {0.7f, 0.3f, 0.2f});
+        setVec3(&m->s,"m.diffuse", {0.4f, 0.2f, 0.1f});
         setVec3(&m->s,"m.specular", {0.1f, 0.1f, 0.1f});
         setFloat(&m->s, "m.shininess", 3.f);
     }

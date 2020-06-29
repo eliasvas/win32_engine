@@ -31,14 +31,15 @@ typedef char      b8;
 #define equalf(a, b, epsilon) (fabs(b - a) <= epsilon)
 #define maximum(a, b) ((a) > (b) ? (a) : (b))
 #define minimum(a, b) ((a) < (b) ? (a) : (b))
+#define step(threshold, value) ((value) < (threshold) ? 0 : 1) 
 #define clamp(x, a, b)  (maximum(a, minimum(x, b)))
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
 
-#ifndef SIN_APPROX
+#ifdef SIN_APPROX
 #define SINF sin_32
 #endif
 
-#ifndef COS_APPROX
+#ifdef COS_APPROX
 #define COSF cos_32
 #endif
 
@@ -161,9 +162,9 @@ INLINE f32 to_radians(float degrees)
     return(res);
 }
 
-INLINE f32 lerp(f32 A, f32 B, f32 time)
+INLINE f32 lerp(f32 A, f32 B, f32 t)
 {
-    f32 res = (1.0f - time)*A + time*B;
+    f32 res = (1.0f - t)*A + t*B;
     return res;
 }
 f32 cos_32s(float x)

@@ -5,6 +5,7 @@
 #include "texture.h"
 #include "model.h"
 #include "quad.h"
+#include "shadowmap.h"
 #include "ext/HandmadeMath.h"
 #define SHADER_MAX 32
 #define RECT_MAX 32
@@ -49,6 +50,7 @@ typedef struct ModelInfo
     GLuint vao;
     mat4 model_matrix;
 	i32 count;
+    b32 indexed;
 
 }ModelInfo;
 
@@ -84,6 +86,10 @@ struct Renderer
     u32 point_light_count;
 
 
+
+    ShadowMapFBO shadowmap;
+
+
     mat4 view_matrix;
     mat4 orthographic_projection;
     mat4 perspective_projection;
@@ -96,6 +102,9 @@ renderer_begin(Renderer* rend, f32 w, f32 h);
 
 static void 
 renderer_render(Renderer* rend,float* proj);
+
+static void
+renderer_render_scene(Renderer* rend,float* proj);
 
 #include "renderer.c"
 

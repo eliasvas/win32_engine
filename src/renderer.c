@@ -12,6 +12,8 @@ init_renderer(Renderer* rend)
     rend->point_light_count = 0;
     rend-> dir_light_count = 0;
    
+
+    init_shadowmap_fbo(&rend->shadowmap);
     {//initializing renderable VAO
         glGenVertexArrays(1, &rend->renderable_vao);    
         glBindVertexArray(rend->renderable_vao);
@@ -89,9 +91,18 @@ init_renderer(Renderer* rend)
     rend->tex_count++;
 
 }
-
 static void
 renderer_render(Renderer* rend,float* proj)
+{
+    //setup_shadowmap(&rend->shadowmap);
+    //renderer_render_scene(rend, proj);
+    //glViewport(0, 0, global_platform.window_width,global_platform.window_height); 
+    glBindFramebuffer(GL_FRAMEBUFFER,0);
+    renderer_render_scene(rend, proj);
+}
+
+static void
+renderer_render_scene(Renderer* rend,float* proj)
 {
     vec2 texture_sizes[TEXTURE_MAX];
 
@@ -212,7 +223,13 @@ renderer_render(Renderer* rend,float* proj)
 
 
         glBindVertexArray(rend->meshes[i].vao);
-        glDrawArrays(GL_TRIANGLES,0, rend->meshes[i].count);
+
+        if (rend->meshes[i].indexed)
+            //glDrawElements(GL_LINES, rend->meshes[i].count, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, rend->meshes[i].count, GL_UNSIGNED_INT, 0);
+        else    
+            glDrawArrays(GL_TRIANGLES,0, rend->meshes[i].count);
+
     }
 
     //zeroing out other lights    ----OPTIONAL just for debugging  
@@ -315,26 +332,26 @@ renderer_push_point_light_info(Renderer* rend,vec3 position, vec3 ambient, vec3 
 
 
 static void 
-renderer_push_mesh(Renderer* rend,Model* model, i32 triangle_count)
+renderer_push_mesh(Renderer* rend,Model* model, i32 triangle_count, b32 indexed = 0)
 {
     ModelInfo info;
     info.vao = model->vao;
-    vec3 arbitrary_position = {0,0,-3};
-    mat4 model_mat = translate_mat4(arbitrary_position);
-    model_mat.elements[0][0] = 0.01f;//model->scale.x; 
-    model_mat.elements[1][1] = 0.01f;//model->scale.y; 
-    model_mat.elements[2][2] = 0.01f;//model->scale.z; 
+    mat4 model_mat = translate_mat4(model->position);
+    model_mat.elements[0][0] = 0.05f;//model->scale.x; 
+    model_mat.elements[1][1] = 0.05f;//model->scale.y; 
+    model_mat.elements[2][2] = 0.05f;//model->scale.z; 
     //TODO(ilias): also add rotation info..
     info.model_matrix = model_mat;
     info.count = triangle_count;
+    info.indexed = indexed;
 
     rend->meshes[rend->mesh_count++] = info;
 }
 
 static void 
-renderer_push_mesh_vao(Renderer* rend,GLuint vao, mat4 model, i32 triangle_count)
+renderer_push_mesh_vao(Renderer* rend,GLuint vao, mat4 model, i32 triangle_count, b32 indexed = 0)
 {
-   ModelInfo info = {vao, model, triangle_count};     
+   ModelInfo info = {vao, model, triangle_count, indexed};     
 
    rend->meshes[rend->mesh_count++] = info;
 }

@@ -16,6 +16,7 @@
 #include "physics.h"
 #include "postproc.h"
 #include "terrain.h"
+#include "shadowmap.h"
 #define CUTE_SOUND_IMPLEMENTATION
 #include "ext/cute_sound.h"
 #include <string>  //just for to_string
@@ -98,6 +99,7 @@ void init(void)
     {
         load_model_data(MrHumpty.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&MrHumpty, MrHumpty.vertices);
+        MrHumpty.position = {5,0,20};
     }
 
     //player initializiation
@@ -176,7 +178,7 @@ void init(void)
 
 void update(void)
 {
-    change_to_fake_framebuffer();
+    //change_to_fake_framebuffer();
 #if sound_on
     cs_mix(ctx);
 #endif
@@ -240,7 +242,7 @@ void update(void)
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
 
-    point_light.position = {sin(global_platform.current_time)* 10, 5,0};
+    point_light.position = {sin(global_platform.current_time)* 10 + 15, 8,20};
 
     view_matrix = get_view_mat(&cam);
     perspective_matrix = perspective_proj(45.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
@@ -250,7 +252,8 @@ void update(void)
     //renderer_push_point_light(&rend,&point_light);
     renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
     renderer_push_mesh(&rend,&MrHumpty, MrHumpty.vertices.size());
-    renderer_push_mesh(&rend,&m, m.vertices.size());
+    //renderer_push_mesh(&rend,&m, m.vertices.size());
+    renderer_push_mesh_vao(&rend,terrain.vao,translate_mat4({0,0,0}),(VERTEX_COUNT-1) * (VERTEX_COUNT-1)*6, 1); 
     renderer_set_projection_matrix(&rend, perspective_matrix);
     renderer_set_view_matrix(&rend, view_matrix);
 
@@ -270,7 +273,7 @@ void render(void)
     }
     renderer_render(&rend, (float*)mat.elements);
 
-    render_terrain(&terrain, perspective_matrix, view_matrix);
+    //render_terrain(&terrain, perspective_matrix, view_matrix);
 
     if (debug_menu){ 
         print_text(&bmf,"|console|",0,570, 20);
@@ -314,7 +317,7 @@ void render(void)
 #endif
 
 
-    render_to_framebuffer0(inverted);
+    //render_to_framebuffer0(inverted);
 
 
 }
