@@ -88,6 +88,7 @@ struct Renderer
 
 
     ShadowMapFBO shadowmap;
+    ShadowmapDebugQuad debug_quad;
 
 
     mat4 view_matrix;

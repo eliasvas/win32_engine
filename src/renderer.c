@@ -91,18 +91,8 @@ init_renderer(Renderer* rend)
     rend->tex_count++;
 
 }
-static void
-renderer_render(Renderer* rend,float* proj)
-{
-    //setup_shadowmap(&rend->shadowmap);
-    //renderer_render_scene(rend, proj);
-    //glViewport(0, 0, global_platform.window_width,global_platform.window_height); 
-    glBindFramebuffer(GL_FRAMEBUFFER,0);
-    renderer_render_scene(rend, proj);
-}
-
-static void
-renderer_render_scene(Renderer* rend,float* proj)
+static void 
+renderer_render_batch_quads(Renderer* rend,float* proj)
 {
     vec2 texture_sizes[TEXTURE_MAX];
 
@@ -139,11 +129,20 @@ renderer_render_scene(Renderer* rend,float* proj)
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->renderable_alloc_pos); // 10 diamonds, 4 vertices per instance
     glBindVertexArray(0);
 
+
+}
+
+static void
+renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
+{
     
+    renderer_render_batch_quads(rend,proj);
 
 
     //NOTE(ilias):drawing models here!!!!
-    use_shader(&rend->shaders[1]);
+    use_shader(shader_to_render_3d);
+
+    setMat4fv(shader_to_render_3d,"lightSpaceMatrix", (f32*)rend->shadowmap.lightSpaceMatrix.elements);
     setMat4fv(&rend->shaders[1],"proj", (f32*)rend->perspective_projection.elements);
     setMat4fv(&rend->shaders[1],"view", (f32*)rend->view_matrix.elements);
     //setting all the directional lights
@@ -166,7 +165,7 @@ renderer_render_scene(Renderer* rend,float* proj)
     };
     for(int i = 0; i < rend->dir_light_count; ++i)
     {
-        //NOTE(ilias): this shouls also be an array in the glsl shader
+        //NOTE(ilias): this should also be an array in the glsl shader
         dir_attr[0][11] = '0'+i;
         dir_attr[1][11] = '0'+i;
         dir_attr[2][11] = '0'+i;
@@ -201,6 +200,7 @@ renderer_render_scene(Renderer* rend,float* proj)
     for (u32 i = 0; i < rend->mesh_count;++i)
     {
         setMat4fv(&rend->shaders[1], "model", (f32*)rend->meshes[i].model_matrix.elements);
+        setMat4fv(shader_to_render_3d, "model", (f32*)rend->meshes[i].model_matrix.elements);
 
         {
        
@@ -213,7 +213,7 @@ renderer_render_scene(Renderer* rend,float* proj)
             setInt(&rend->shaders[1],"m.diffuse", 0);
             glBindTexture(GL_TEXTURE_2D, rend->tex[5].id);
             setInt(&rend->shaders[1],"m.specular", 1);
-            glActiveTexture(GL_TEXTURE1);
+            glActiveTexture(GL_TEXTURE1);                             //they should be active i have deactivated
             glBindTexture(GL_TEXTURE_2D, rend->tex[6].id);
 
             //TextureManager^^^
@@ -232,6 +232,7 @@ renderer_render_scene(Renderer* rend,float* proj)
 
     }
 
+    /*
     //zeroing out other lights    ----OPTIONAL just for debugging  
     for(int i = 0; i < rend->dir_light_count; ++i)
     {
@@ -241,9 +242,25 @@ renderer_render_scene(Renderer* rend,float* proj)
     {
         rend->point_lights[i] = {0};
     }
+    */
     glBindVertexArray(0);
 
 }
+static void
+renderer_render(Renderer* rend,float* proj)
+{
+    GLint prev_fbo; //its always a 0 -but who am I to judge?
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
+    setup_shadowmap(&rend->shadowmap);
+    //renderer_render_scene(rend, proj, &rend->shaders[1]);
+    renderer_render_scene(rend, proj, &rend->shadowmap.s);
+    glViewport(0, 0, global_platform.window_width,global_platform.window_height); 
+    glBindFramebuffer(GL_FRAMEBUFFER,prev_fbo);
+    setup_debug_quad(&rend->debug_quad, &rend->shadowmap);
+    //renderer_render_scene(rend, proj, &rend->debug_quad.shader);
+    renderer_render_scene(rend, proj, &rend->shaders[1]);
+}
+
 
 static void
 renderer_begin(Renderer* rend, i32 w, i32 h)

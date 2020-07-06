@@ -10,6 +10,8 @@
 #include <math.h>
 #include <string.h>
 
+//TODO gotta make an array wrapper lmao <------
+
 typedef uint8_t   u8;
 typedef int8_t    i8;
 typedef uint16_t  u16;

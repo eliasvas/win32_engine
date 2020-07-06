@@ -99,7 +99,7 @@ void init(void)
     {
         load_model_data(MrHumpty.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&MrHumpty, MrHumpty.vertices);
-        MrHumpty.position = {5,0,20};
+        MrHumpty.position = {0,0,0};
     }
 
     //player initializiation
@@ -256,12 +256,11 @@ void update(void)
     renderer_push_mesh_vao(&rend,terrain.vao,translate_mat4({0,0,0}),(VERTEX_COUNT-1) * (VERTEX_COUNT-1)*6, 1); 
     renderer_set_projection_matrix(&rend, perspective_matrix);
     renderer_set_view_matrix(&rend, view_matrix);
-
 }
 
 void render(void)
 {
-    render_sprite(&s, &rend); 
+    //render_sprite(&s, &rend);  <----------------------------this is for the braid guy
 #if skybox_on
     render_skybox(&skybox,perspective_matrix, view_matrix);
 #endif
@@ -272,7 +271,8 @@ void render(void)
         //render_quad(&background, mat);
     }
     renderer_render(&rend, (float*)mat.elements);
-
+    return;
+    
     //render_terrain(&terrain, perspective_matrix, view_matrix);
 
     if (debug_menu){ 
@@ -284,7 +284,7 @@ void render(void)
         std::string w = std::to_string(global_platform.window_width);
         std::string h = std::to_string(global_platform.window_height);
         std::string window_info("wsize: " + w + "x"+ h) ;
-        print_text(&bmf,window_info.c_str(),0,510, 20); 
+        print_text(&bmf,window_info.c_str(),0,510, 20);
         std::string fps_info("ms: " + std::to_string(global_platform.dt));
         print_text(&bmf,fps_info.c_str(),0,490, 20);
         std::string camera_info("camera: {" + std::to_string(cam.pos.x) + ", " + std::to_string(cam.pos.y) + ", " + std::to_string(cam.pos.z) + "}");

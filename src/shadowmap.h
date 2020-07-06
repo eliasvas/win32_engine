@@ -3,6 +3,7 @@
 #include "tools.h"
 #include "texture.h"
 #include "shader.h"
+#include "ext/HandmadeMath.h"
 
 #define SHADOW_WIDTH  1024
 #define SHADOW_HEIGHT  1024
@@ -14,7 +15,7 @@ typedef struct ShadowMapFBO
     GLuint depth_attachment;
     u32 w,h;
     Shader s;
-
+    mat4 lightSpaceMatrix;
 }ShadowMapFBO;
 
 static void
@@ -31,7 +32,7 @@ init_shadowmap_fbo(ShadowMapFBO* shadowmap)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  
 
     
-    //we attach the depth texture as as a depth attachment for our framebuffer
+    //we attach the depth texture as a depth attachment for our framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, shadowmap->fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowmap->depth_attachment, 0);
     glDrawBuffer(GL_NONE);//we explicitly state that we are not going to read or draw, so we
@@ -52,10 +53,15 @@ setup_shadowmap(ShadowMapFBO* shadowmap)
     glClear(GL_DEPTH_BUFFER_BIT);
     f32 near_plane = 1.f;
     f32 far_plane = 9.f;
-    mat4 light_projection = orthographic_proj(-10.f,10.f,-10.f,10.f, near_plane, far_plane);
+    mat4 light_projection = orthographic_proj(-10.f,10.f,-10.f,10.f, near_plane, far_plane); //we use orthographic projection because we do direction lights..
     //mat4 light_view = look_at(vec3 eye, vec3 center, vec3 fake_up)
-    mat4 light_view = look_at(v3(-2.f, 4.f, -1.f), v3(0.f,0.f,0.f), v3(0.f,1.f,0.f));
-    mat4 lightSpaceMatrix = mul_mat4(light_projection, light_view); 
+    //mat4 light_view = look_at(v3(-2.f, 4.f, -1.f), v3(0.f,0.f,0.f), v3(0.f,1.f,0.f));
+    //mat4 light_view = look_at(v3(0,20,0), v3(0.f,0.f,0.f), v3(0.f,1.f,0.f));
+    mat4 light_view = m4d(1.f);
+    light_view = look_at(v3(0.0f, 4.0f, -2.0f), v3( 0.0f, 0.0f, -10.0f), v3( 0.0f, 1.0f,  0.0f));
+    //light_view.elements[3][2] = 2.f;
+    mat4 lightSpaceMatrix = mul_mat4(light_projection,light_view); 
+    shadowmap->lightSpaceMatrix = lightSpaceMatrix;
     //glBindFramebuffer(GL_FRAMEBUFFER,0);
 
     //render the scene as normal
@@ -70,4 +76,50 @@ setup_shadowmap(ShadowMapFBO* shadowmap)
 }
 
 
+//      |||  (so smart wow)
+//THESE VVV ARE JUST FOR TESTING.. WHEN DONE I BETTER DELETE THEM....
+
+typedef struct ShadowmapDebugQuad
+{
+	Shader shader; //wow
+}ShadowmapDebugQuad;
+
+
+static void 
+setup_debug_quad(ShadowmapDebugQuad* debug_quad, ShadowMapFBO* shadowmap)
+{
+	shader_load (&debug_quad->shader, "../assets/shaders/shadowmap_to_quad.vert","../assets/shaders/shadowmap_to_quad.frag");
+	setFloat(&debug_quad->shader,"near_plane", 1.f);
+    setFloat(&debug_quad->shader,"far_plane", 9.f);
+    glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE0, shadowmap->depth_attachment);
+}
+
+static void
+render_to_debug_quad(ShadowmapDebugQuad* debug_quad)
+{
+	
+	
+} 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

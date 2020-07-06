@@ -9,6 +9,7 @@ typedef struct AnimationInfo
     vec2 bottom_left;
     vec2 dim;
     f32 tex_unit; //TODO make this a texture* or sth?? and have the renderer decide its texture unit
+    //there is a texture unit in the Texture struct I think we dont need it ??? CHECKK
     i32 frame;
     i32 frame_count;
     i32 frames_per_row;
@@ -26,8 +27,7 @@ static void
 init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
 {
     info->bottom_left = bl;
-    info->tex_unit = tex_unit; //NOTE(ilias): umm, tex unit is handled by sprite, maybe remove??
-    info->frame_count = frame_count;
+    info->tex_unit = tex_unit;     info->frame_count = frame_count;
     info->frame = 0;
     info->time_per_frame = time_per_frame;
     info->play_once = play_once;
