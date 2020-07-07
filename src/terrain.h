@@ -18,6 +18,7 @@ struct Terrain
     Texture tex;
     Shader shader;
     Image image;
+    mat4 model;
 };
 
 static f32 

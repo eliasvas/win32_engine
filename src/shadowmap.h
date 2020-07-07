@@ -40,27 +40,30 @@ init_shadowmap_fbo(ShadowMapFBO* shadowmap)
     shader_load (&shadowmap->s, "../assets/shaders/shadowmap.vert","../assets/shaders/shadowmap.frag");
 
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);  
 }
 
 
 static void
-setup_shadowmap(ShadowMapFBO* shadowmap)
+setup_shadowmap(ShadowMapFBO* shadowmap, mat4 view_matrix = {0})
 {
     //render to depth map
     glViewport(0,0,SHADOW_WIDTH, SHADOW_HEIGHT);
     glBindFramebuffer(GL_FRAMEBUFFER, shadowmap->fbo);
     glClear(GL_DEPTH_BUFFER_BIT);
-    f32 near_plane = 1.f;
-    f32 far_plane = 9.f;
+    f32 near_plane = -10.f;
+    f32 far_plane = 20.f;
     mat4 light_projection = orthographic_proj(-10.f,10.f,-10.f,10.f, near_plane, far_plane); //we use orthographic projection because we do direction lights..
     //mat4 light_view = look_at(vec3 eye, vec3 center, vec3 fake_up)
     //mat4 light_view = look_at(v3(-2.f, 4.f, -1.f), v3(0.f,0.f,0.f), v3(0.f,1.f,0.f));
     //mat4 light_view = look_at(v3(0,20,0), v3(0.f,0.f,0.f), v3(0.f,1.f,0.f));
-    mat4 light_view = m4d(1.f);
-    light_view = look_at(v3(0.0f, 4.0f, -2.0f), v3( 0.0f, 0.0f, -10.0f), v3( 0.0f, 1.0f,  0.0f));
+    //mat4 light_view = m4d(1.f);
+    //light_view = look_at(v3(0.0f, 2.0f, 2.0f), v3( 0.0f, 0.0f, 0.0f), v3( 0.0f, 1.0f,  0.0f));
     //light_view.elements[3][2] = 2.f;
-    mat4 lightSpaceMatrix = mul_mat4(light_projection,light_view); 
+
+    view_matrix = mul_mat4(view_matrix,rotate_mat4(45.f, v3(1.f,0.f,0.f)));
+    view_matrix = mul_mat4(view_matrix, translate_mat4(v3(0,2,0)));
+    mat4 lightSpaceMatrix = mul_mat4(light_projection,view_matrix); 
+
     shadowmap->lightSpaceMatrix = lightSpaceMatrix;
     //glBindFramebuffer(GL_FRAMEBUFFER,0);
 
@@ -82,6 +85,8 @@ setup_shadowmap(ShadowMapFBO* shadowmap)
 typedef struct ShadowmapDebugQuad
 {
 	Shader shader; //wow
+    GLuint vao;
+    GLuint vbo;
 }ShadowmapDebugQuad;
 
 
@@ -99,7 +104,30 @@ static void
 render_to_debug_quad(ShadowmapDebugQuad* debug_quad)
 {
 	
-	
+    use_shader(&debug_quad->shader);
+    if (debug_quad->vao == 0)
+    {
+        float quadVertices[] = {
+            // positions        // texture Coords
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+        // setup plane VAO
+        glGenVertexArrays(1, &debug_quad->vao);
+        glGenBuffers(1, &debug_quad->vbo);
+        glBindVertexArray(debug_quad->vao);
+        glBindBuffer(GL_ARRAY_BUFFER, debug_quad->vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    }
+    glBindVertexArray(debug_quad->vao);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
 } 
 #endif
 

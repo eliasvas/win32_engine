@@ -92,6 +92,7 @@ void init(void)
     init_camera(&cam);
 
     init_terrain(&terrain,"../assets/test.png");
+    terrain.model = translate_mat4(v3(-8,0,-16));
     {
         load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&m, m.vertices);
@@ -99,7 +100,7 @@ void init(void)
     {
         load_model_data(MrHumpty.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&MrHumpty, MrHumpty.vertices);
-        MrHumpty.position = {0,0,0};
+        MrHumpty.position = {0,1.f,0};
     }
 
     //player initializiation
@@ -253,9 +254,11 @@ void update(void)
     renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
     renderer_push_mesh(&rend,&MrHumpty, MrHumpty.vertices.size());
     //renderer_push_mesh(&rend,&m, m.vertices.size());
-    renderer_push_mesh_vao(&rend,terrain.vao,translate_mat4({0,0,0}),(VERTEX_COUNT-1) * (VERTEX_COUNT-1)*6, 1); 
+    renderer_push_mesh_vao(&rend,terrain.vao,terrain.model,(VERTEX_COUNT-1) * (VERTEX_COUNT-1)*6, 1); 
     renderer_set_projection_matrix(&rend, perspective_matrix);
     renderer_set_view_matrix(&rend, view_matrix);
+    mat4 ortho = orthographic_proj(-10.f,10.f,-10.f,10.f,0.1f,9.f); //we use orthographic projection because we do direction lights..
+    renderer_set_ortho_matrix(&rend, ortho);
 }
 
 void render(void)

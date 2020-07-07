@@ -136,7 +136,7 @@ static void
 renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
 {
     
-    renderer_render_batch_quads(rend,proj);
+    //renderer_render_batch_quads(rend,proj);
 
 
     //NOTE(ilias):drawing models here!!!!
@@ -171,10 +171,6 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
         dir_attr[2][11] = '0'+i;
         dir_attr[3][11] = '0'+i;
         
-        setVec3(&rend->shaders[1],dir_attr[0], rend->dir_lights[i].ambient);
-        setVec3(&rend->shaders[1],dir_attr[1], rend->dir_lights[i].diffuse);
-        setVec3(&rend->shaders[1],dir_attr[2], rend->dir_lights[i].specular);
-        setVec3(&rend->shaders[1],dir_attr[3], rend->dir_lights[i].direction);
     }
     for(int i = 0; i < rend->point_light_count; ++i)
     {
@@ -187,41 +183,20 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
         point_attr[6][13] = '0' + i;
 
 
-        setVec3(&rend->shaders[1],point_attr[0], rend->point_lights[i].ambient);
-        setVec3(&rend->shaders[1],point_attr[1], rend->point_lights[i].diffuse);
-        setVec3(&rend->shaders[1],point_attr[2], rend->point_lights[i].specular);
-        setVec3(&rend->shaders[1],point_attr[3], rend->point_lights[i].position);
-        setFloat(&rend->shaders[1],dir_attr[4], rend->point_lights[i].constant);
-        setFloat(&rend->shaders[1],dir_attr[5], rend->point_lights[i].linear);
-        setFloat(&rend->shaders[1],dir_attr[6], rend->point_lights[i].quadratic);
 
     }
 
     for (u32 i = 0; i < rend->mesh_count;++i)
     {
-        setMat4fv(&rend->shaders[1], "model", (f32*)rend->meshes[i].model_matrix.elements);
+        //setting up shadowmap shader stuff needed for drawcall
         setMat4fv(shader_to_render_3d, "model", (f32*)rend->meshes[i].model_matrix.elements);
+        setMat4fv(shader_to_render_3d,"lightSpaceMatrix", (f32*)rend->shadowmap.lightSpaceMatrix.elements);
+        //setting up the shadowmap's depth value as a texture in the real rendering function
+        setInt(shader_to_render_3d, "depthMap", 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, rend->shadowmap.depth_attachment);
 
-        {
        
-            //diffuse and spec should be samplers to textures
-            setVec3(&rend->shaders[1],"m.ambient", {0.2f, 0.2f, 0.2f});
-            //setVec3(&rend->shaders[1],"m.diffuse", {0.7f, 0.3f, 0.2f});
-            //setVec3(&rend->shaders[1],"m.specular", {0.1f, 0.1f, 0.1f});
-            setFloat(&rend->shaders[1], "m.shininess", 3.f);
-            glActiveTexture(GL_TEXTURE0);
-            setInt(&rend->shaders[1],"m.diffuse", 0);
-            glBindTexture(GL_TEXTURE_2D, rend->tex[5].id);
-            setInt(&rend->shaders[1],"m.specular", 1);
-            glActiveTexture(GL_TEXTURE1);                             //they should be active i have deactivated
-            glBindTexture(GL_TEXTURE_2D, rend->tex[6].id);
-
-            //TextureManager^^^
-        }
-        setInt(&rend->shaders[1], "point_light_count", rend->point_light_count); 
-        setInt(&rend->shaders[1], "dir_light_count", rend->dir_light_count); 
-
-
         glBindVertexArray(rend->meshes[i].vao);
 
         if (rend->meshes[i].indexed)
@@ -232,17 +207,6 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
 
     }
 
-    /*
-    //zeroing out other lights    ----OPTIONAL just for debugging  
-    for(int i = 0; i < rend->dir_light_count; ++i)
-    {
-        rend->dir_lights[i] = {0};
-    }
-    for(int i = 0; i < rend->point_light_count; ++i)
-    {
-        rend->point_lights[i] = {0};
-    }
-    */
     glBindVertexArray(0);
 
 }
@@ -251,14 +215,18 @@ renderer_render(Renderer* rend,float* proj)
 {
     GLint prev_fbo; //its always a 0 -but who am I to judge?
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
-    setup_shadowmap(&rend->shadowmap);
+    setup_shadowmap(&rend->shadowmap, rend->view_matrix);
+    glBindFramebuffer(GL_FRAMEBUFFER, rend->shadowmap.fbo);
     //renderer_render_scene(rend, proj, &rend->shaders[1]);
     renderer_render_scene(rend, proj, &rend->shadowmap.s);
+    //glBindFramebuffer(GL_FRAMEBUFFER,prev_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER,0);
     glViewport(0, 0, global_platform.window_width,global_platform.window_height); 
-    glBindFramebuffer(GL_FRAMEBUFFER,prev_fbo);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     setup_debug_quad(&rend->debug_quad, &rend->shadowmap);
     //renderer_render_scene(rend, proj, &rend->debug_quad.shader);
-    renderer_render_scene(rend, proj, &rend->shaders[1]);
+    render_to_debug_quad(&rend->debug_quad);
+    //renderer_render_scene(rend, proj, &rend->shaders[1]);
 }
 
 
@@ -383,4 +351,10 @@ renderer_set_projection_matrix(Renderer* rend, mat4 projection)
 static void renderer_set_view_matrix(Renderer* rend, mat4 view)
 {
     rend->view_matrix = view;
+}
+
+static void 
+renderer_set_ortho_matrix(Renderer* rend, mat4 ortho)
+{
+    rend->orthographic_projection = ortho;    
 }

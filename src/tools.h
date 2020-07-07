@@ -37,11 +37,11 @@ typedef char      b8;
 #define clamp(x, a, b)  (maximum(a, minimum(x, b)))
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
 
-#ifdef SIN_APPROX
+#ifdef SIN_APPROx
 #define SINF sin_32
 #endif
 
-#ifdef COS_APPROX
+#ifdef COS_APPROx
 #define COSF cos_32
 #endif
 
@@ -50,7 +50,7 @@ typedef char      b8;
 static b32
 char_is_alpha(i32 c)
 {
-    return ((c >='A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
+    return ((c >='A' && c <= 'z') || (c >= 'a' && c <= 'z'));
 }
 static b32 char_is_digit(i32 c)
 {
@@ -59,7 +59,7 @@ static b32 char_is_digit(i32 c)
 
 static i32 char_to_lower(i32 c)
 {
-    if (c >= 'A' && c <= 'Z')
+    if (c >= 'A' && c <= 'z')
     {
         c += 32;
     }
@@ -626,11 +626,29 @@ INLINE mat4 translate_mat4(vec3 t) //TODO(ilias): check handedness
     return res;
 }
 
-INLINE mat4 rotate_mat4(f32 angle, vec3 axis)
+INLINE mat4 rotate_mat4(float Angle, vec3 Axis)
 {
-    mat4 res = m4d(1.0f);
-    //TBA
-    return res;
+    mat4 Result = m4d(1.0f);
+
+    Axis = normalize_vec3(Axis);
+
+    float SinTheta = sin(to_radians(Angle));
+    float CosTheta = cos(to_radians(Angle));
+    float CosValue = 1.0f - CosTheta;
+
+    Result.elements[0][0] = (Axis.x * Axis.x * CosValue) + CosTheta;
+    Result.elements[0][1] = (Axis.x * Axis.y * CosValue) + (Axis.z * SinTheta);
+    Result.elements[0][2] = (Axis.x * Axis.z * CosValue) - (Axis.y * SinTheta);
+
+    Result.elements[1][0] = (Axis.y * Axis.x * CosValue) - (Axis.z * SinTheta);
+    Result.elements[1][1] = (Axis.y * Axis.y * CosValue) + CosTheta;
+    Result.elements[1][2] = (Axis.y * Axis.z * CosValue) + (Axis.x * SinTheta);
+
+    Result.elements[2][0] = (Axis.z * Axis.x * CosValue) + (Axis.y * SinTheta);
+    Result.elements[2][1] = (Axis.z * Axis.y * CosValue) - (Axis.x * SinTheta);
+    Result.elements[2][2] = (Axis.z * Axis.z * CosValue) + CosTheta;
+
+    return (Result);
 }
 
 INLINE mat4 scale_mat4(vec3 s)
@@ -646,7 +664,7 @@ INLINE mat4 orthographic_proj(float l, float r, float b, float t, float n, float
 {
     mat4 res = m4();
 
-    //the quotents are in reverse because we were supposed to do one more matrix multiplication to negate Z..
+    //the quotents are in reverse because we were supposed to do one more matrix multiplication to negate z..
     res.elements[0][0] = 2.0f / (r - l);
     res.elements[1][1] = 2.0f / (t - b);
     res.elements[2][2] = 2.0f / (n - f);
