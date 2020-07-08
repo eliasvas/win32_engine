@@ -7,7 +7,7 @@ if ERRORLEVEL 1 (
 
 set application_name=win32_game.exe
 set build_options= -DBUILD_WIN32=1
-set compile_flags= -nologo /Zi /EHsc
+set compile_flags= -nologo /W0 /Zi /EHsc
 set link_flags= gdi32.lib opengl32.lib user32.lib
 
 if not exist build mkdir build

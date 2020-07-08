@@ -61,7 +61,7 @@ setup_shadowmap(ShadowMapFBO* shadowmap, mat4 view_matrix = {0})
     //light_view.elements[3][2] = 2.f;
 
     view_matrix = mul_mat4(view_matrix,rotate_mat4(45.f, v3(1.f,0.f,0.f)));
-    view_matrix = mul_mat4(view_matrix, translate_mat4(v3(0,2,0)));
+    //view_matrix = mul_mat4(view_matrix, translate_mat4(v3(0,2,0)));
     mat4 lightSpaceMatrix = mul_mat4(light_projection,view_matrix); 
 
     shadowmap->lightSpaceMatrix = lightSpaceMatrix;
@@ -96,8 +96,8 @@ setup_debug_quad(ShadowmapDebugQuad* debug_quad, ShadowMapFBO* shadowmap)
 	shader_load (&debug_quad->shader, "../assets/shaders/shadowmap_to_quad.vert","../assets/shaders/shadowmap_to_quad.frag");
 	setFloat(&debug_quad->shader,"near_plane", 1.f);
     setFloat(&debug_quad->shader,"far_plane", 9.f);
-    glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE0, shadowmap->depth_attachment);
+    glActiveTexture(GL_TEXTURE10);
+	glBindTexture(GL_TEXTURE_2D, shadowmap->depth_attachment);
 }
 
 static void

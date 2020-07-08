@@ -1,4 +1,5 @@
 #version 330 core
+
 struct Material {
     vec3 ambient;
     sampler2D diffuse;
@@ -27,6 +28,7 @@ struct PointLight {
 };  
 #define MAX_POINT_LIGHTS 1
 #define MAX_DIR_LIGHTS 10
+uniform sampler2D shadowMap;
 uniform PointLight point_lights[MAX_POINT_LIGHTS];
 uniform DirLight dir_light;
 uniform DirLight dir_lights[MAX_DIR_LIGHTS];
@@ -38,9 +40,24 @@ out vec4 FragColor;
 in vec3 f_normal;
 in vec3 w_frag_pos;
 in vec2 f_texcoords;
+in vec4 f_frag_pos_ls;
+
+
 
 uniform vec3 view_pos; //camera position
 uniform Material m;
+
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+	//perspective devide so we go to clip-space [-1,1]
+	vec3 projCoords = w_frag_pos.xyz / f_frag_pos_ls.w;
+	//we transform to NDC so we go to [0,1]
+	projCoords = projCoords * 0.5 + 0.5;
+	float closestDepth = texture(shadowMap, projCoords.xy).r;   
+	float currentDepth = projCoords.z;  
+	float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;  
+	return shadow;
+}
 
 vec3 calculate_directional_light(DirLight light, vec3 normal, vec3 viewDir)
 {
@@ -54,7 +71,12 @@ vec3 calculate_directional_light(DirLight light, vec3 normal, vec3 viewDir)
     vec3 ambient  = light.ambient  * vec3(texture(m.diffuse, f_texcoords));
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(m.diffuse, f_texcoords));
     vec3 specular = light.specular * spec * vec3(texture(m.specular, f_texcoords));
-    return (ambient + diffuse + specular);
+	
+	vec3 color = texture(m.diffuse, f_texcoords).rgb;
+	float shadow = ShadowCalculation(f_frag_pos_ls);       
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+	
+    return (lighting);
 }  
 vec3 calculate_point_light(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
@@ -66,8 +88,8 @@ vec3 calculate_point_light(PointLight light, vec3 normal, vec3 fragPos, vec3 vie
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), m.shininess);
     // attenuation
     float distance    = length(light.position - fragPos);
-    float attenuation = 0.1;//1.0 / (light.constant + light.linear * distance + 
-  			     //light.quadratic * (distance * distance));    
+    float attenuation = 1.0 / (light.constant + light.linear * distance + 
+  			     light.quadratic * (distance * distance));    
     // combine results
     vec3 ambient  = light.ambient  * vec3(texture(m.diffuse, f_texcoords));
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(m.diffuse, f_texcoords));
@@ -75,7 +97,11 @@ vec3 calculate_point_light(PointLight light, vec3 normal, vec3 fragPos, vec3 vie
     //ambient  *= attenuation;
     //diffuse  *= attenuation;
     //specular *= attenuation;
-    return (ambient + diffuse + specular);
+	vec3 color = texture(m.diffuse, f_texcoords).rgb;
+	float shadow = ShadowCalculation(f_frag_pos_ls);       
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+	
+    return (lighting);
 } 
 
 
@@ -98,5 +124,4 @@ void main()
 	
 	FragColor = vec4(output_color, 1.0);
 }
-
 

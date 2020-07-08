@@ -94,6 +94,7 @@ struct Renderer
     mat4 view_matrix;
     mat4 orthographic_projection;
     mat4 perspective_projection;
+    vec3 camera_pos;
 };
 static void 
 init_renderer(Renderer* r);
@@ -106,6 +107,8 @@ renderer_render(Renderer* rend,float* proj);
 
 static void
 renderer_render_scene(Renderer* rend,float* proj);
+
+
 
 #include "renderer.c"
 

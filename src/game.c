@@ -100,7 +100,7 @@ void init(void)
     {
         load_model_data(MrHumpty.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&MrHumpty, MrHumpty.vertices);
-        MrHumpty.position = {0,1.f,0};
+        MrHumpty.position = {0,2.f,-4.0};
     }
 
     //player initializiation
@@ -152,7 +152,7 @@ void init(void)
     {
      point_light = {{0,1,1},1.f,0.022f,0.0019f,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
 
-     dir_light = {normalize_vec3({0.5f,-0.7f,0.f}),{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
+     dir_light = {normalize_vec3({0.5f,-0.7f,-1.f}),{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
 
     }
     init_renderer(&rend);
@@ -243,20 +243,21 @@ void update(void)
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
 
-    point_light.position = {sin(global_platform.current_time)* 10 + 15, 8,20};
+    point_light.position = {sin(global_platform.current_time)* 10 + 15, 8,30};
+    //point_light.position = {0, 8,3};
 
     view_matrix = get_view_mat(&cam);
     perspective_matrix = perspective_proj(45.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
     ortho_matrix = orthographic_proj(-6.f,6.f,-6.f,6.f, 0.1, 100.f);
 
     renderer_push_dir_light(&rend,&dir_light);
-    //renderer_push_point_light(&rend,&point_light);
-    renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
+    //renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
     renderer_push_mesh(&rend,&MrHumpty, MrHumpty.vertices.size());
     //renderer_push_mesh(&rend,&m, m.vertices.size());
     renderer_push_mesh_vao(&rend,terrain.vao,terrain.model,(VERTEX_COUNT-1) * (VERTEX_COUNT-1)*6, 1); 
     renderer_set_projection_matrix(&rend, perspective_matrix);
     renderer_set_view_matrix(&rend, view_matrix);
+    renderer_set_camera_pos(&rend, cam.pos);
     mat4 ortho = orthographic_proj(-10.f,10.f,-10.f,10.f,0.1f,9.f); //we use orthographic projection because we do direction lights..
     renderer_set_ortho_matrix(&rend, ortho);
 }
@@ -274,7 +275,6 @@ void render(void)
         //render_quad(&background, mat);
     }
     renderer_render(&rend, (float*)mat.elements);
-    return;
     
     //render_terrain(&terrain, perspective_matrix, view_matrix);
 
@@ -300,11 +300,11 @@ void render(void)
 #if 1
     {
         m.position = {0,0, -5};
-        render_model(&m,&perspective_matrix, &view_matrix, point_light.position, cam.pos);
+        //render_model(&m,&perspective_matrix, &view_matrix, point_light.position, cam.pos);
     }
 
     {
-        render_cube_textured(&c,&perspective_matrix, &view_matrix, point_light.position, cam.pos);
+        //render_cube_textured(&c,&perspective_matrix, &view_matrix, point_light.position, cam.pos);
     }
 
 #endif

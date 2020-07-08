@@ -12,7 +12,6 @@ init_renderer(Renderer* rend)
     rend->point_light_count = 0;
     rend-> dir_light_count = 0;
    
-
     init_shadowmap_fbo(&rend->shadowmap);
     {//initializing renderable VAO
         glGenVertexArrays(1, &rend->renderable_vao);    
@@ -74,7 +73,7 @@ init_renderer(Renderer* rend)
 
     //this is for testing purposes.. make it normal..
     shader_load(&rend->shaders[0], "../assets/shaders/batch.vert", "../assets/shaders/batch.frag");
-    shader_load(&rend->shaders[1],"../assets/shaders/batch_phong_tex.vert", "../assets/shaders/batch_phong_tex.frag");
+    shader_load(&rend->shaders[1],"../assets/shaders/batch_phong_tex_sm.vert", "../assets/shaders/batch_phong_tex_sm.frag");
 
     //TODO make texture loading dynamic!!!!!!!!!! <---
     load_texture(&rend->tex[1],"../assets/panda.png");
@@ -91,8 +90,9 @@ init_renderer(Renderer* rend)
     rend->tex_count++;
 
 }
-static void 
-renderer_render_batch_quads(Renderer* rend,float* proj)
+
+static void
+renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
 {
     vec2 texture_sizes[TEXTURE_MAX];
 
@@ -129,20 +129,11 @@ renderer_render_batch_quads(Renderer* rend,float* proj)
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->renderable_alloc_pos); // 10 diamonds, 4 vertices per instance
     glBindVertexArray(0);
 
-
-}
-
-static void
-renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
-{
     
-    //renderer_render_batch_quads(rend,proj);
 
 
     //NOTE(ilias):drawing models here!!!!
     use_shader(shader_to_render_3d);
-
-    setMat4fv(shader_to_render_3d,"lightSpaceMatrix", (f32*)rend->shadowmap.lightSpaceMatrix.elements);
     setMat4fv(&rend->shaders[1],"proj", (f32*)rend->perspective_projection.elements);
     setMat4fv(&rend->shaders[1],"view", (f32*)rend->view_matrix.elements);
     //setting all the directional lights
@@ -165,12 +156,16 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
     };
     for(int i = 0; i < rend->dir_light_count; ++i)
     {
-        //NOTE(ilias): this should also be an array in the glsl shader
+        //NOTE(ilias): this shouls also be an array in the glsl shader
         dir_attr[0][11] = '0'+i;
         dir_attr[1][11] = '0'+i;
         dir_attr[2][11] = '0'+i;
         dir_attr[3][11] = '0'+i;
         
+        setVec3(&rend->shaders[1],dir_attr[0], rend->dir_lights[i].ambient);
+        setVec3(&rend->shaders[1],dir_attr[1], rend->dir_lights[i].diffuse);
+        setVec3(&rend->shaders[1],dir_attr[2], rend->dir_lights[i].specular);
+        setVec3(&rend->shaders[1],dir_attr[3], rend->dir_lights[i].direction);
     }
     for(int i = 0; i < rend->point_light_count; ++i)
     {
@@ -183,24 +178,49 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
         point_attr[6][13] = '0' + i;
 
 
+        setVec3(&rend->shaders[1],point_attr[0], rend->point_lights[i].ambient);
+        setVec3(&rend->shaders[1],point_attr[1], rend->point_lights[i].diffuse);
+        setVec3(&rend->shaders[1],point_attr[2], rend->point_lights[i].specular);
+        setVec3(&rend->shaders[1],point_attr[3], rend->point_lights[i].position);
+        setFloat(&rend->shaders[1],dir_attr[4], rend->point_lights[i].constant);
+        setFloat(&rend->shaders[1],dir_attr[5], rend->point_lights[i].linear);
+        setFloat(&rend->shaders[1],dir_attr[6], rend->point_lights[i].quadratic);
 
     }
 
     for (u32 i = 0; i < rend->mesh_count;++i)
     {
-        //setting up shadowmap shader stuff needed for drawcall
+        setMat4fv(&rend->shaders[1], "model", (f32*)rend->meshes[i].model_matrix.elements);
         setMat4fv(shader_to_render_3d, "model", (f32*)rend->meshes[i].model_matrix.elements);
-        setMat4fv(shader_to_render_3d,"lightSpaceMatrix", (f32*)rend->shadowmap.lightSpaceMatrix.elements);
-        //setting up the shadowmap's depth value as a texture in the real rendering function
-        setInt(shader_to_render_3d, "depthMap", 0);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, rend->shadowmap.depth_attachment);
 
+        {
        
-        glBindVertexArray(rend->meshes[i].vao);
+            //diffuse and spec should be samplers to textures
+            setVec3(&rend->shaders[1],"m.ambient", {0.2f, 0.2f, 0.2f});
+            setFloat(&rend->shaders[1], "m.shininess", 16.f);
+            glActiveTexture(GL_TEXTURE0);
+            setInt(&rend->shaders[1],"m.diffuse", 0);
+            glBindTexture(GL_TEXTURE_2D, rend->tex[5].id);
+            setInt(&rend->shaders[1],"m.specular", 1);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, rend->tex[6].id);
 
+            //TextureManager^^^
+        }
+        setInt(&rend->shaders[1], "point_light_count", rend->point_light_count); 
+        setInt(&rend->shaders[1], "dir_light_count", rend->dir_light_count); 
+        setMat4fv(&rend->shaders[1], "lightSpaceMatrix", (f32*)rend->shadowmap.lightSpaceMatrix.elements);
+        setMat4fv(shader_to_render_3d, "lightSpaceMatrix", (f32*)rend->shadowmap.lightSpaceMatrix.elements);
+
+        setVec3(&rend->shaders[1],"view_pos", rend->camera_pos);
+        
+
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, rend->shadowmap.depth_attachment);
+        setInt(&rend->shaders[1], "shadowMap", 2);
+
+        glBindVertexArray(rend->meshes[i].vao);
         if (rend->meshes[i].indexed)
-            //glDrawElements(GL_LINES, rend->meshes[i].count, GL_UNSIGNED_INT, 0);
             glDrawElements(GL_TRIANGLES, rend->meshes[i].count, GL_UNSIGNED_INT, 0);
         else    
             glDrawArrays(GL_TRIANGLES,0, rend->meshes[i].count);
@@ -217,16 +237,12 @@ renderer_render(Renderer* rend,float* proj)
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
     setup_shadowmap(&rend->shadowmap, rend->view_matrix);
     glBindFramebuffer(GL_FRAMEBUFFER, rend->shadowmap.fbo);
-    //renderer_render_scene(rend, proj, &rend->shaders[1]);
     renderer_render_scene(rend, proj, &rend->shadowmap.s);
-    //glBindFramebuffer(GL_FRAMEBUFFER,prev_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER,0);
     glViewport(0, 0, global_platform.window_width,global_platform.window_height); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     setup_debug_quad(&rend->debug_quad, &rend->shadowmap);
-    //renderer_render_scene(rend, proj, &rend->debug_quad.shader);
-    render_to_debug_quad(&rend->debug_quad);
-    //renderer_render_scene(rend, proj, &rend->shaders[1]);
+    renderer_render_scene(rend, proj, &rend->shaders[1]);
 }
 
 
@@ -358,3 +374,10 @@ renderer_set_ortho_matrix(Renderer* rend, mat4 ortho)
 {
     rend->orthographic_projection = ortho;    
 }
+
+static void
+renderer_set_camera_pos(Renderer* rend, vec3 pos)
+{
+    rend->camera_pos = pos;
+}
+
