@@ -46,16 +46,18 @@ in vec4 f_frag_pos_ls;
 
 uniform vec3 view_pos; //camera position
 uniform Material m;
+float bias = 0.005;
+
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
 	//perspective devide so we go to clip-space [-1,1]
-	vec3 projCoords = w_frag_pos.xyz / f_frag_pos_ls.w;
+	vec3 projCoords = f_frag_pos_ls.xyz / f_frag_pos_ls.w;
 	//we transform to NDC so we go to [0,1]
 	projCoords = projCoords * 0.5 + 0.5;
 	float closestDepth = texture(shadowMap, projCoords.xy).r;   
 	float currentDepth = projCoords.z;  
-	float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;  
+	float shadow = (currentDepth - bias) > closestDepth  ? 1.0 : 0.0;  
 	return shadow;
 }
 
@@ -68,16 +70,15 @@ vec3 calculate_directional_light(DirLight light, vec3 normal, vec3 viewDir)
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), m.shininess);
     // combine results
-    vec3 ambient  = light.ambient  * vec3(texture(m.diffuse, f_texcoords));
+    vec3 ambient  = 0.3 * vec3(texture(m.diffuse, f_texcoords));
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(m.diffuse, f_texcoords));
     vec3 specular = light.specular * spec * vec3(texture(m.specular, f_texcoords));
 	
-	//vec3 color = texture(m.diffuse, f_texcoords).rgb;
-	//float shadow = ShadowCalculation(f_frag_pos_ls);       
-    //vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+	vec3 color = texture(m.diffuse, f_texcoords).rgb;
+	float shadow = ShadowCalculation(f_frag_pos_ls);       
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
 	
-    //return (lighting);
-	return (ambient + diffuse + specular);
+    return (lighting);
 }  
 vec3 calculate_point_light(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
@@ -100,12 +101,11 @@ vec3 calculate_point_light(PointLight light, vec3 normal, vec3 fragPos, vec3 vie
     //specular *= attenuation;
 	
 	
-	//vec3 color = texture(m.diffuse, f_texcoords).rgb;
-	//float shadow = ShadowCalculation(f_frag_pos_ls);       
-    //vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+	vec3 color = texture(m.diffuse, f_texcoords).rgb;
+	float shadow = ShadowCalculation(f_frag_pos_ls);       
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
 	
-    //return (lighting);
-	return (ambient + diffuse + specular);
+    return (lighting);
 } 
 
 
