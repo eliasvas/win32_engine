@@ -6,7 +6,7 @@
 #include "ext/HandmadeMath.h"
 
 #define SHADOW_WIDTH 1024 
-#define SHADOW_HEIGHT  1024
+#define SHADOW_HEIGHT 1024 
 
 
 typedef struct ShadowMapFBO
@@ -26,7 +26,7 @@ init_shadowmap_fbo(ShadowMapFBO* shadowmap)
     glGenFramebuffers(1, &shadowmap->fbo);
     glGenTextures(1, &shadowmap->depth_attachment);
     glBindTexture(GL_TEXTURE_2D, shadowmap->depth_attachment);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, global_platform.window_width, global_platform.window_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
@@ -39,7 +39,6 @@ init_shadowmap_fbo(ShadowMapFBO* shadowmap)
     glDrawBuffer(GL_NONE);//we explicitly state that we are not going to read or draw, so we
     glReadBuffer(GL_NONE);//don't need to bind any color attachment to our FBO
     shader_load (&shadowmap->s, "../assets/shaders/shadowmap.vert","../assets/shaders/shadowmap.frag");
-
 
 }
 

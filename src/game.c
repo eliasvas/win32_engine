@@ -94,16 +94,16 @@ void init(void)
     init_terrain(&terrain,"../assets/test.png");
     terrain.model = translate_mat4(v3(-8,0,-16));
     {
-        load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
+        load_model_data(m.vertices, "../assets/huge_plane.obj", "../assets/basic.mtl");
         init_model(&m, m.vertices);
-        m.position = {0,-5,0};
-        m.scale = v3(0.4,0.1,1);
+        //m.position = {0,-5,0};
+        //m.scale = v3(0.4,0.1,1);
     }
     {
         load_model_data(m2.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&m2, m2.vertices);
         m2.position = {0,2.f,0.0};
-        m2.scale = {0.01,0.01,0.01};
+        m2.scale = {0.02,0.02,0.02};
     }
 
     //player initializiation
@@ -184,6 +184,7 @@ void init(void)
 
 void update(void)
 {
+    m2.position = {0, abs(sin(global_platform.current_time)*4.f),0.0};
     //change_to_fake_framebuffer();
 #if sound_on
     cs_mix(ctx);
@@ -270,7 +271,7 @@ void update(void)
 
 void render(void)
 {
-    //render_sprite(&s, &rend);  <----------------------------this is for the braid guy
+    //render_sprite(&s, &rend);  //<----------------------------this is for the braid guy
 #if skybox_on
     render_skybox(&skybox,perspective_matrix, view_matrix);
 #endif

@@ -46,8 +46,8 @@ in vec4 f_frag_pos_ls;
 
 uniform vec3 view_pos; //camera position
 uniform Material m;
-float bias = 0.005;
-
+float bias = 0.00001;
+vec3 light_position;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
@@ -61,9 +61,30 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 	return shadow;
 }
 
-vec3 calculate_directional_light(DirLight light, vec3 normal, vec3 viewDir)
+vec3 calculate_directional_lightORIGINAL(DirLight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(-light.direction);
+    // diffuse shading
+    float diff = max(dot(normal, lightDir), 0.0);
+    // specular shading
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), m.shininess);
+    // combine results
+    vec3 ambient  = 0.3 * vec3(texture(m.diffuse, f_texcoords));
+    vec3 diffuse  = light.diffuse  * diff * vec3(texture(m.diffuse, f_texcoords));
+    vec3 specular = light.specular * spec * vec3(texture(m.specular, f_texcoords));
+	
+	vec3 color = texture(m.diffuse, f_texcoords).rgb;
+	float shadow = ShadowCalculation(f_frag_pos_ls);       
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+	
+    return (lighting);
+}  
+vec3 calculate_directional_light(DirLight light, vec3 normal, vec3 viewDir)
+{
+	vec3 light_pos = view_pos;
+	
+    vec3 lightDir = normalize(-light_pos - w_frag_pos);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
