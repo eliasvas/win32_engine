@@ -94,13 +94,16 @@ void init(void)
     init_terrain(&terrain,"../assets/test.png");
     terrain.model = translate_mat4(v3(-8,0,-16));
     {
-        load_model_data(m.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
+        load_model_data(m.vertices, "../assets/island.obj", "../assets/basic.mtl");
         init_model(&m, m.vertices);
+        m.position = {0,0,0};
+        m.scale = v3(0.4,0.1,1);
     }
     {
         load_model_data(MrHumpty.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&MrHumpty, MrHumpty.vertices);
-        MrHumpty.position = {0,2.f,-4.0};
+        MrHumpty.position = {0,2.f,0.0};
+        MrHumpty.scale = {0.01,0.01,0.01};
     }
 
     //player initializiation
@@ -152,7 +155,9 @@ void init(void)
     {
      point_light = {{0,1,1},1.f,0.022f,0.0019f,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
 
-     dir_light = {normalize_vec3({0.5f,-0.7f,-1.f}),{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
+     //dir_light = {normalize_vec3({0.5f,-0.7f,-1.f}),{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
+     //dir_light = {normalize_vec3({0,-1,-1}),{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
+     dir_light = {{0,-0.7,-0.7},{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
 
     }
     init_renderer(&rend);
@@ -253,8 +258,9 @@ void update(void)
     renderer_push_dir_light(&rend,&dir_light);
     //renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
     renderer_push_mesh(&rend,&MrHumpty, MrHumpty.vertices.size());
+    renderer_push_mesh(&rend,&m, m.vertices.size());
     //renderer_push_mesh(&rend,&m, m.vertices.size());
-    renderer_push_mesh_vao(&rend,terrain.vao,terrain.model,(VERTEX_COUNT-1) * (VERTEX_COUNT-1)*6, 1); 
+    //renderer_push_mesh_vao(&rend,terrain.vao,terrain.model,(VERTEX_COUNT-1) * (VERTEX_COUNT-1)*6, 1); 
     renderer_set_projection_matrix(&rend, perspective_matrix);
     renderer_set_view_matrix(&rend, view_matrix);
     renderer_set_camera_pos(&rend, cam.pos);
@@ -297,17 +303,11 @@ void render(void)
 
     }
 
-#if 1
-    {
-        m.position = {0,0, -5};
-        //render_model(&m,&perspective_matrix, &view_matrix, point_light.position, cam.pos);
-    }
 
     {
         //render_cube_textured(&c,&perspective_matrix, &view_matrix, point_light.position, cam.pos);
     }
 
-#endif
 
 #if colliders_on
     //NOTE(ilias): this is for drawing colliders!

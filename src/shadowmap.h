@@ -5,8 +5,9 @@
 #include "shader.h"
 #include "ext/HandmadeMath.h"
 
-#define SHADOW_WIDTH  1024
+#define SHADOW_WIDTH 1024 
 #define SHADOW_HEIGHT  1024
+
 
 typedef struct ShadowMapFBO
 {
@@ -50,9 +51,9 @@ setup_shadowmap(ShadowMapFBO* shadowmap, mat4 view_matrix = {0})
     glViewport(0,0,SHADOW_WIDTH, SHADOW_HEIGHT);
     glBindFramebuffer(GL_FRAMEBUFFER, shadowmap->fbo);
     glClear(GL_DEPTH_BUFFER_BIT);
-    f32 near_plane = -10.f;
-    f32 far_plane = 20.f;
-    mat4 light_projection = orthographic_proj(-10.f,10.f,-10.f,10.f, near_plane, far_plane); //we use orthographic projection because we do direction lights..
+    f32 near_plane = 0.1f;
+    f32 far_plane = 10.f;
+    mat4 light_projection = orthographic_proj(-3.f,3.f,-3.f,3.f, near_plane, far_plane); //we use orthographic projection because we do direction lights..
     //mat4 light_view = look_at(vec3 eye, vec3 center, vec3 fake_up)
     //mat4 light_view = look_at(v3(-2.f, 4.f, -1.f), v3(0.f,0.f,0.f), v3(0.f,1.f,0.f));
     //mat4 light_view = look_at(v3(0,20,0), v3(0.f,0.f,0.f), v3(0.f,1.f,0.f));
@@ -60,8 +61,9 @@ setup_shadowmap(ShadowMapFBO* shadowmap, mat4 view_matrix = {0})
     //light_view = look_at(v3(0.0f, 2.0f, 2.0f), v3( 0.0f, 0.0f, 0.0f), v3( 0.0f, 1.0f,  0.0f));
     //light_view.elements[3][2] = 2.f;
 
-    view_matrix = mul_mat4(view_matrix,rotate_mat4(45.f, v3(1.f,0.f,0.f)));
-    //view_matrix = mul_mat4(view_matrix, translate_mat4(v3(0,2,0)));
+    view_matrix = mul_mat4(view_matrix,rotate_mat4(45.f, v3(1.f,0.f,0.f))); //SHOULD BE THIS INSTEAD THIS IS JUST FOR
+    view_matrix = mul_mat4(view_matrix, translate_mat4(v3(0,0,-4)));
+    //view_matrix = mul_mat4(translate_mat4({0,0,0}),rotate_mat4(90.f, v3(1.f,0.f,0.f)));
     mat4 lightSpaceMatrix = mul_mat4(light_projection,view_matrix); 
 
     shadowmap->lightSpaceMatrix = lightSpaceMatrix;

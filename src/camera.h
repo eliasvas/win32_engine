@@ -24,7 +24,7 @@ turn_camera_around_center(Camera* cam, f32 degrees)
 static void 
 init_camera (Camera* cam)
 {
-    cam->pos = {0,2,7};
+    cam->pos = {0,2.5,5};
     cam->front = {0.0f,0.0f,-1.0f};
     cam->up = {0.f,1.f,0.f};
     cam->yaw = -90.0f;

@@ -47,7 +47,7 @@ struct Model{
     Shader s;
     std::vector<vertex> vertices;
     vec3 position;
-    vec3 scale;
+    vec3 scale = {0.1f,0.1f,0.1f};
     Material m;
     Texture diff;
     Texture spec;
@@ -133,9 +133,9 @@ render_model_textured(Model* m, mat4* projection, mat4* view, vec3 light_pos, ve
 
     Light light = {light_pos,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
     mat4 model = translate_mat4(m->position);
-    model.elements[0][0] =0.1f;
-    model.elements[1][1] =0.1f;
-    model.elements[2][2] =0.1f;
+    model.elements[0][0] = m->scale.x;
+    model.elements[1][1] = m->scale.y;
+    model.elements[2][2] = m->scale.z;
     setMat4fv(&m->s, "proj", (GLfloat*)projection->elements);
     setMat4fv(&m->s, "view", (GLfloat*)view->elements);
     setMat4fv(&m->s, "model", (GLfloat*)model.elements);

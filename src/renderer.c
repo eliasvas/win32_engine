@@ -257,7 +257,7 @@ renderer_begin(Renderer* rend, i32 w, i32 h)
     rend->point_light_count = 0;
     rend->mesh_count = 0;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.1f, 0.1f, 0.1f, 1);
+    glClearColor(0.5f, 0.8f, 1.f, 1);
     //glViewport(0, 0, (GLsizei)rend->render_width, (GLsizei)(rend->render_height)); //for some reason this is the only viewport called
     //glViewport(0, 0, (GLsizei)rend->render_width, (GLsizei)(rend->render_height*(w/(float)h))); //this is the holy saviour???
 }
@@ -338,9 +338,9 @@ renderer_push_mesh(Renderer* rend,Model* model, i32 triangle_count, b32 indexed 
     ModelInfo info;
     info.vao = model->vao;
     mat4 model_mat = translate_mat4(model->position);
-    model_mat.elements[0][0] = 0.05f;//model->scale.x; 
-    model_mat.elements[1][1] = 0.05f;//model->scale.y; 
-    model_mat.elements[2][2] = 0.05f;//model->scale.z; 
+    model_mat.elements[0][0] = model->scale.x;//model->scale.x; 
+    model_mat.elements[1][1] = model->scale.x;//model->scale.y; 
+    model_mat.elements[2][2] = model->scale.x;//model->scale.z; 
     //TODO(ilias): also add rotation info..
     info.model_matrix = model_mat;
     info.count = triangle_count;

@@ -72,11 +72,12 @@ vec3 calculate_directional_light(DirLight light, vec3 normal, vec3 viewDir)
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(m.diffuse, f_texcoords));
     vec3 specular = light.specular * spec * vec3(texture(m.specular, f_texcoords));
 	
-	vec3 color = texture(m.diffuse, f_texcoords).rgb;
-	float shadow = ShadowCalculation(f_frag_pos_ls);       
-    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+	//vec3 color = texture(m.diffuse, f_texcoords).rgb;
+	//float shadow = ShadowCalculation(f_frag_pos_ls);       
+    //vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
 	
-    return (lighting);
+    //return (lighting);
+	return (ambient + diffuse + specular);
 }  
 vec3 calculate_point_light(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
@@ -97,11 +98,14 @@ vec3 calculate_point_light(PointLight light, vec3 normal, vec3 fragPos, vec3 vie
     //ambient  *= attenuation;
     //diffuse  *= attenuation;
     //specular *= attenuation;
-	vec3 color = texture(m.diffuse, f_texcoords).rgb;
-	float shadow = ShadowCalculation(f_frag_pos_ls);       
-    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
 	
-    return (lighting);
+	
+	//vec3 color = texture(m.diffuse, f_texcoords).rgb;
+	//float shadow = ShadowCalculation(f_frag_pos_ls);       
+    //vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
+	
+    //return (lighting);
+	return (ambient + diffuse + specular);
 } 
 
 
