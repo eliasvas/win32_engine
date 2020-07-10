@@ -46,7 +46,7 @@ in vec4 f_frag_pos_ls;
 
 uniform vec3 view_pos; //camera position
 uniform Material m;
-float bias = 0.00001;
+float bias = 0.005;
 vec3 light_position;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
@@ -57,7 +57,23 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 	projCoords = projCoords * 0.5 + 0.5;
 	float closestDepth = texture(shadowMap, projCoords.xy).r;   
 	float currentDepth = projCoords.z;  
-	float shadow = (currentDepth - bias) > closestDepth  ? 1.0 : 0.0;  
+	
+	float shadow = 0.0;
+	vec2 texel_size = 1.0 / vec2(1024,720); //instead of vec2(1024,720) must be the size of the tilemap..
+	for (int x = -1; x <=1; ++x)
+	{
+		for (int y = -1; y <=1; ++y)
+		{
+			float pcf_depth = texture(shadowMap, projCoords.xy + vec2(x, y) * texel_size).r;
+			shadow += currentDepth - bias > pcf_depth ? 1.0 : 0.0; //if 0, stay 0, if else add the adjacent shadow tiles
+		}
+		shadow /= 9.0;
+	}
+	
+	//make the shadow 0 if it is outside the far plane
+	if (projCoords.z > 1.0)
+		shadow = 0.0;
+	
 	return shadow;
 }
 
@@ -141,8 +157,8 @@ void main()
 	for(int i = 0; i < dir_light_count; ++i)
 		output_color += calculate_directional_light(dir_lights[i], norm, view_dir);
 	//calculate point light contributions
-	for(int i = 0; i < point_light_count; ++i)
-		output_color += calculate_point_light(point_lights[i], norm, w_frag_pos, view_dir);
+	//for(int i = 0; i < point_light_count; ++i)
+		//output_color += calculate_point_light(point_lights[i], norm, w_frag_pos, view_dir);
 	//calculatte spot light contributions
 	//for(int i = 0; i < NR_SPOT_LIGHTS; ++i)
 		//output_color += calculate_spot_light(spot_lights[i], normal, w_frag_pos, view_dir);

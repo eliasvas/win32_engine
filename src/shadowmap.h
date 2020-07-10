@@ -46,6 +46,15 @@ init_shadowmap_fbo(ShadowMapFBO* shadowmap)
 static void
 setup_shadowmap(ShadowMapFBO* shadowmap, mat4 view_matrix = {0})
 {
+    //this is so that a new image is generated and shadows are resolution independant (NOTE: ITS REALLY FUCKING SLOW
+    //maybe do it only if resolution has changed
+    glBindTexture(GL_TEXTURE_2D, shadowmap->depth_attachment);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, global_platform.window_width, global_platform.window_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  
+
     //render to depth map
     glViewport(0,0,SHADOW_WIDTH, SHADOW_HEIGHT);
     glBindFramebuffer(GL_FRAMEBUFFER, shadowmap->fbo);
@@ -53,15 +62,9 @@ setup_shadowmap(ShadowMapFBO* shadowmap, mat4 view_matrix = {0})
     f32 near_plane = 0.1f;
     f32 far_plane = 40.f;
     mat4 light_projection = orthographic_proj(-10.f,10.f,-10.f,10.f, near_plane, far_plane); //we use orthographic projection because we do direction lights..
-    //mat4 light_view = look_at(vec3 eye, vec3 center, vec3 fake_up)
-    //mat4 light_view = look_at(v3(-2.f, 4.f, -1.f), v3(0.f,0.f,0.f), v3(0.f,1.f,0.f));
-    //mat4 light_view = look_at(v3(0,20,0), v3(0.f,0.f,0.f), v3(0.f,1.f,0.f));
-    //mat4 light_view = m4d(1.f);
-    //light_view = look_at(v3(0.0f, 2.0f, 2.0f), v3( 0.0f, 0.0f, 0.0f), v3( 0.0f, 1.0f,  0.0f));
-    //light_view.elements[3][2] = 2.f;
 
-    //view_matrix = mul_mat4(view_matrix,rotate_mat4(90.f, v3(1.f,0.f,0.f))); //SHOULD BE THIS INSTEAD THIS IS JUST FOR
-    view_matrix = mul_mat4(translate_mat4({view_matrix.elements[3][0],view_matrix.elements[3][1], view_matrix.elements[3][2]}),rotate_mat4(90.f, v3(1.f,0.f,0.f))); //SHOULD BE THIS INSTEAD THIS IS JUST FOR
+    view_matrix = mul_mat4(translate_mat4({view_matrix.elements[3][0],view_matrix.elements[3][1], view_matrix.elements[3][2]}),rotate_mat4(90.f, v3(1.f,0.f,0.f)));
+    //view_matrix = mul_mat4(translate_mat4({0,7.f*abs(sin(global_platform.current_time)),0}),rotate_mat4(90.f, v3(1.f,0.f,0.f))); 
 
     //view_matrix = look_at(v3(0,8,0), v3(0.f,-1.f,0.f), v3(0.f,1.f,0.f));
     //view_matrix = mul_mat4(view_matrix, translate_mat4(v3(0,0,-4)));

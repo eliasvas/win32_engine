@@ -212,7 +212,8 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
         setMat4fv(&rend->shaders[1], "lightSpaceMatrix", (f32*)rend->shadowmap.lightSpaceMatrix.elements);
         setMat4fv(shader_to_render_3d, "lightSpaceMatrix", (f32*)rend->shadowmap.lightSpaceMatrix.elements);
 
-        setVec3(&rend->shaders[1],"view_pos", rend->camera_pos);
+        //setVec3(&rend->shaders[1],"view_pos", rend->camera_pos);
+        setVec3(&rend->shaders[1],"view_pos", {0,100,0}); //THIS IS WONG!!
         
 
         glActiveTexture(GL_TEXTURE2);
