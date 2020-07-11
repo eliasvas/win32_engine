@@ -80,6 +80,7 @@ struct Renderer
     Shader shaders[SHADER_MAX];
     Texture tex[TEXTURE_MAX];
     u32 tex_count;
+    TextureManager manager;
     DirLight dir_lights[LIGHT_MAX];
     u32 dir_light_count;
     PointLight point_lights[LIGHT_MAX];

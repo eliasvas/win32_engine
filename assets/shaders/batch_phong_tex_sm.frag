@@ -157,8 +157,8 @@ void main()
 	for(int i = 0; i < dir_light_count; ++i)
 		output_color += calculate_directional_light(dir_lights[i], norm, view_dir);
 	//calculate point light contributions
-	//for(int i = 0; i < point_light_count; ++i)
-		//output_color += calculate_point_light(point_lights[i], norm, w_frag_pos, view_dir);
+	for(int i = 0; i < point_light_count; ++i)
+		output_color += calculate_point_light(point_lights[i], norm, w_frag_pos, view_dir);
 	//calculatte spot light contributions
 	//for(int i = 0; i < NR_SPOT_LIGHTS; ++i)
 		//output_color += calculate_spot_light(spot_lights[i], normal, w_frag_pos, view_dir);

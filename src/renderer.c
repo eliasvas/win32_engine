@@ -88,7 +88,14 @@ init_renderer(Renderer* rend)
     rend->tex_count++;
     load_texture(&rend->tex[6],"../assets/white.png");
     rend->tex_count++;
+    
 
+    push_texture(&rend->manager, "../assets/runimation.png");
+    push_texture(&rend->manager, "../assets/panda.png");
+    push_texture(&rend->manager, "../assets/runimation.png");
+    push_texture(&rend->manager, "../assets/braid.png"); //<-- this is "2" somehow
+    push_texture(&rend->manager, "../assets/red.png");
+    push_texture(&rend->manager, "../assets/white.png");
 }
 
 static void
@@ -102,12 +109,25 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
     glBufferData(GL_ARRAY_BUFFER, sizeof(rend->renderable_instance_data), rend->renderable_instance_data, GL_STATIC_DRAW);
 
 
+    /* This is correct, revert if things go bad.
     for (i32 i = 0; i< rend->tex_count;++i)
     {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, rend->tex[i].id);
         texture_sizes[i] = {(GLfloat)rend->tex[i].width, (GLfloat)rend->tex[i].height};
     }
+    */
+    
+
+
+    for (i32 i = 0; i< rend->manager.size;++i)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, rend->manager.textures[i].t.id);
+        texture_sizes[i] = {(GLfloat)rend->manager.textures[i].t.width, (GLfloat)rend->manager.textures[i].t.height};
+    }
+
+
 
     use_shader(&rend->shaders[0]);
     setMat4fv(&rend->shaders[0],"projection_matrix",proj);

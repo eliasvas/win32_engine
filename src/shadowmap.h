@@ -64,12 +64,8 @@ setup_shadowmap(ShadowMapFBO* shadowmap, mat4 view_matrix = {0})
     mat4 light_projection = orthographic_proj(-10.f,10.f,-10.f,10.f, near_plane, far_plane); //we use orthographic projection because we do direction lights..
 
     view_matrix = mul_mat4(translate_mat4({view_matrix.elements[3][0],view_matrix.elements[3][1], view_matrix.elements[3][2]}),rotate_mat4(90.f, v3(1.f,0.f,0.f)));
-    //view_matrix = mul_mat4(translate_mat4({0,7.f*abs(sin(global_platform.current_time)),0}),rotate_mat4(90.f, v3(1.f,0.f,0.f))); 
+    view_matrix = look_at({2,4,-3}, {0,1,0}, {0,1,0});
 
-    //view_matrix = look_at(v3(0,8,0), v3(0.f,-1.f,0.f), v3(0.f,1.f,0.f));
-    //view_matrix = mul_mat4(view_matrix, translate_mat4(v3(0,0,-4)));
-
-    //view_matrix = mul_mat4(translate_mat4({-1.f,5.f,1.f}),rotate_mat4(90.f, v3(-1.f,0.f,0.f)));
     mat4 lightSpaceMatrix = mul_mat4(light_projection,view_matrix); 
 
     shadowmap->lightSpaceMatrix = lightSpaceMatrix;

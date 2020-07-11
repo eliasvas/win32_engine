@@ -184,7 +184,7 @@ void init(void)
 
 void update(void)
 {
-    m2.position = {0, abs(sin(global_platform.current_time)*4.f),0.0};
+    m2.position = {0, abs(sin(global_platform.current_time)/4.f) + 2.f,0.0};
     //change_to_fake_framebuffer();
 #if sound_on
     cs_mix(ctx);
@@ -249,7 +249,7 @@ void update(void)
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
 
-    point_light.position = {sin(global_platform.current_time)* 10 + 15, 8,30};
+    point_light.position = {sin(global_platform.current_time)* 3, 8,10};
     //point_light.position = {0, 8,3};
 
     view_matrix = get_view_mat(&cam);
@@ -257,7 +257,7 @@ void update(void)
     ortho_matrix = orthographic_proj(-6.f,6.f,-6.f,6.f, 0.1, 100.f);
 
     renderer_push_dir_light(&rend,&dir_light);
-    //renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
+    renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
     renderer_push_mesh(&rend,&m2, m2.vertices.size());
     renderer_push_mesh(&rend,&m, m.vertices.size());
     //renderer_push_mesh(&rend,&m, m.vertices.size());
@@ -271,7 +271,7 @@ void update(void)
 
 void render(void)
 {
-    //render_sprite(&s, &rend);  //<----------------------------this is for the braid guy
+    render_sprite(&s, &rend);  //<----------------------------this is for the braid guy
 #if skybox_on
     render_skybox(&skybox,perspective_matrix, view_matrix);
 #endif

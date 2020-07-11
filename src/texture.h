@@ -50,3 +50,50 @@ load_image_bytes(const char *filename)
     unsigned char *data = stbi_load(filename, &width, &height, &nrChannels,STBI_rgb_alpha);
     return {data, width, height};
 }
+
+
+typedef struct TextureContainer
+{
+    Texture t;
+    std::string filename;
+    b32 has_mipmaps;
+};
+
+typedef struct TextureManager
+{
+    TextureContainer textures[32];
+    u32 size = 0;
+    u32 max_size = 32;
+};
+
+static Texture* 
+find_texture(TextureManager* manager, const char* filename)
+{
+    for (u32 i = 0; i < manager->size; ++i)
+    {
+        if (strcmp(manager->textures[i].filename.c_str(), filename) == 0)
+            return &manager->textures[i].t;
+    }
+    return 0; //texture not found
+}
+
+static GLuint 
+push_texture(TextureManager* manager, const char* filepath)
+{
+    Texture dummy;
+    load_texture(&dummy,filepath);
+    std::string filename = getFileName(filepath);
+    TextureContainer to_insert = {dummy, getFileName(filepath), 1};
+    
+    //putting TextureContainer in textures array (if it fits)
+    if (manager->size >= manager->max_size || dummy.id == 0)
+        return 0;
+    manager->textures[manager->size++] = to_insert;
+    return dummy.id;
+}
+
+
+
+
+
+

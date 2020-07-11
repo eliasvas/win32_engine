@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <string>
 
 //TODO gotta make an array wrapper lmao <------
 
@@ -99,6 +100,18 @@ static b32 file_exists(const char* filename) {
   }
 
   return ret;
+}
+
+static std::string 
+getFileName(const std::string& s) {
+
+   char sep = '/';
+   size_t i = s.rfind(sep, s.length());
+   if (i != std::string::npos) {
+      return(s.substr(i+1, s.length() - i));
+   }
+
+   return("");
 }
 
 
