@@ -152,6 +152,8 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
     
 
 
+
+    return;
     //NOTE(ilias):drawing models here!!!!
     use_shader(shader_to_render_3d);
     setMat4fv(&rend->shaders[1],"proj", (f32*)rend->perspective_projection.elements);

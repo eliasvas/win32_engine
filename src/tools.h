@@ -1141,3 +1141,100 @@ ppm_write(PPMInfo* info, const char *filename)
     }
     return PPM_OK;
 }
+
+//TODO: make a ppm_write_FBO to write color attachments of a framebuffer as PPM images.. 
+
+//MEMORY STUFF
+
+typedef struct Arena
+{
+    void *memory;
+    u32 memory_size;
+    u32 current_offset;
+} Arena;
+
+
+static Arena 
+arena_init(void* memory, u32 size)
+{
+    Arena a = {0};
+    a.memory = memory;
+    a.memory_size = size;
+    a.current_offset = 0;
+}
+
+static void
+arena_free(Arena* arena, u32 size)
+{
+    //do nothing
+}
+
+static void * 
+arena_alloc(Arena* arena, u32 size)
+{
+    void* mem = 0;
+
+    if (arena->current_offset + size <= arena->memory_size)
+    {
+        //position of next available byte
+        mem = (void *)((u8*)arena->memory + arena->current_offset); 
+        arena->current_offset += size;
+    }
+    //we return a pointer to size free bytes of memory
+    return mem;
+}
+
+static void
+arena_clear(Arena* arena)
+{
+    arena->current_offset = 0;
+}
+
+static void 
+arena_zero(Arena* arena)
+{
+    memset(arena->memory, 0, arena->memory_size);
+}
+
+//STRING STUFF
+
+typedef struct String
+{
+    char* data;
+    u32 len;
+    u32 size;
+    u32 max_size;
+    b32 is_constant;
+}String;
+
+static String
+init_string_in_arena(Arena* arena, u32 size)
+{
+    String str = {0};
+
+    str.data = (char*)arena_alloc(arena, size);
+    if (str.data)
+    {
+        str.len = size - 1;
+        str.size = size;
+        str.max_size = size;
+        str.is_constant = 0;
+
+        str.data[size-1] = '\0';
+    }
+    return str;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
