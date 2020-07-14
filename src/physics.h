@@ -141,6 +141,196 @@ render_collider(mat4 mat, Box* b)
 }
 
 
+//NEW VERSION OF PHYSICS ENGINE
+
+
+typedef struct AABB
+{
+    vec2 min;
+    vec2 max;
+}AABB;
+
+
+b32 AABBvsAABB(AABB a, AABB b)
+{
+    //search for a Separating Axis 
+    if (a.max.x < b.min.x || a.min.x > b.max.x)return 0;
+    if (a.max.y < b.min.y || a.min.y > b.max.y)return 0;
+
+    //if not found, there must be a collision
+    return 1;
+}
+
+typedef struct Circle
+{
+    f32 radius;
+    vec2 position;
+}Circle;
+
+f32 dist(vec2 a, vec2 b)
+{
+    return sqrt((a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y));
+}
+
+b32 CirclevsCircle(Circle c1, Circle c2)
+{
+    f32 r = c1.radius + c2.radius;
+    return (r < dist(c1.position, c2.position));
+}
+
+typedef enum Shape 
+{
+   CIRCLE = 1,
+   BOX,
+   CAPSULE
+}Shape;
+
+
+struct PhysicsMaterial
+{
+    f32 density;
+    f32 restitution;
+};
+struct MassData
+{
+    f32 mass;
+    f32 inv_mass;
+
+    f32 inertia;
+    f32 inv_inertia;
+};
+
+typedef struct PhysicsBodyComponent  //managers??
+{
+  Shape *shape;
+  mat4 transform;
+  PhysicsMaterial material;
+  MassData mass_data;
+  vec2 velocity;
+  vec2 force;
+  f32 gravity_scale;
+}PhysicsBody;
+
+typedef struct Collider
+{
+    union
+    {
+        Circle circle;
+        AABB box;
+    };
+    Shape shape;
+}Collider;
+
+typedef struct Manifold
+{
+    Collider* c1;
+    Collider* c2;
+    f32 penetration;
+    vec2 normal;
+};
+
+static b32 CirclevsCircle(Manifold* m)
+{
+    Circle* c1 = &m->c1->circle;
+    Circle* c2 = &m->c2->circle;
+
+    //collision normal
+    vec2 n = sub_vec2(c2->position , c1->position);
+
+
+    f32 r = c2->radius + c1->radius;
+    r*=r;
+
+
+    if (length_vec2(n)*length_vec2(n) > r)
+        return 0;
+
+
+    f32 d = length_vec2(n);
+
+
+    //if the distance of the radii is not zero
+    if (d!=0)
+    {
+        m->penetration = r - d;
+
+        m->normal = v2(r/d, r/d);
+        return 1;
+    }
+    else
+    {
+        m->penetration = c2->radius;
+        m->normal = v2(1,0);
+        return 1;
+    }
+}
+
+static void
+AABBvsAABB(Manifold* m)
+{
+    AABB b1 = m->c1->box;
+    AABB b2 = m->c2->box;
+
+    vec2 b1_mid = mul_vec2f(add_vec2(b1.min, b1.max), 0.5f);
+    vec2 b2_mid = mul_vec2f(add_vec2(b2.min, b2.max), 0.5f);
+
+    vec2 e_b1 = abs_vec2(mul_vec2f(sub_vec2(b1.max, b1.min), 0.5f)); 
+    vec2 e_b2 = abs_vec2(mul_vec2f(sub_vec2(b2.max, b2.min), 0.5f)); 
+
+    vec2 d = sub_vec2(b2_mid, b1_mid);
+
+
+    //calculate the overlap on x and y axis
+    f32 dx = e_b1.x + e_b2.x - abs(d.x);
+    if (dx < 0)return;
+    f32 dy = e_b1.y + e_b2.y - abs(d.y);
+    if (dy < 0)return;
+
+    vec2 n;
+    f32 depth;
+    vec2 p;
+
+
+    //x-axis overlap is smaller
+    if (dx < dy)
+    {
+       depth = dx; 
+
+       if (d.x < 0)
+       {
+            n = v2(-1.f,0.f);
+            p = sub_vec2(b1_mid, v2(e_b1.x,0.f));
+       }
+       else
+       {
+           n = v2(1.f,0.f);
+           p = add_vec2(b1_mid, v2(e_b1.x, 0));
+       }
+    }
+    else 
+    {
+        depth = dy;
+        if (d.y < 0)
+        {
+            n = v2(0,-1.f);
+            p = sub_vec2(b1_mid, v2(0, e_b1.y));
+        }
+        else
+        {
+            n = v2(0,1.f);
+            p = add_vec2(b1_mid, v2(0,e_b1.y));
+        }
+    }
+    //m->contact_points[0] = p;
+    //m->depths[0] = depth;
+    //m->n = n;
+
+}
+
+
+
+
+
 
 
 

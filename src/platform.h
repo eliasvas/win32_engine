@@ -23,6 +23,10 @@ typedef struct Platform
     i32 last_key;
     b32 keyboard_used;
     f32 dt;
+
+
+    Arena permanent_storage;
+    Arena frame_storage;
 }Platform;
 
 enum keyboard_keys

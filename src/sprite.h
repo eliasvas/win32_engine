@@ -37,6 +37,7 @@ static void
 update_sprite(Sprite* s)
 {
     vec2 velocity = s->box.velocity; 
+    //update its collider
 }
 
 static void 

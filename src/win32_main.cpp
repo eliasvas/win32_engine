@@ -8,7 +8,6 @@ static HWND WND;
 #include <windows.h>
 #include "win32_opengl.cpp"
 #include "game.c"
-#include "tools.h"
 #include "skybox.h"
 #include "text.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -17,6 +16,7 @@ static HWND WND;
 #include "ext/HandmadeMath.h"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "ext/tiny_obj_loader.h"
+#include "tools.h"
 
 static LARGE_INTEGER fr,st,ft;
 
@@ -181,6 +181,14 @@ WinMain(HINSTANCE Instance,
     //glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
 
+
+    //initializing arenas (MAYBE do it inside game.c/init()??)
+    u8* permanent_memory = (u8*)malloc(32768 * sizeof(u8));
+    u8* frame_memory = (u8*)malloc(1024 * sizeof(u8));
+    if (permanent_memory == NULL || frame_memory == NULL)memcpy(infoLog, "Not Enough Storage for Arenas", 29);
+    global_platform.permanent_storage = arena_init(permanent_memory, 32768);
+    global_platform.frame_storage = arena_init(frame_memory, 1024);
+    
     init();
     while (!global_platform.exit){
         QueryPerformanceCounter(&st);

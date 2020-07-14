@@ -314,8 +314,8 @@ void render(void)
     //NOTE(ilias): this is for drawing colliders!
     glDisable(GL_DEPTH_TEST); //NOTE(ilias): this is used only for collider visualization
     glLineWidth(2);
-    //for (Box *b : colliders)
-        //render_collider_in_pos (mat, {b->min.x + b->hb.min.x,b->min.y + b->hb.min.y,-1.f}, {b->w * b->hb.w, b->h * b->hb.h}, (float)b->is_colliding);
+    for (Box *b : colliders)
+        render_collider_in_pos (mat, {b->min.x + b->hb.min.x,b->min.y + b->hb.min.y,-1.f}, {b->w * b->hb.w, b->h * b->hb.h}, (float)b->is_colliding);
     glLineWidth(1);
     glEnable(GL_DEPTH_TEST);
 #endif

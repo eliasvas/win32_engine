@@ -330,6 +330,12 @@ INLINE f32 length_vec2(vec2 v)
     f32 res = sqrt(dot_vec2(v,v)); // (x^2 + y^2)^(1/2)
     return res;
 }
+
+INLINE vec2 abs_vec2(vec2 v)
+{
+    vec2 res = v2(abs(v.x), abs(v.y));
+    return res;
+}
    
 INLINE vec2 normalize_vec2(vec2 v)
 {
@@ -639,27 +645,27 @@ INLINE mat4 translate_mat4(vec3 t) //TODO(ilias): check handedness
     return res;
 }
 
-INLINE mat4 rotate_mat4(float Angle, vec3 Axis)
+INLINE mat4 rotate_mat4(float angle, vec3 axis)
 {
     mat4 Result = m4d(1.0f);
 
-    Axis = normalize_vec3(Axis);
+    axis = normalize_vec3(axis);
 
-    float SinTheta = sin(to_radians(Angle));
-    float CosTheta = cos(to_radians(Angle));
-    float CosValue = 1.0f - CosTheta;
+    float sinA = sin(to_radians(angle));
+    float cosA = cos(to_radians(angle));
+    float cos_val = 1.0f - cosA;
 
-    Result.elements[0][0] = (Axis.x * Axis.x * CosValue) + CosTheta;
-    Result.elements[0][1] = (Axis.x * Axis.y * CosValue) + (Axis.z * SinTheta);
-    Result.elements[0][2] = (Axis.x * Axis.z * CosValue) - (Axis.y * SinTheta);
+    Result.elements[0][0] = (axis.x * axis.x * cos_val) + cosA;
+    Result.elements[0][1] = (axis.x * axis.y * cos_val) + (axis.z * sinA);
+    Result.elements[0][2] = (axis.x * axis.z * cos_val) - (axis.y * sinA);
 
-    Result.elements[1][0] = (Axis.y * Axis.x * CosValue) - (Axis.z * SinTheta);
-    Result.elements[1][1] = (Axis.y * Axis.y * CosValue) + CosTheta;
-    Result.elements[1][2] = (Axis.y * Axis.z * CosValue) + (Axis.x * SinTheta);
+    Result.elements[1][0] = (axis.y * axis.x * cos_val) - (axis.z * sinA);
+    Result.elements[1][1] = (axis.y * axis.y * cos_val) + cosA;
+    Result.elements[1][2] = (axis.y * axis.z * cos_val) + (axis.x * sinA);
 
-    Result.elements[2][0] = (Axis.z * Axis.x * CosValue) + (Axis.y * SinTheta);
-    Result.elements[2][1] = (Axis.z * Axis.y * CosValue) - (Axis.x * SinTheta);
-    Result.elements[2][2] = (Axis.z * Axis.z * CosValue) + CosTheta;
+    Result.elements[2][0] = (axis.z * axis.x * cos_val) + (axis.y * sinA);
+    Result.elements[2][1] = (axis.z * axis.y * cos_val) - (axis.x * sinA);
+    Result.elements[2][2] = (axis.z * axis.z * cos_val) + cosA;
 
     return (Result);
 }
@@ -678,6 +684,7 @@ INLINE mat4 orthographic_proj(float l, float r, float b, float t, float n, float
     mat4 res = m4();
 
     //the quotents are in reverse because we were supposed to do one more matrix multiplication to negate z..
+    //its basically two steps in one..
     res.elements[0][0] = 2.0f / (r - l);
     res.elements[1][1] = 2.0f / (t - b);
     res.elements[2][2] = 2.0f / (n - f);
@@ -1161,6 +1168,8 @@ arena_init(void* memory, u32 size)
     a.memory = memory;
     a.memory_size = size;
     a.current_offset = 0;
+
+    return a;
 }
 
 static void

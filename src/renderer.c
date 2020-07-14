@@ -93,7 +93,7 @@ init_renderer(Renderer* rend)
     push_texture(&rend->manager, "../assets/runimation.png");
     push_texture(&rend->manager, "../assets/panda.png");
     push_texture(&rend->manager, "../assets/runimation.png");
-    push_texture(&rend->manager, "../assets/braid.png"); //<-- this is "2" somehow
+    push_texture(&rend->manager, "../assets/braid.png"); //<-- this is "2" somehow FIX
     push_texture(&rend->manager, "../assets/red.png");
     push_texture(&rend->manager, "../assets/white.png");
 }
@@ -130,7 +130,8 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
 
 
     use_shader(&rend->shaders[0]);
-    setMat4fv(&rend->shaders[0],"projection_matrix",proj);
+    setMat4fv(&rend->shaders[0],"projection_matrix",(f32*)rend->orthographic_projection.elements);
+    //setMat4fv(&rend->shaders[0],"projection_matrix",proj); //enable for 3D projected 2D quads
 
     //passing the available tex_units as uniform
     GLuint loc = glGetUniformLocation(rend->shaders[0].ID, "slots");
@@ -150,10 +151,10 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
     glBindVertexArray(0);
 
     
-
-
-
     return;
+
+
+
     //NOTE(ilias):drawing models here!!!!
     use_shader(shader_to_render_3d);
     setMat4fv(&rend->shaders[1],"proj", (f32*)rend->perspective_projection.elements);
