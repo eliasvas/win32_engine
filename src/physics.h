@@ -13,12 +13,11 @@ struct HitBox
     f32 w, h;
 };
 
-struct Box
+typedef struct Box
 {
     vec2 min;
     f32 w, h;
     HitBox hb;
-    u32 id; //0 == player, 1 == enemy, 2 == hit, 3 == wall, 4 = king 
 
     vec2 velocity;
     f32 restitution = 1.f;
@@ -27,7 +26,7 @@ struct Box
     b32 is_colliding;
     b32 active = 1;
     b32 is_destroyed;
-};
+} Box;
 
 static vector<Box*> colliders;
 
@@ -37,7 +36,6 @@ static void init_Box(Box* b,vec2 min,f32 w, f32 h)
     b->w = w;
     b->h = h;
     b->velocity = {0.f,0.f};
-    b->id = collider_id++;
     colliders.push_back(b);
     b->hb = {{0,0},1.f,1.f};
 }
@@ -52,10 +50,6 @@ i32 collide(Box *b1, Box *b2)
     vec2 b2_max = {b2_min.x + b2->w * b2->hb.w, b2_min.y + b2->h*b2->hb.h};
     if (b1_max.x < b2_min.x || b1_min.x > b2_max.x)return 0;
     if (b1_max.y < b2_min.y || b1_min.y > b2_max.y)return 0;
-    if (b1->id == 666 && b2->id == 667)return 666;
-    if (b1->id == 1024 && b2->id == 667)return 989;
-    if (b1->id == 1&& b2->id == 666)return -989;
-    if (b1->id == 1&& b2->id == 667)return 89;
     return 1;
 
 }
@@ -178,12 +172,12 @@ b32 CirclevsCircle(Circle c1, Circle c2)
     return (r < dist(c1.position, c2.position));
 }
 
-typedef enum Shape 
+typedef enum ShapeType 
 {
    CIRCLE = 1,
    BOX,
    CAPSULE
-}Shape;
+}ShapeType;
 
 
 struct PhysicsMaterial
@@ -200,31 +194,20 @@ struct MassData
     f32 inv_inertia;
 };
 
-typedef struct PhysicsBodyComponent  //managers??
-{
-  Shape *shape;
-  mat4 transform;
-  PhysicsMaterial material;
-  MassData mass_data;
-  vec2 velocity;
-  vec2 force;
-  f32 gravity_scale;
-}PhysicsBody;
-
-typedef struct Collider
+typedef struct Shape 
 {
     union
     {
         Circle circle;
         AABB box;
     };
-    Shape shape;
-}Collider;
+    ShapeType type;
+}Shape;
 
 typedef struct Manifold
 {
-    Collider* c1;
-    Collider* c2;
+    Shape* c1;
+    Shape* c2;
     f32 penetration;
     vec2 normal;
 };
@@ -323,14 +306,77 @@ AABBvsAABB(Manifold* m)
     }
     //m->contact_points[0] = p;
     //m->depths[0] = depth;
-    //m->n = n;
+    m->normal = n;
+    m->penetration = depth;//???
 
+}
+
+static void aabb_update(AABB* aabb, vec2 pos, f32 w, f32 h)
+{
+    vec2 min = pos;
+    vec2 max = v2(pos.x+w, pos.y + h);
+    aabb->min = min;
+    aabb->max = max;
 }
 
 
 
+typedef struct PhysicsBodyComponent  //managers??
+{
+  Shape *shape;
+  mat4 transform;
+  PhysicsMaterial material;
+  MassData mass_data;
+  vec2 velocity;
+  vec2 force;
+  f32 gravity_scale;
+}PhysicsBody;
 
 
+struct PhysicsBody2DComponent
+{
+    vec2 min;
+    f32 w, h;
+    AABB collider;
+
+    vec2 velocity;
+    f32 restitution = 1.f;
+    f32 mass = 1.f;
+    b32 on_ground;
+    b32 is_colliding;
+    b32 active = 1;
+    b32 is_destroyed;
+};
+
+#define MAX_SHAPES 1000
+typedef struct ColliderManager
+{
+    Shape* shapes;
+    u32 current_index;
+    u32 max_shapes;
+}ColliderManager;
+
+static ColliderManager 
+colldier_manager_init()
+{
+    ColliderManager m = {0};
+    m.shapes = (Shape*)arena_alloc(&global_platform.permanent_storage, MAX_SHAPES * sizeof(Shape));
+    m.current_index = 0;
+    m.max_shapes = MAX_SHAPES;
+
+    return m;
+}
+
+static Shape* 
+collider_manager_add(ColliderManager* m, Shape shape)
+{
+    if (m->current_index < m->max_shapes)
+    {
+        m->shapes[m->current_index++] = shape;
+        return &m->shapes[m->current_index - 1];
+    }else
+        return NULL;
+}
 
 
 

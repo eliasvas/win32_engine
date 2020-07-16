@@ -21,15 +21,15 @@
 #include "ext/cute_sound.h"
 #include <string>  //just for to_string
 
-mat4 MVP;
 static Camera cam;
 static BitmapFont bmf;
 static Sprite s;
 static Cube c;
 static Terrain terrain;
-static quad background;
+
 static Model m;
-static Model m2;
+static Model teapot_model;
+
 static mat4 view_matrix;
 static mat4 perspective_matrix;
 static mat4 ortho_matrix;
@@ -37,51 +37,18 @@ static Renderer rend;
 static DirLight dir_light;
 static PointLight point_light;
 static Skybox skybox;
+
+
 b32 debug_menu = 1;
 f32 inverted = 0.f;
 static cs_context_t* ctx;
 
-static b32 DEATH = 0;
 
 static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
 #define sound_on 0
 #define colliders_on 1
 #define skybox_on 0
-
-static Box b1;
-static Box b2;
-static Box b3;
-static Box b4;
-
-Box hit_colliders[4];
-
-
-/*
- TODO(ilias)
- 
- -see whats wrong with the OBJ loader
-
- -add framebuffers to the renderer!!!!
-
- -fix fps issues in win32_main.cpp
-
- -add particles to 2d renderer
- 
- -billboards to 2d renderer
-
- -improve 3d rendering
- 
- -support .mtl file reading
- 
- -SDF text
-
- -Scenes!!
-
- -procedural terrain
-
- -marching cubes
- */
 
 void init(void)
 {
@@ -90,6 +57,7 @@ void init(void)
     init_text(&bmf,"../assets/ASCII_512.png"); 
 
     init_camera(&cam);
+    init_renderer(&rend);
 
     init_terrain(&terrain,"../assets/test.png");
     terrain.model = translate_mat4(v3(-8,0,-16));
@@ -99,11 +67,13 @@ void init(void)
         //m.position = {0,-5,0};
         //m.scale = v3(0.4,0.1,1);
     }
+    //teapot_model initialization
     {
-        load_model_data(m2.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
-        init_model(&m2, m2.vertices);
-        m2.position = {0,2.f,0.0};
-        m2.scale = {0.02,0.02,0.02};
+        load_model_data(teapot_model.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
+        init_model(&teapot_model, teapot_model.vertices);
+        teapot_model.diff_name = "red.png";
+        teapot_model.position = {0,2.f,0.0};
+        teapot_model.scale = {0.02,0.02,0.02};
     }
 
     //player initializiation
@@ -116,24 +86,6 @@ void init(void)
         init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 3, 1.f, info);
         //s.is_blinking = 1;
         s.box.hb = {{0.3f,0.0f}, 0.4f,0.6f};
-        s.box.id = 1024;
-    }
-    //background initialization
-    {
-        init_quad(&background,"../assets/background.png");
-        background.pos = {0,0,-1.1f};
-    }
-    //initializing collider boxes
-    {
-       init_Box(&b1,{-25.f,-25.f},1.f,50.f); 
-       b1.id = -1;
-       init_Box(&b2,{-25.f,-25.f},50.f,1.f); 
-       b2.id = -1;
-       init_Box(&b3,{-26.f,26.f},55.f,1.f); 
-       b3.id = -1;
-       init_Box(&b4,{26.f,-26.f},1.f,55.f); 
-       b4.id = -1;
-
     }
     //init the skybox
     {
@@ -146,32 +98,13 @@ void init(void)
         faces.push_back("../assets/nebula/purplenebula_ft.tga");
         init_skybox(&skybox, faces);
     }
-    //init debug cube
-    {
-        init_cube_textured(&c);
-        c.center = {2.f,0.f, -2.f};
-    }
     //init lights
     {
-     point_light = {{0,1,1},1.f,0.022f,0.0019f,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
+         point_light = {{0,1,1},1.f,0.022f,0.0019f,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
 
-     //dir_light = {normalize_vec3({0.5f,-0.7f,-1.f}),{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
-     //dir_light = {normalize_vec3({0,-1,-1}),{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
-     dir_light = {{0,-1,0},{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
+         dir_light = {{0,-1,0},{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
 
     }
-    init_renderer(&rend);
-
-
-#if 0
-    PPMInfo* info;
-    info = ppm_init(40,40);
-    for (int i = 0; i < 1600* 2; ++i)
-    {
-        //info->image_data[i] = 0.5f;
-    }
-    ppm_write(info, "image.ppm");
-#endif
 
 
 #if sound_on
@@ -184,17 +117,14 @@ void init(void)
 
 void update(void)
 {
-    m2.position = {0, abs(sin(global_platform.current_time)/4.f) + 2.f,0.0};
-    //change_to_fake_framebuffer();
+    teapot_model.position = {0, abs(sin(global_platform.current_time)/4.f) + 2.f,0.0};
+    change_to_fake_framebuffer();
 #if sound_on
     cs_mix(ctx);
 #endif
 
-    //background.pos = {0,0,abs(sin(global_platform.current_time)) * -80.f};
-
     global_platform.vsync = 1;
-    renderer_begin(&rend, global_platform.window_width, global_platform.window_height);
-    //update_wrt_player(&cam, {s.box.min.x, s.box.min.y});
+    renderer_begin(&rend);
     update_cam(&cam);
     update_animation_info(&s.info);
 
@@ -203,10 +133,6 @@ void update(void)
        debug_menu = !debug_menu; 
     }
 
-    if (global_platform.key_pressed[KEY_D])
-    {
-        DEATH = 1;
-    }
 
 
     if (global_platform.key_pressed[KEY_P])
@@ -258,10 +184,8 @@ void update(void)
 
     renderer_push_dir_light(&rend,&dir_light);
     renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
-    renderer_push_mesh(&rend,&m2, m2.vertices.size());
+    renderer_push_mesh(&rend,&teapot_model, teapot_model.vertices.size());
     renderer_push_mesh(&rend,&m, m.vertices.size());
-    //renderer_push_mesh(&rend,&m, m.vertices.size());
-    //renderer_push_mesh_vao(&rend,terrain.vao,terrain.model,(VERTEX_COUNT-1) * (VERTEX_COUNT-1)*6, 1); 
     renderer_set_projection_matrix(&rend, perspective_matrix);
     renderer_set_view_matrix(&rend, view_matrix);
     renderer_set_camera_pos(&rend, cam.pos);
@@ -281,7 +205,7 @@ void render(void)
     {
         //render_quad(&background, mat);
     }
-    renderer_render(&rend, (float*)mat.elements);
+    renderer_render(&rend);
     
     //render_terrain(&terrain, perspective_matrix, view_matrix);
 
@@ -321,7 +245,7 @@ void render(void)
 #endif
 
 
-    //render_to_framebuffer0(inverted);
+    render_to_framebuffer0(inverted);
 
 
 }

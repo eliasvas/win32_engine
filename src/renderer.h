@@ -51,6 +51,8 @@ typedef struct ModelInfo
     mat4 model_matrix;
 	i32 count;
     b32 indexed;
+    Texture* diff;
+    Texture* spec;
 
 }ModelInfo;
 
@@ -101,13 +103,13 @@ static void
 init_renderer(Renderer* r);
 
 static void
-renderer_begin(Renderer* rend, f32 w, f32 h);
+renderer_begin(Renderer* rend);
 
 static void 
-renderer_render(Renderer* rend,float* proj);
+renderer_render(Renderer* rend);
 
 static void
-renderer_render_scene(Renderer* rend,float* proj);
+renderer_render_scene(Renderer* rend);
 
 
 

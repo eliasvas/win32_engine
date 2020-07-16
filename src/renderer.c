@@ -91,7 +91,7 @@ init_renderer(Renderer* rend)
     
 
     push_texture(&rend->manager, "../assets/runimation.png");
-    push_texture(&rend->manager, "../assets/panda.png");
+    push_texture(&rend->manager, "../assets/grey.png");
     push_texture(&rend->manager, "../assets/runimation.png");
     push_texture(&rend->manager, "../assets/braid.png"); //<-- this is "2" somehow FIX
     push_texture(&rend->manager, "../assets/red.png");
@@ -99,7 +99,7 @@ init_renderer(Renderer* rend)
 }
 
 static void
-renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
+renderer_render_scene(Renderer* rend, Shader* shader_to_render_3d)
 {
     vec2 texture_sizes[TEXTURE_MAX];
 
@@ -130,8 +130,8 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
 
 
     use_shader(&rend->shaders[0]);
-    setMat4fv(&rend->shaders[0],"projection_matrix",(f32*)rend->orthographic_projection.elements);
-    //setMat4fv(&rend->shaders[0],"projection_matrix",proj); //enable for 3D projected 2D quads
+    //setMat4fv(&rend->shaders[0],"projection_matrix",(f32*)rend->orthographic_projection.elements);
+    setMat4fv(&rend->shaders[0],"projection_matrix",(f32*)rend->perspective_projection.elements);
 
     //passing the available tex_units as uniform
     GLuint loc = glGetUniformLocation(rend->shaders[0].ID, "slots");
@@ -147,11 +147,13 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
 
 
     //glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->renderable_alloc_pos); // 10 diamonds, 4 vertices per instance
-    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->renderable_alloc_pos); // 10 diamonds, 4 vertices per instance
+    //so it doesnt render 2d stuff on the shadowmap.. maybe we would like to but they would have to be 3d projected
+    //if(shader_to_render_3d == &rend->shaders[1])
+        glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->renderable_alloc_pos); // 10 diamonds, 4 vertices per instance
     glBindVertexArray(0);
 
     
-    return;
+//    return;
 
 
 
@@ -223,12 +225,11 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
             setFloat(&rend->shaders[1], "m.shininess", 16.f);
             glActiveTexture(GL_TEXTURE0);
             setInt(&rend->shaders[1],"m.diffuse", 0);
-            glBindTexture(GL_TEXTURE_2D, rend->tex[5].id);
+            glBindTexture(GL_TEXTURE_2D, rend->meshes[i].diff->id);
             setInt(&rend->shaders[1],"m.specular", 1);
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, rend->tex[6].id);
+            glBindTexture(GL_TEXTURE_2D, rend->meshes[i].spec->id);
 
-            //TextureManager^^^
         }
         setInt(&rend->shaders[1], "point_light_count", rend->point_light_count); 
         setInt(&rend->shaders[1], "dir_light_count", rend->dir_light_count); 
@@ -255,33 +256,33 @@ renderer_render_scene(Renderer* rend,float* proj, Shader* shader_to_render_3d)
 
 }
 static void
-renderer_render(Renderer* rend,float* proj)
+renderer_render(Renderer* rend)
 {
     GLint prev_fbo; //its always a 0 -but who am I to judge?
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
     setup_shadowmap(&rend->shadowmap, rend->view_matrix);
     glBindFramebuffer(GL_FRAMEBUFFER, rend->shadowmap.fbo);
-    renderer_render_scene(rend, proj, &rend->shadowmap.s);
-    glBindFramebuffer(GL_FRAMEBUFFER,0);
+    renderer_render_scene(rend, &rend->shadowmap.s);
+    glBindFramebuffer(GL_FRAMEBUFFER,prev_fbo);
     glViewport(0, 0, global_platform.window_width,global_platform.window_height); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     setup_debug_quad(&rend->debug_quad, &rend->shadowmap);
-    renderer_render_scene(rend, proj, &rend->shaders[1]);
+    renderer_render_scene(rend, &rend->shaders[1]);
 }
 
 
 static void
-renderer_begin(Renderer* rend, i32 w, i32 h)
+renderer_begin(Renderer* rend)
 {
-    rend->render_width = w;
-    rend->render_height = h;
+    rend->render_width = global_platform.window_width;
+    rend->render_height = global_platform.window_height;
     rend->rect_alloc_pos = 0;
     rend->renderable_alloc_pos = 0;
     rend->dir_light_count = 0;
     rend->point_light_count = 0;
     rend->mesh_count = 0;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.5f, 0.8f, 1.f, 1);
+    glClearColor(0.5f, 0.7f, 1.f, 1);
     //glViewport(0, 0, (GLsizei)rend->render_width, (GLsizei)(rend->render_height)); //for some reason this is the only viewport called
     //glViewport(0, 0, (GLsizei)rend->render_width, (GLsizei)(rend->render_height*(w/(float)h))); //this is the holy saviour???
 }
@@ -369,6 +370,9 @@ renderer_push_mesh(Renderer* rend,Model* model, i32 triangle_count, b32 indexed 
     info.model_matrix = model_mat;
     info.count = triangle_count;
     info.indexed = indexed;
+
+    info.spec = find_texture(&rend->manager, model->diff_name.c_str());
+    info.diff = find_texture(&rend->manager, model->spec_name.c_str());
 
     rend->meshes[rend->mesh_count++] = info;
 }

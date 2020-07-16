@@ -49,8 +49,10 @@ struct Model{
     vec3 position;
     vec3 scale = {0.1f,0.1f,0.1f};
     Material m;
-    Texture diff;
-    Texture spec;
+    Texture* diff;
+    Texture* spec;
+    std::string diff_name;
+    std::string spec_name;
     //quaternion rotation
 };
 
@@ -114,10 +116,43 @@ init_model_textured(Model* m, std::vector<vertex>& vertices)
 
 
     shader_load(&m->s,"../assets/shaders/phong_tex.vert","../assets/shaders/phong_tex.frag");
-    load_texture(&(m->diff),"../assets/corona.png");
-    load_texture(&(m->spec),"../assets/noise.png");
+    load_texture((m->diff),"../assets/corona.png");
+    load_texture((m->spec),"../assets/noise.png");
       
+    m->diff_name = "grey.png";
+    m->spec_name = "white.png";
 }
+
+
+static void 
+init_model_textured(Model* m, std::vector<vertex>& vertices, const char* diff, const char * spec)
+{
+    glGenVertexArrays(1, &m->vao);
+    glBindVertexArray(m->vao);
+    GLuint VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, nullptr);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 3));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 6));
+    glBindVertexArray(0);
+
+
+    shader_load(&m->s,"../assets/shaders/phong_tex.vert","../assets/shaders/phong_tex.frag");
+    load_texture((m->diff),"../assets/corona.png");
+    load_texture((m->spec),"../assets/noise.png");
+      
+
+    std::string diff_name = getFileName(diff);
+    std::string spec_name = getFileName(spec);
+    m->diff_name = diff_name;
+    m->spec_name = spec_name;
+}
+
 
 static void 
 render_model_textured(Model* m, mat4* projection, mat4* view, vec3 light_pos, vec3 camera_pos)
@@ -126,10 +161,10 @@ render_model_textured(Model* m, mat4* projection, mat4* view, vec3 light_pos, ve
     
     setInt(&m->s, "m.diffuse", 0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m->diff.id);
+    glBindTexture(GL_TEXTURE_2D, m->diff->id);
     setInt(&m->s, "m.specular", 1);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m->spec.id);
+    glBindTexture(GL_TEXTURE_2D, m->spec->id);
 
     Light light = {light_pos,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
     mat4 model = translate_mat4(m->position);
@@ -190,6 +225,9 @@ init_model (Model* m, std::vector<vertex>& vertices)
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 6));
     glBindVertexArray(0);
+
+    m->diff_name = "grey.png";
+    m->spec_name = "white.png";
 
     shader_load(&m->s,"../assets/shaders/phong.vert","../assets/shaders/phong.frag");
 }
