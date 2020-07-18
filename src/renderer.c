@@ -371,8 +371,8 @@ renderer_push_mesh(Renderer* rend,Model* model, i32 triangle_count, b32 indexed 
     info.count = triangle_count;
     info.indexed = indexed;
 
-    info.spec = find_texture(&rend->manager, model->diff_name.c_str());
-    info.diff = find_texture(&rend->manager, model->spec_name.c_str());
+    info.diff = find_texture(&rend->manager, model->diff_name.c_str());
+    info.spec = find_texture(&rend->manager, model->spec_name.c_str());
 
     rend->meshes[rend->mesh_count++] = info;
 }
