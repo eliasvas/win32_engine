@@ -131,7 +131,8 @@ renderer_render_scene(Renderer* rend, Shader* shader_to_render_3d)
 
     use_shader(&rend->shaders[0]);
     //setMat4fv(&rend->shaders[0],"projection_matrix",(f32*)rend->orthographic_projection.elements);
-    setMat4fv(&rend->shaders[0],"projection_matrix",(f32*)rend->perspective_projection.elements);
+    mat4 VP = mul_mat4(rend->perspective_projection, rend->view_matrix);
+    setMat4fv(&rend->shaders[0],"projection_matrix",(f32*)VP.elements);
 
     //passing the available tex_units as uniform
     GLuint loc = glGetUniformLocation(rend->shaders[0].ID, "slots");
@@ -148,7 +149,6 @@ renderer_render_scene(Renderer* rend, Shader* shader_to_render_3d)
 
     //glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->renderable_alloc_pos); // 10 diamonds, 4 vertices per instance
     //so it doesnt render 2d stuff on the shadowmap.. maybe we would like to but they would have to be 3d projected
-    //if(shader_to_render_3d == &rend->shaders[1])
         glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, rend->renderable_alloc_pos); // 10 diamonds, 4 vertices per instance
     glBindVertexArray(0);
 
