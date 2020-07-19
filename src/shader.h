@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SHADER_H
+#define SHADER_H
 #include "tools.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -119,3 +120,4 @@ setMat4fv(Shader * shader, const std::string &name, f32* value)
 { 
     glUniformMatrix4fv(glGetUniformLocation(shader->ID, name.c_str()),1,GL_FALSE, value);  //NOTE(ilias): check
 }
+#endif

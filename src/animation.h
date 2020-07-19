@@ -1,9 +1,12 @@
-#pragma once
+#ifndef ANIMATION_H
+#define ANIMATION_H
+
 #include "tools.h"
 #include "shader.h"
 #include "physics.h"
 #include "texture.h"
 
+// 2D ANIMATION!!!!!
 typedef struct AnimationInfo
 { 
     vec2 bottom_left;
@@ -105,3 +108,30 @@ set_animation_info(AnimationInfo* info, AnimationInfo to_copy)
     info->done = to_copy.done;
 
 }
+
+
+
+
+//3D ANIMATION!!!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+

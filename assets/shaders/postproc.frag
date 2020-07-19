@@ -5,7 +5,7 @@ in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
 uniform float flag;
-float offset = 1.0 / 400.0;
+float offset = 1.0 / 300.0;
 
 
 
@@ -29,9 +29,9 @@ void main()
         vec2( offset, -offset)  // bottom-right    
     );
 	float kernel[9] = float[](
-    1.0 / 16, 2.0 / 16, 1.0 / 16,
-    2.0 / 16, 4.0 / 16, 2.0 / 16,
-    1.0 / 16, 2.0 / 16, 1.0 / 16  
+    1.0 / 16.0, 2.0 / 16.0, 1.0 / 16.0,
+    2.0 / 16.0, 4.0 / 16.0, 2.0 / 16.0,
+    1.0 / 16.0, 2.0 / 16.0, 1.0 / 16.0  
 	);
 	vec3 SampleTex[9];
 	for (int i = 0; i < 9; ++i)
@@ -40,5 +40,5 @@ void main()
 	for (int  i = 0; i < 9; ++i)
 		KernelColor += SampleTex[i] * kernel[i];
 	
-	FragColor = vec4(vec3(texture(screenTexture, TexCoords)), 1.0) * (1 - flag) + vec4(KernelColor,1.0)* (flag);
+	FragColor = vec4(vec3(texture(screenTexture, TexCoords)), 1.0) * (1 - flag) + vec4(KernelColor,1.0) * (flag);
 }

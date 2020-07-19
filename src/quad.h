@@ -1,4 +1,7 @@
-#pragma once
+#ifndef QUAD_H
+#define QUAD_H
+
+
 #include "tools.h"
 #include "shader.h"
 
@@ -124,4 +127,4 @@ render_collider(quad* q, float* m,f32 red = 0.f)
     glBindVertexArray(0);
 }
 
-
+#endif

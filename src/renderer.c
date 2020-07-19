@@ -90,7 +90,7 @@ init_renderer(Renderer* rend)
     rend->tex_count++;
     
 
-    push_texture(&rend->manager, "../assets/runimation.png");
+    push_texture(&rend->manager, "../assets/noise.png");
     push_texture(&rend->manager, "../assets/grey.png");
     push_texture(&rend->manager, "../assets/runimation.png");
     push_texture(&rend->manager, "../assets/braid.png"); //<-- this is "2" somehow FIX
@@ -107,17 +107,6 @@ renderer_render_scene(Renderer* rend, Shader* shader_to_render_3d)
     //update the isntanced array
     glBindBuffer(GL_ARRAY_BUFFER, rend->renderable_instance_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(rend->renderable_instance_data), rend->renderable_instance_data, GL_STATIC_DRAW);
-
-
-    /* This is correct, revert if things go bad.
-    for (i32 i = 0; i< rend->tex_count;++i)
-    {
-        glActiveTexture(GL_TEXTURE0 + i);
-        glBindTexture(GL_TEXTURE_2D, rend->tex[i].id);
-        texture_sizes[i] = {(GLfloat)rend->tex[i].width, (GLfloat)rend->tex[i].height};
-    }
-    */
-    
 
 
     for (i32 i = 0; i< rend->manager.size;++i)

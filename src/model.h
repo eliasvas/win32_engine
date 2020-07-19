@@ -1,4 +1,6 @@
-#pragma once
+#ifndef MODEL_H
+#define MODEL_H
+
 #include "ext/tiny_obj_loader.h"
 #include "ext/HandmadeMath.h"
 #include "vector"
@@ -270,3 +272,4 @@ render_model(Model* m, mat4* projection, mat4* view, vec3 light_pos, vec3 camera
 
 
 
+#endif

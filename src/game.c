@@ -41,11 +41,11 @@ static Skybox skybox;
 
 b32 debug_menu = 1;
 f32 inverted = 0.f;
+
 static cs_context_t* ctx;
-
-
 static cs_playing_sound_t sound;
 static cs_loaded_sound_t loaded;
+
 #define sound_on 0
 #define colliders_on 1
 #define skybox_on 0
@@ -64,6 +64,7 @@ void init(void)
     {
         load_model_data(m.vertices, "../assets/huge_plane.obj", "../assets/basic.mtl");
         init_model(&m, m.vertices);
+        m.spec_name = "noise.png";
         //m.position = {0,-5,0};
         //m.scale = v3(0.4,0.1,1);
     }
@@ -81,7 +82,7 @@ void init(void)
 
         AnimationInfo info; 
         //init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
-        init_animation_info(&info,{0.0f,1.f - 1.f/4.f}, 7, 4, 3, 27, 0.03f, 0);
+        init_animation_info(&info,{0.0f,1.f - 1.f/4.f}, 7, 4, 3, 27, 0.025f, 0);
         //init_animation_info(&info,{0.0f,0.0f}, 1, 1, 1, 1, 300000.f, 0);
         init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 3, 1.f, info);
         //s.is_blinking = 1;

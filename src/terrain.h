@@ -1,4 +1,7 @@
-#pragma once
+#ifndef TERRAIN_H
+#define TERRAIN_H
+
+
 #include "tools.h"
 #include "shader.h"
 #include "texture.h"
@@ -120,3 +123,4 @@ render_terrain(Terrain *terrain, mat4 proj, mat4 view)
     glBindVertexArray(0);
 
 }
+#endif

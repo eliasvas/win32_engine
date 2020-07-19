@@ -1,4 +1,7 @@
-#pragma once
+#ifndef SKYBOX_H
+#define SKYBOX_H
+
+
 #include "tools.h"
 #include <vector>
 #include <string>
@@ -131,3 +134,4 @@ render_skybox(Skybox* skybox,mat4 projection, mat4 view) {
     glDepthMask(GL_TRUE);
 }
 
+#endif

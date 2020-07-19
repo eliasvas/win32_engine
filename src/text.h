@@ -1,4 +1,6 @@
-#pragma once
+#ifndef TEXT_H
+#define TEXT_H
+
 #include <vector> //what a disgrace!! NOTE(ilias): replace with fixed sized array
 #include "ext/HandmadeMath.h"
 #include "shader.h"
@@ -192,3 +194,5 @@ cleanup_text(BitmapFont *f)
 {
 
 }
+
+#endif

@@ -1,4 +1,7 @@
-#pragma once
+#ifndef POSTPROC_H
+#define POSTPROC_H
+
+
 #include "tools.h"
 
 //TODO(ilias): make the API clean!!
@@ -90,3 +93,5 @@ render_to_framebuffer0(f32 inverted = 0.f)
     glEnable(GL_DEPTH_TEST);
     glBindVertexArray(0);
 }
+
+#endif

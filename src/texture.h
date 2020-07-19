@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TEXTURE_H
+#define TEXTURE_H
 #include "tools.h"
 #include "ext/stb_image.h"
 
@@ -92,8 +93,4 @@ push_texture(TextureManager* manager, const char* filepath)
     return dummy.id;
 }
 
-
-
-
-
-
+#endif

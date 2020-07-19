@@ -1,4 +1,6 @@
-#pragma once
+#ifndef RENDERER_H
+#define RENDERER_H
+
 #include "string.h" //for memcpy
 #include "tools.h"
 #include "shader.h"
@@ -74,7 +76,7 @@ struct Renderer
     u32 mesh_count;
 
 
-    mat4 projection_matrix;
+    mat4 projection_matrix; //delete this
 
     u32 render_width, render_height;
     
@@ -83,6 +85,8 @@ struct Renderer
     Texture tex[TEXTURE_MAX];
     u32 tex_count;
     TextureManager manager;
+
+
     DirLight dir_lights[LIGHT_MAX];
     u32 dir_light_count;
     PointLight point_lights[LIGHT_MAX];
@@ -116,3 +120,4 @@ renderer_render_scene(Renderer* rend);
 #include "renderer.c"
 
 
+#endif

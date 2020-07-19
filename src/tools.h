@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TOOLS_H
+#define TOOLS_H
 #if defined(_WIN32)
 #include "windows.h"
 #endif
@@ -10,6 +11,7 @@
 #include <math.h>
 #include <string.h>
 #include <string>
+#include "ext/HandmadeMath.h"
 
 //TODO gotta make an array wrapper lmao <------
 
@@ -746,8 +748,152 @@ INLINE mat4 look_at(vec3 eye, vec3 center, vec3 fake_up)
     return res;
 }
 
+//QUATERNION LIB ^-^
+typedef union Quaternion
+{
+    struct
+    {
+        union
+        {
+            vec3 xyz;
+            struct
+            {
+                f32 x,y,z;
+            };
+        };
+        f32 w;
+    };
+    f32 Elements[4];
 
-//TGA LIB
+}Quaternion;
+
+INLINE Quaternion quat(f32 x, f32 y, f32 z, f32 w)
+{
+    Quaternion res;
+
+    res.x = x;
+    res.y = y;
+    res.z = z;
+    res.w = w;
+    //res = {x,y,z,w};
+
+    return res;
+}
+
+INLINE Quaternion quat_vec4(vec4 vec)
+{
+    Quaternion res;
+
+    res.x = vec.x;
+    res.y = vec.y;
+    res.z = vec.z;
+    res.w = vec.w;
+
+    return res;
+}
+
+INLINE Quaternion add_quat(Quaternion l, Quaternion r)
+{
+    Quaternion res;
+
+    res.x = l.x + r.x;
+    res.y = l.y + r.y;
+    res.z = l.z + r.z;
+    res.w = l.w + r.w;
+
+    return res;
+}
+
+INLINE Quaternion sub_quat(Quaternion l, Quaternion r)
+{
+    Quaternion res;
+
+    res.x = l.x - r.x;
+    res.y = l.y - r.y;
+    res.z = l.z - r.z;
+    res.w = l.w - r.w;
+
+    return res;
+}
+
+INLINE Quaternion mul_quat(Quaternion l, Quaternion r)
+{
+    Quaternion res;
+
+    //some complicated shit
+    
+    return res;
+}
+
+
+INLINE Quaternion mul_quatf(Quaternion l, f32 val)
+{
+    Quaternion res;
+
+    res.x = l.x * val;
+    res.y = l.y * val;
+    res.z = l.z * val;
+    res.w = l.w * val;
+
+    return res;
+}
+
+INLINE Quaternion div_quatf(Quaternion l, f32 val)
+{
+    assert(val);
+    Quaternion res;
+    
+    res.x = l.x / val;
+    res.y = l.y / val;
+    res.z = l.z / val;
+    res.w = l.w / val;
+
+    return res;
+}
+
+INLINE f32 dot_quat(Quaternion l, Quaternion r)
+{
+    
+}
+
+INLINE Quaternion inv_quat(Quaternion l, Quaternion r)
+{
+    Quaternion res;
+
+    //some complex shit
+    
+    return res;
+}
+
+INLINE Quaternion inv_quat(Quaternion l)
+{
+    Quaternion res;
+
+    f32 len = sqrt(dot_quat(l,l));
+    res = div_quatf(l, len);
+
+    return res;
+}
+
+INLINE Quaternion nlerp(Quaternion l, f32 time, Quaternion r)
+{
+    Quaternion res;
+
+    //some complex shit
+
+    return res;
+}
+
+INLINE mat4 quat_to_mat4(Quaternion l)
+{
+    mat4 res;
+
+    //some complex shit
+
+    return res;
+}
+
+//TGA LIB 
 enum {
     TGA_ERROR_FILE_OPEN = 1,
     TGA_ERROR_READING_FILE,
@@ -1233,7 +1379,7 @@ init_string_in_arena(Arena* arena, u32 size)
     }
     return str;
 }
-
+#endif
 
 
 

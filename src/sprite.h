@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SPRITE_H
+#define SPRITE_H
+
 #include "animation.h"
 #include "quad.h"
 #include "renderer.h"
@@ -50,4 +52,4 @@ render_sprite(Sprite* s, Renderer* rend) //maybe make the renderer static
         renderer_push(rend, s->box.min,{s->box.w, s->box.h}, s->texture_unit, (s->info).bottom_left, (s->info).dim, s->flip, 1.f);
 }
 
-
+#endif
