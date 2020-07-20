@@ -816,11 +816,15 @@ INLINE Quaternion sub_quat(Quaternion l, Quaternion r)
     return res;
 }
 
+//TODO(ilias): check the scalars..
 INLINE Quaternion mul_quat(Quaternion l, Quaternion r)
 {
     Quaternion res;
 
-    //some complicated shit
+    res.w = (l.w * r.w) - (l.x * r.x) - (l.y * r.y) - (l.z * r.z);
+    res.x = (l.w * r.w) + (l.x * r.w) + (l.y * r.z) - (l.z * r.y);
+    res.y = (l.w * r.y) - (l.x * r.z) + (l.y * r.w) + (l.z * r.x);
+    res.z = (l.w * r.z) - (l.x * r.y) - (l.y * r.x) + (l.z * r.w);
     
     return res;
 }
@@ -853,17 +857,13 @@ INLINE Quaternion div_quatf(Quaternion l, f32 val)
 
 INLINE f32 dot_quat(Quaternion l, Quaternion r)
 {
-    
+   f32 res;
+
+   res = (l.x * r.x) + (l.y * r.y) + (l.z * r.z) + (l.w * r.w);
+
+   return res;
 }
 
-INLINE Quaternion inv_quat(Quaternion l, Quaternion r)
-{
-    Quaternion res;
-
-    //some complex shit
-    
-    return res;
-}
 
 INLINE Quaternion inv_quat(Quaternion l)
 {
@@ -875,7 +875,20 @@ INLINE Quaternion inv_quat(Quaternion l)
     return res;
 }
 
-INLINE Quaternion nlerp(Quaternion l, f32 time, Quaternion r)
+INLINE Quaternion nlerp(Quaternion l, Quaternion r, f32 time)
+{
+    Quaternion res;
+
+    //we gotta interpolate all quaternion components
+    res.x = lerp(l.x, r.x, time);
+    res.y = lerp(l.y, r.y, time);
+    res.z = lerp(l.z, r.z, time);
+    res.w = lerp(l.w, r.w, time);
+    
+    return res;
+}
+
+INLINE Quaternion slerp(Quaternion l, Quaternion r, f32 time)
 {
     Quaternion res;
 
@@ -884,11 +897,44 @@ INLINE Quaternion nlerp(Quaternion l, f32 time, Quaternion r)
     return res;
 }
 
+INLINE Quaternion quat_from_angle(vec3 axis, f32 angle)
+{
+    Quaternion res;
+
+    vec3 axis_normalized = normalize_vec3(axis);
+    //this because quaternions are (i)q(i^-1) so angles are double
+    f32 sintheta = sin(angle / 2.f); 
+
+    res.xyz = mul_vec3f(axis_normalized, sintheta);
+    res.w = cos(angle / 2.f);
+    
+    return res;
+}
+
 INLINE mat4 quat_to_mat4(Quaternion l)
 {
     mat4 res;
 
     //some complex shit
+
+    return res;
+}
+
+INLINE Quaternion mat4_to_quat(mat4 m)
+{
+    Quaternion res;
+
+    //some complex shit
+
+    return res;
+}
+
+INLINE Quaternion nomralize_quat(Quaternion l)
+{
+    Quaternion res;
+
+    f32 len = sqrt(dot_quat(l,l)) ;
+    res = div_quatf(l,len);
 
     return res;
 }
