@@ -351,11 +351,10 @@ renderer_push_mesh(Renderer* rend,Model* model, i32 triangle_count, b32 indexed 
 {
     ModelInfo info;
     info.vao = model->vao;
-    mat4 model_mat = translate_mat4(model->position);
-    model_mat.elements[0][0] = model->scale.x;//model->scale.x; 
-    model_mat.elements[1][1] = model->scale.x;//model->scale.y; 
-    model_mat.elements[2][2] = model->scale.x;//model->scale.z; 
-    //TODO(ilias): also add rotation info..
+    mat4 scale_matrix = scale_mat4(model->scale);
+    mat4 rotation_matrix = quat_to_mat4(quat_from_angle(v3(0,1,0), 0.1f*PI *sin(global_platform.current_time)));
+    mat4 trans_matrix = translate_mat4(model->position);
+    mat4 model_mat = mul_mat4(trans_matrix, mul_mat4(rotation_matrix, scale_matrix));
     info.model_matrix = model_mat;
     info.count = triangle_count;
     info.indexed = indexed;

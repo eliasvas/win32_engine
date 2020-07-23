@@ -649,7 +649,7 @@ INLINE mat4 translate_mat4(vec3 t) //TODO(ilias): check handedness
 
 INLINE mat4 rotate_mat4(float angle, vec3 axis)
 {
-    mat4 Result = m4d(1.0f);
+    mat4 res = m4d(1.0f);
 
     axis = normalize_vec3(axis);
 
@@ -657,19 +657,19 @@ INLINE mat4 rotate_mat4(float angle, vec3 axis)
     float cosA = cos(to_radians(angle));
     float cos_val = 1.0f - cosA;
 
-    Result.elements[0][0] = (axis.x * axis.x * cos_val) + cosA;
-    Result.elements[0][1] = (axis.x * axis.y * cos_val) + (axis.z * sinA);
-    Result.elements[0][2] = (axis.x * axis.z * cos_val) - (axis.y * sinA);
+    res.elements[0][0] = (axis.x * axis.x * cos_val) + cosA;
+    res.elements[0][1] = (axis.x * axis.y * cos_val) + (axis.z * sinA);
+    res.elements[0][2] = (axis.x * axis.z * cos_val) - (axis.y * sinA);
 
-    Result.elements[1][0] = (axis.y * axis.x * cos_val) - (axis.z * sinA);
-    Result.elements[1][1] = (axis.y * axis.y * cos_val) + cosA;
-    Result.elements[1][2] = (axis.y * axis.z * cos_val) + (axis.x * sinA);
+    res.elements[1][0] = (axis.y * axis.x * cos_val) - (axis.z * sinA);
+    res.elements[1][1] = (axis.y * axis.y * cos_val) + cosA;
+    res.elements[1][2] = (axis.y * axis.z * cos_val) + (axis.x * sinA);
 
-    Result.elements[2][0] = (axis.z * axis.x * cos_val) + (axis.y * sinA);
-    Result.elements[2][1] = (axis.z * axis.y * cos_val) - (axis.x * sinA);
-    Result.elements[2][2] = (axis.z * axis.z * cos_val) + cosA;
+    res.elements[2][0] = (axis.z * axis.x * cos_val) + (axis.y * sinA);
+    res.elements[2][1] = (axis.z * axis.y * cos_val) - (axis.x * sinA);
+    res.elements[2][2] = (axis.z * axis.z * cos_val) + cosA;
 
-    return (Result);
+    return (res);
 }
 
 INLINE mat4 scale_mat4(vec3 s)
@@ -763,7 +763,7 @@ typedef union Quaternion
         };
         f32 w;
     };
-    f32 Elements[4];
+    f32 elements[4];
 
 }Quaternion;
 
@@ -864,6 +864,12 @@ INLINE f32 dot_quat(Quaternion l, Quaternion r)
    return res;
 }
 
+INLINE b32 equals_quat(Quaternion l, Quaternion r)
+{
+    f32 dot = dot_quat(l,r);
+    return 1 ? 0 : abs(dot - 1.f) < 0.001f;
+}
+
 
 INLINE Quaternion inv_quat(Quaternion l)
 {
@@ -911,11 +917,54 @@ INLINE Quaternion quat_from_angle(vec3 axis, f32 angle)
     return res;
 }
 
+INLINE Quaternion normalize_quat(Quaternion l)
+{
+    Quaternion res;
+
+    f32 len = sqrt(dot_quat(l,l)) ;
+    res = div_quatf(l,len);
+
+    return res;
+}
+
+//taken from HMMATH.. investigate further..
 INLINE mat4 quat_to_mat4(Quaternion l)
 {
     mat4 res;
 
-    //some complex shit
+    Quaternion norm_quat = normalize_quat(l);
+
+    f32 XX, YY, ZZ, XY, XZ, YZ, WX, WY, WZ;
+
+    XX = norm_quat.x * norm_quat.x;
+    YY = norm_quat.y * norm_quat.y;
+    ZZ = norm_quat.z * norm_quat.z;
+    XY = norm_quat.x * norm_quat.y;
+    XZ = norm_quat.x * norm_quat.z;
+    YZ = norm_quat.y * norm_quat.z;
+    WX = norm_quat.w * norm_quat.x;
+    WY = norm_quat.w * norm_quat.y;
+    WZ = norm_quat.w * norm_quat.z;
+
+    res.elements[0][0] = 1.0f - 2.0f * (YY + ZZ);
+    res.elements[0][1] = 2.0f * (XY + WZ);
+    res.elements[0][2] = 2.0f * (XZ - WY);
+    res.elements[0][3] = 0.0f;
+
+    res.elements[1][0] = 2.0f * (XY - WZ);
+    res.elements[1][1] = 1.0f - 2.0f * (XX + ZZ);
+    res.elements[1][2] = 2.0f * (YZ + WX);
+    res.elements[1][3] = 0.0f;
+
+    res.elements[2][0] = 2.0f * (XZ + WY);
+    res.elements[2][1] = 2.0f * (YZ - WX);
+    res.elements[2][2] = 1.0f - 2.0f * (XX + YY);
+    res.elements[2][3] = 0.0f;
+
+    res.elements[3][0] = 0.0f;
+    res.elements[3][1] = 0.0f;
+    res.elements[3][2] = 0.0f;
+    res.elements[3][3] = 1.0f;
 
     return res;
 }
@@ -929,15 +978,6 @@ INLINE Quaternion mat4_to_quat(mat4 m)
     return res;
 }
 
-INLINE Quaternion nomralize_quat(Quaternion l)
-{
-    Quaternion res;
-
-    f32 len = sqrt(dot_quat(l,l)) ;
-    res = div_quatf(l,len);
-
-    return res;
-}
 
 //TGA LIB 
 enum {
