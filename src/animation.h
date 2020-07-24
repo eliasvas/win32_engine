@@ -115,9 +115,32 @@ set_animation_info(AnimationInfo* info, AnimationInfo to_copy)
 //3D ANIMATION!!!
 
 
+typedef struct Joint
+{
+    u32 index;
+    String name;
+    std::vector<Joint> children;
+    //Joint* children;
+    //u32 num_of_children;
+    mat4 animated_transform; 
+    mat4 local_bind_transform;
+    mat4 inv_local_bind_transform;
+} Joint;
 
+static Joint 
+joint(u32 index, String name, mat4 local_bind_transform)
+{
+    Joint j;
+    j.index = index;
+    j.name = name;
+    j.local_bind_transform = local_bind_transform;
+}
 
-
+static void
+calc_inv_bind_transform(mat4 parent_bind_transform)
+{
+    //mat4 bind_transform = mul_mat4(parent_bind_transform, local_bind_transform); //transform in relation to origin
+}
 
 
 

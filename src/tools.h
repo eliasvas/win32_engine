@@ -178,7 +178,7 @@ typedef union mat4
     struct{
         f32 elements[4][4];//{x.x,x.y,x.z,0,y.x,y.y,y.z,0,z.x,z.y,z.z,0,p.x,p.y,p.z,1} 
     };
-    f32 elements_raw[16]; //{x.x,x.y,x.z,0,y.x,y.y,y.z,0,z.x,z.y,z.z,0,p.x,p.y,p.z,1} 
+    f32 raw[16]; //{x.x,x.y,x.z,0,y.x,y.y,y.z,0,z.x,z.y,z.z,0,p.x,p.y,p.z,1} 
 }mat4;
 
 INLINE f32 to_radians(float degrees)
@@ -689,7 +689,141 @@ INLINE mat4 scale_mat4(vec3 s)
     return res;
 }
 
-INLINE mat4 orthographic_proj(float l, float r, float b, float t, float n, float f)
+//what the fuuuuuuuck is this shit??
+INLINE mat4 inv_mat4(mat4 m)
+{
+   mat4 res;
+    f32 det;
+    mat4 inv, invOut;
+    int i;
+
+    inv.raw[0] = m.raw[5]  * m.raw[10] * m.raw[15] - 
+             m.raw[5]  * m.raw[11] * m.raw[14] - 
+             m.raw[9]  * m.raw[6]  * m.raw[15] + 
+             m.raw[9]  * m.raw[7]  * m.raw[14] +
+             m.raw[13] * m.raw[6]  * m.raw[11] - 
+             m.raw[13] * m.raw[7]  * m.raw[10];
+
+    inv.raw[4] = -m.raw[4]  * m.raw[10] * m.raw[15] + 
+              m.raw[4]  * m.raw[11] * m.raw[14] + 
+              m.raw[8]  * m.raw[6]  * m.raw[15] - 
+              m.raw[8]  * m.raw[7]  * m.raw[14] - 
+              m.raw[12] * m.raw[6]  * m.raw[11] + 
+              m.raw[12] * m.raw[7]  * m.raw[10];
+
+    inv.raw[8] = m.raw[4]  * m.raw[9] * m.raw[15] - 
+             m.raw[4]  * m.raw[11] * m.raw[13] - 
+             m.raw[8]  * m.raw[5] * m.raw[15] + 
+             m.raw[8]  * m.raw[7] * m.raw[13] + 
+             m.raw[12] * m.raw[5] * m.raw[11] - 
+             m.raw[12] * m.raw[7] * m.raw[9];
+
+    inv.raw[12] = -m.raw[4]  * m.raw[9] * m.raw[14] + 
+               m.raw[4]  * m.raw[10] * m.raw[13] +
+               m.raw[8]  * m.raw[5] * m.raw[14] - 
+               m.raw[8]  * m.raw[6] * m.raw[13] - 
+               m.raw[12] * m.raw[5] * m.raw[10] + 
+               m.raw[12] * m.raw[6] * m.raw[9];
+
+    inv.raw[1] = -m.raw[1]  * m.raw[10] * m.raw[15] + 
+              m.raw[1]  * m.raw[11] * m.raw[14] + 
+              m.raw[9]  * m.raw[2] * m.raw[15] - 
+              m.raw[9]  * m.raw[3] * m.raw[14] - 
+              m.raw[13] * m.raw[2] * m.raw[11] + 
+              m.raw[13] * m.raw[3] * m.raw[10];
+
+    inv.raw[5] = m.raw[0]  * m.raw[10] * m.raw[15] - 
+             m.raw[0]  * m.raw[11] * m.raw[14] - 
+             m.raw[8]  * m.raw[2] * m.raw[15] + 
+             m.raw[8]  * m.raw[3] * m.raw[14] + 
+             m.raw[12] * m.raw[2] * m.raw[11] - 
+             m.raw[12] * m.raw[3] * m.raw[10];
+
+    inv.raw[9] = -m.raw[0]  * m.raw[9] * m.raw[15] + 
+              m.raw[0]  * m.raw[11] * m.raw[13] + 
+              m.raw[8]  * m.raw[1] * m.raw[15] - 
+              m.raw[8]  * m.raw[3] * m.raw[13] - 
+              m.raw[12] * m.raw[1] * m.raw[11] + 
+              m.raw[12] * m.raw[3] * m.raw[9];
+
+    inv.raw[13] = m.raw[0]  * m.raw[9] * m.raw[14] - 
+              m.raw[0]  * m.raw[10] * m.raw[13] - 
+              m.raw[8]  * m.raw[1] * m.raw[14] + 
+              m.raw[8]  * m.raw[2] * m.raw[13] + 
+              m.raw[12] * m.raw[1] * m.raw[10] - 
+              m.raw[12] * m.raw[2] * m.raw[9];
+
+    inv.raw[2] = m.raw[1]  * m.raw[6] * m.raw[15] - 
+             m.raw[1]  * m.raw[7] * m.raw[14] - 
+             m.raw[5]  * m.raw[2] * m.raw[15] + 
+             m.raw[5]  * m.raw[3] * m.raw[14] + 
+             m.raw[13] * m.raw[2] * m.raw[7] - 
+             m.raw[13] * m.raw[3] * m.raw[6];
+
+    inv.raw[6] = -m.raw[0]  * m.raw[6] * m.raw[15] + 
+              m.raw[0]  * m.raw[7] * m.raw[14] + 
+              m.raw[4]  * m.raw[2] * m.raw[15] - 
+              m.raw[4]  * m.raw[3] * m.raw[14] - 
+              m.raw[12] * m.raw[2] * m.raw[7] + 
+              m.raw[12] * m.raw[3] * m.raw[6];
+
+    inv.raw[10] = m.raw[0]  * m.raw[5] * m.raw[15] - 
+              m.raw[0]  * m.raw[7] * m.raw[13] - 
+              m.raw[4]  * m.raw[1] * m.raw[15] + 
+              m.raw[4]  * m.raw[3] * m.raw[13] + 
+              m.raw[12] * m.raw[1] * m.raw[7] - 
+              m.raw[12] * m.raw[3] * m.raw[5];
+
+    inv.raw[14] = -m.raw[0]  * m.raw[5] * m.raw[14] + 
+               m.raw[0]  * m.raw[6] * m.raw[13] + 
+               m.raw[4]  * m.raw[1] * m.raw[14] - 
+               m.raw[4]  * m.raw[2] * m.raw[13] - 
+               m.raw[12] * m.raw[1] * m.raw[6] + 
+               m.raw[12] * m.raw[2] * m.raw[5];
+
+    inv.raw[3] = -m.raw[1] * m.raw[6] * m.raw[11] + 
+              m.raw[1] * m.raw[7] * m.raw[10] + 
+              m.raw[5] * m.raw[2] * m.raw[11] - 
+              m.raw[5] * m.raw[3] * m.raw[10] - 
+              m.raw[9] * m.raw[2] * m.raw[7] + 
+              m.raw[9] * m.raw[3] * m.raw[6];
+
+    inv.raw[7] = m.raw[0] * m.raw[6] * m.raw[11] - 
+             m.raw[0] * m.raw[7] * m.raw[10] - 
+             m.raw[4] * m.raw[2] * m.raw[11] + 
+             m.raw[4] * m.raw[3] * m.raw[10] + 
+             m.raw[8] * m.raw[2] * m.raw[7] - 
+             m.raw[8] * m.raw[3] * m.raw[6];
+
+    inv.raw[11] = -m.raw[0] * m.raw[5] * m.raw[11] + 
+               m.raw[0] * m.raw[7] * m.raw[9] + 
+               m.raw[4] * m.raw[1] * m.raw[11] - 
+               m.raw[4] * m.raw[3] * m.raw[9] - 
+               m.raw[8] * m.raw[1] * m.raw[7] + 
+               m.raw[8] * m.raw[3] * m.raw[5];
+
+    inv.raw[15] = m.raw[0] * m.raw[5] * m.raw[10] - 
+              m.raw[0] * m.raw[6] * m.raw[9] - 
+              m.raw[4] * m.raw[1] * m.raw[10] + 
+              m.raw[4] * m.raw[2] * m.raw[9] + 
+              m.raw[8] * m.raw[1] * m.raw[6] - 
+              m.raw[8] * m.raw[2] * m.raw[5];
+
+    det = m.raw[0] * inv.raw[0] + m.raw[1] * inv.raw[4] + 
+        m.raw[2] * inv.raw[8] + m.raw[3] * inv.raw[12];
+
+    if (det == 0) //in case the matrix is non-invertible
+        return {0}; 
+
+    det = 1.f / det;
+
+    for (i = 0; i < 16; ++i)
+        invOut.raw[i] = inv.raw[i] * det;
+
+   return invOut;
+}
+
+INLINE mat4 orthographic_proj(f32 l, f32 r, f32 b, f32 t, f32 n, f32 f)
 {
     mat4 res = m4();
 

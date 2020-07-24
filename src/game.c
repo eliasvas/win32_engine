@@ -108,15 +108,6 @@ void init(void)
 
     }
 
-    /*
-    char buf[] = "hello there";
-    char buf2[] = "hello there";
-    String s1 = str(&global_platform.permanent_storage,buf);
-    String s2 = str(&global_platform.permanent_storage,buf2);
-    if (strcmp(s1,s2) ==0) exit(0);
-    */
-
-
 #if sound_on
     ctx =cs_make_context(WND,44000,8192,0,0);
     loaded = cs_load_wav("../assets/background_music.wav");
