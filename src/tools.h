@@ -69,6 +69,14 @@ static i32 char_to_lower(i32 c)
     return c;
 }
 
+static u32 
+str_size(char* str)
+{
+    u32 i = 0;
+    while (str[i] != 0)++i;
+    return i;
+}
+
 static void
 seed_random_()
 {
@@ -1465,10 +1473,25 @@ init_string_in_arena(Arena* arena, u32 size)
     }
     return str;
 }
+
+static String str(Arena* arena, char* characters)
+{
+
+    String s = init_string_in_arena(arena, str_size(characters) + 1);
+    memcpy(s.data, characters, str_size(characters) + 1);
+    return s; 
+}
+
+static u32
+strcmp(String l, String r)
+{
+    u32 res = 0;
+    res =strcmp(l.data,r.data);
+    return res;
+}
+
+
 #endif
-
-
-
 
 
 

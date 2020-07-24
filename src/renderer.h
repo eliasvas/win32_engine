@@ -84,6 +84,7 @@ struct Renderer
     Shader shaders[SHADER_MAX];
     Texture tex[TEXTURE_MAX];
     u32 tex_count;
+    //NOTE: maybe the TextureManager should be global? or per scene?
     TextureManager manager;
 
 

@@ -75,6 +75,7 @@ void init(void)
         teapot_model.diff_name = "red.png";
         teapot_model.position = {0,2.f,0.0};
         teapot_model.scale = {0.02,0.02,0.02};
+
     }
 
     //player initializiation
@@ -106,6 +107,14 @@ void init(void)
          dir_light = {{0,-1,0},{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
 
     }
+
+    /*
+    char buf[] = "hello there";
+    char buf2[] = "hello there";
+    String s1 = str(&global_platform.permanent_storage,buf);
+    String s2 = str(&global_platform.permanent_storage,buf2);
+    if (strcmp(s1,s2) ==0) exit(0);
+    */
 
 
 #if sound_on
@@ -176,6 +185,8 @@ void update(void)
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
 
+    teapot_model.rotation = quat_from_angle(v3(0,1,0), 2 * PI *( sin(global_platform.current_time)));
+
     point_light.position = {sin(global_platform.current_time)* 3, 8,10};
     //point_light.position = {0, 8,3};
 
@@ -240,7 +251,7 @@ void render(void)
     glDisable(GL_DEPTH_TEST); //NOTE(ilias): this is used only for collider visualization
     glLineWidth(2);
     for (Box *b : colliders)
-        render_collider_in_pos (mat, {b->min.x + b->hb.min.x,b->min.y + b->hb.min.y,-1.f}, {b->w * b->hb.w, b->h * b->hb.h}, (float)b->is_colliding);
+        render_collider_in_pos (mat, v3(b->min.x + b->hb.min.x,b->min.y + b->hb.min.y,-1.f), v2(b->w * b->hb.w, b->h * b->hb.h), (float)b->is_colliding);
     glLineWidth(1);
     glEnable(GL_DEPTH_TEST);
 #endif

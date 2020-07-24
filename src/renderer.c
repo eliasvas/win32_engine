@@ -352,7 +352,8 @@ renderer_push_mesh(Renderer* rend,Model* model, i32 triangle_count, b32 indexed 
     ModelInfo info;
     info.vao = model->vao;
     mat4 scale_matrix = scale_mat4(model->scale);
-    mat4 rotation_matrix = quat_to_mat4(quat_from_angle(v3(0,1,0), 0.1f*PI *sin(global_platform.current_time)));
+    //mat4 rotation_matrix = quat_to_mat4(quat_from_angle(v3(0,1,0), 0.1f*PI *sin(global_platform.current_time)));
+    mat4 rotation_matrix = quat_to_mat4(model->rotation);//quat_to_mat4(quat_from_angle(v3(0,1,0), 0.1f*PI *sin(global_platform.current_time)));
     mat4 trans_matrix = translate_mat4(model->position);
     mat4 model_mat = mul_mat4(trans_matrix, mul_mat4(rotation_matrix, scale_matrix));
     info.model_matrix = model_mat;

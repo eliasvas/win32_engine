@@ -50,6 +50,7 @@ struct Model{
     std::vector<vertex> vertices;
     vec3 position;
     vec3 scale = {0.1f,0.1f,0.1f};
+    Quaternion rotation = quat_from_angle(v3(0,1,0), 0.f);
     Material m;
     Texture* diff;
     Texture* spec;
