@@ -182,14 +182,18 @@ WinMain(HINSTANCE Instance,
 	//glCullFace(GL_BACK);
 
 
-    //initializing arenas (MAYBE do it inside game.c/init()??)
-    u8* permanent_memory = (u8*)malloc(32768 * sizeof(u8));
-    u8* frame_memory = (u8*)malloc(1024 * sizeof(u8));
-    //mem = (void *)((u8*)arena->memory + arena->current_offset); 
-    if (permanent_memory == NULL || frame_memory == NULL)memcpy(infoLog, "Not Enough Storage for Arenas", 29);
-    global_platform.permanent_storage = arena_init(permanent_memory, 32768);
-    global_platform.frame_storage = arena_init(frame_memory, 1024);
-    
+    //initializing arenas
+    {
+        u8* permanent_memory = (u8*)malloc(32768 * sizeof(u8));
+        u8* frame_memory = (u8*)malloc(1024 * sizeof(u8));
+        //mem = (void *)((u8*)arena->memory + arena->current_offset); 
+        if (permanent_memory == NULL || frame_memory == NULL)memcpy(infoLog, "Not Enough Storage for Arenas", 29);
+        global_platform.permanent_storage = arena_init(permanent_memory, 32768);
+        global_platform.frame_storage = arena_init(frame_memory, 1024);
+     
+    }
+
+
     init();
     while (!global_platform.exit){
         QueryPerformanceCounter(&st);
@@ -218,6 +222,9 @@ WinMain(HINSTANCE Instance,
         update();
         render();
         SwapBuffers(GetDC(WND));
+        
+        arena_clear(&global_platform.frame_storage);
+
         QueryPerformanceCounter(&ft);
 
         if (global_platform.vsync){

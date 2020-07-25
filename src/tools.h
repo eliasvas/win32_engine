@@ -446,6 +446,18 @@ INLINE vec3 normalize_vec3(vec3 v)
     return res;
 }
 
+INLINE vec3 lerp_vec3(vec3 l, vec3 r, f32 time)
+{
+    vec3 res;
+
+    f32 x = lerp(l.x, r.x, time);
+    f32 y = lerp(l.y, r.y, time);
+    f32 z = lerp(l.z, r.z, time);
+    res = v3(x,y,z); 
+    
+    return res;
+}
+
 INLINE vec3 cross_vec3(vec3 l,vec3 r)
 {
     vec3 res;

@@ -52,7 +52,6 @@ static cs_loaded_sound_t loaded;
 
 void init(void)
 {
-
     init_fake_framebuffer();
     init_text(&bmf,"../assets/ASCII_512.png"); 
 

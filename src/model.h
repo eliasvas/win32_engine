@@ -6,34 +6,34 @@
 #include "vector"
 #include "objloader.h"
 
-struct vertex
+typedef struct vertex
 {
    vec3 position; 
    vec3 normal;
    vec2 tex_coord;
-};
-struct Material
+}vertex;
+typedef struct Material
 {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
     f32 shininess;
-};
-struct Light {
+}Material;
+typedef struct Light {
     vec3 position;
   
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-};
-struct DirLight {
+}Light;
+typedef struct DirLight {
     vec3 direction;
   
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-};  
-struct PointLight {    
+}DirLight;  
+typedef struct PointLight {    
     vec3 position;
     
     f32 constant;
@@ -43,8 +43,8 @@ struct PointLight {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-};  
-struct Model{
+}PointLight;  
+typedef struct Model{
     GLuint vao;
     Shader s;
     std::vector<vertex> vertices;
@@ -57,7 +57,7 @@ struct Model{
     std::string diff_name;
     std::string spec_name;
     //quaternion rotation
-};
+}Model;
 
 static void
 load_model_data(std::vector<vertex>& vec, const char * obj_path, const char * mtl_path)
