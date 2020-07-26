@@ -124,6 +124,24 @@ getFileName(const std::string& s) {
    return("");
 }
 
+static i32 
+get_num_from_string(char *str)
+{
+   char num[64];
+   int k = 0;
+   i32 i = 0;
+   while (str[i] != '\0')
+   {
+      if (char_is_digit(str[i]))
+      {
+          num[k++] = str[i];
+      }else if (k > 0)break; //we only get the first number in the string
+      ++i;
+   }
+   num[k] = '\0';
+   i32 res = atoi(num);
+   return res;
+}
 
 //MATH LIB
 typedef union vec2

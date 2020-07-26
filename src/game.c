@@ -50,8 +50,12 @@ static cs_loaded_sound_t loaded;
 #define colliders_on 1
 #define skybox_on 0
 
+static MeshData data;
+
 void init(void)
 {
+    data = read_collada(str(&global_platform.permanent_storage,"../assets/man.dae"));
+
     init_fake_framebuffer();
     init_text(&bmf,"../assets/ASCII_512.png"); 
 
@@ -70,10 +74,11 @@ void init(void)
     //teapot_model initialization
     {
         load_model_data(teapot_model.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
-        init_model(&teapot_model, teapot_model.vertices);
+        //init_model(&teapot_model, teapot_model.vertices);
+        init_model(&teapot_model, data.verts, data.vertex_count);
         teapot_model.diff_name = "red.png";
         teapot_model.position = {0,2.f,0.0};
-        teapot_model.scale = {0.02,0.02,0.02};
+        teapot_model.scale = {0.2,0.2,0.2};
 
     }
 
@@ -107,6 +112,7 @@ void init(void)
 
     }
 
+
 #if sound_on
     ctx =cs_make_context(WND,44000,8192,0,0);
     loaded = cs_load_wav("../assets/background_music.wav");
@@ -117,7 +123,8 @@ void init(void)
 
 void update(void)
 {
-    teapot_model.position = {0, abs(sin(global_platform.current_time)/4.f) + 2.f,0.0};
+    //teapot_model.position = {0, abs(sin(global_platform.current_time)/4.f) + 2.f,0.0};
+    teapot_model.position = {0, 1.f,0.0};
     change_to_fake_framebuffer();
 #if sound_on
     cs_mix(ctx);
@@ -175,7 +182,8 @@ void update(void)
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
 
-    teapot_model.rotation = quat_from_angle(v3(0,1,0), 2 * PI *( sin(global_platform.current_time)));
+    //teapot_model.rotation = quat_from_angle(v3(0,1,0), 2 * PI *( sin(global_platform.current_time)));
+    teapot_model.rotation = quat_from_angle(v3(1,0,0),-PI/2 );
 
     point_light.position = {sin(global_platform.current_time)* 3, 8,10};
     //point_light.position = {0, 8,3};
@@ -186,7 +194,7 @@ void update(void)
 
     renderer_push_dir_light(&rend,&dir_light);
     renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
-    renderer_push_mesh(&rend,&teapot_model, teapot_model.vertices.size());
+    renderer_push_mesh(&rend,&teapot_model, data.vertex_count);
     renderer_push_mesh(&rend,&m, m.vertices.size());
     renderer_set_projection_matrix(&rend, perspective_matrix);
     renderer_set_view_matrix(&rend, view_matrix);

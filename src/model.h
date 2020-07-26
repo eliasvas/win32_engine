@@ -56,7 +56,6 @@ typedef struct Model{
     Texture* spec;
     std::string diff_name;
     std::string spec_name;
-    //quaternion rotation
 }Model;
 
 static void
@@ -157,6 +156,7 @@ init_model_textured(Model* m, std::vector<vertex>& vertices, const char* diff, c
 }
 
 
+
 static void 
 render_model_textured(Model* m, mat4* projection, mat4* view, vec3 light_pos, vec3 camera_pos)
 {
@@ -211,7 +211,6 @@ render_model_textured(Model* m, mat4* projection, mat4* view, vec3 light_pos, ve
 
 
 
-//DEPRECATED, ONLY USE FOR TESTING!!
 static void 
 init_model (Model* m, std::vector<vertex>& vertices)
 {
@@ -234,6 +233,30 @@ init_model (Model* m, std::vector<vertex>& vertices)
 
     shader_load(&m->s,"../assets/shaders/phong.vert","../assets/shaders/phong.frag");
 }
+
+static void 
+init_model (Model* m, vertex* vertices, i32 count)
+{
+    glGenVertexArrays(1, &m->vao);
+    glBindVertexArray(m->vao);
+    GLuint VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * count, &vertices[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8,(void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 3));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 6));
+    glBindVertexArray(0);
+
+    m->diff_name = "grey.png";
+    m->spec_name = "white.png";
+
+    shader_load(&m->s,"../assets/shaders/phong.vert","../assets/shaders/phong.frag");
+}
+
 
 static void 
 render_model(Model* m, mat4* projection, mat4* view, vec3 light_pos, vec3 camera_pos)

@@ -237,6 +237,7 @@ renderer_render_scene(Renderer* rend, Shader* shader_to_render_3d)
         if (rend->meshes[i].indexed)
             glDrawElements(GL_TRIANGLES, rend->meshes[i].count, GL_UNSIGNED_INT, 0);
         else    
+            //glDrawArrays(GL_TRIANGLES,0, rend->meshes[i].count);
             glDrawArrays(GL_TRIANGLES,0, rend->meshes[i].count);
 
     }
