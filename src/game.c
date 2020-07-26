@@ -29,6 +29,7 @@ static Terrain terrain;
 
 static Model m;
 static Model teapot_model;
+static Model test_model;
 
 static mat4 view_matrix;
 static mat4 perspective_matrix;
@@ -74,13 +75,24 @@ void init(void)
     //teapot_model initialization
     {
         load_model_data(teapot_model.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
-        //init_model(&teapot_model, teapot_model.vertices);
-        init_model(&teapot_model, data.verts, data.vertex_count);
+        init_model(&teapot_model, teapot_model.vertices);
         teapot_model.diff_name = "red.png";
         teapot_model.position = {0,2.f,0.0};
-        teapot_model.scale = {0.2,0.2,0.2};
+        teapot_model.scale = {0.02,0.02,0.02};
 
     }
+    //test model
+    {
+        load_model_data(test_model.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
+        init_model(&test_model, data.verts, data.vertex_count);
+        test_model.diff_name = "red.png";
+        test_model.position = {0,2.f,0.0};
+        test_model.scale = {0.2,0.2,0.2};
+        test_model.rotation = quat_from_angle(v3(1,0,0), -PI/2);
+
+    }
+
+
 
     //player initializiation
     {
@@ -123,8 +135,9 @@ void init(void)
 
 void update(void)
 {
-    //teapot_model.position = {0, abs(sin(global_platform.current_time)/4.f) + 2.f,0.0};
-    teapot_model.position = {0, 1.f,0.0};
+
+    teapot_model.position = {0, abs(sin(global_platform.current_time)/4.f) + 4.f,0.0};
+    test_model.position = {0, 1.f,0.0};
     change_to_fake_framebuffer();
 #if sound_on
     cs_mix(ctx);
@@ -182,8 +195,7 @@ void update(void)
         s.box.min = add_vec2(s.box.min,mul_vec2f(s.box.velocity, global_platform.dt));
     }
 
-    //teapot_model.rotation = quat_from_angle(v3(0,1,0), 2 * PI *( sin(global_platform.current_time)));
-    teapot_model.rotation = quat_from_angle(v3(1,0,0),-PI/2 );
+    teapot_model.rotation = quat_from_angle(v3(0,1,0), 2 * PI *( sin(global_platform.current_time)));
 
     point_light.position = {sin(global_platform.current_time)* 3, 8,10};
     //point_light.position = {0, 8,3};
@@ -194,7 +206,8 @@ void update(void)
 
     renderer_push_dir_light(&rend,&dir_light);
     renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
-    renderer_push_mesh(&rend,&teapot_model, data.vertex_count);
+    renderer_push_mesh(&rend,&teapot_model, teapot_model.vertices.size());
+    renderer_push_mesh(&rend,&test_model, data.vertex_count);
     renderer_push_mesh(&rend,&m, m.vertices.size());
     renderer_set_projection_matrix(&rend, perspective_matrix);
     renderer_set_view_matrix(&rend, view_matrix);

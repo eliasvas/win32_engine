@@ -40,11 +40,11 @@ typedef char      b8;
 #define clamp(x, a, b)  (maximum(a, minimum(x, b)))
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
 
-#ifdef SIN_APPROx
+#ifdef SIN_APPROX
 #define SINF sin_32
 #endif
 
-#ifdef COS_APPROx
+#ifdef COS_APPROX
 #define COSF cos_32
 #endif
 
