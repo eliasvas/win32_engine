@@ -74,6 +74,7 @@ init_renderer(Renderer* rend)
     //this is for testing purposes.. make it normal..
     shader_load(&rend->shaders[0], "../assets/shaders/batch.vert", "../assets/shaders/batch.frag");
     shader_load(&rend->shaders[1],"../assets/shaders/batch_phong_tex_sm.vert", "../assets/shaders/batch_phong_tex_sm.frag");
+    shader_load(&rend->shaders[2],"../assets/shaders/animated3d.vert", "../assets/shaders/animated3d.frag");
 
     //TODO make texture loading dynamic!!!!!!!!!! <---
     load_texture(&rend->tex[1],"../assets/panda.png");

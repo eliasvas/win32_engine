@@ -12,7 +12,7 @@ layout(location = 4) in vec3 weights;
 out vec2 f_tex_coords;
 out vec3 f_normal;
 
-uniform mat4 joint_transforms[MAX_JOINT;
+uniform mat4 joint_transforms[MAX_JOINTS];
 uniform mat4 view_matrix;
 uniform mat4 projection_matrix;
 
@@ -20,7 +20,7 @@ void main(){
 	vec4 total_local_pos = vec4(0.0);
 	vec4 total_normal = vec4(0.0);
 	
-	for (int i = 0; i < MAX_WEIGHTS; ++i)
+	for (int i = 0; i < MAX_BONES; ++i)
 	{
 		mat4 joint_transform = joint_transforms[joint_ids[i]];
 		
@@ -31,7 +31,7 @@ void main(){
 		total_normal += world_normal * weights[i];
 	}
 	gl_Position = projection_matrix * view_matrix * total_local_pos;
-	f_normal = roral_normal.xyz;
-	f_texture_coords = tex_coords;
+	f_normal = total_normal.xyz;
+	f_tex_coords = tex_coords;
 }
 
