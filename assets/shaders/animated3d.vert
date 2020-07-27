@@ -15,6 +15,7 @@ out vec3 f_normal;
 uniform mat4 joint_transforms[MAX_JOINTS];
 uniform mat4 view_matrix;
 uniform mat4 projection_matrix;
+//maybe add a model
 
 void main(){
 	vec4 total_local_pos = vec4(0.0);

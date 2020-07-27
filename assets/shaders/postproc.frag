@@ -5,7 +5,7 @@ in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
 uniform float flag;
-float offset = 1.0 / 300.0;
+float offset = 1.0 / 300.0; //tweak this
 
 
 

@@ -2,6 +2,15 @@
 #define DAEPARSER_H
 #include "tools.h"
 
+typedef struct AnimatedVertex
+{
+    vec3 position;
+    vec3 normal;
+    vec2 tex_coord;
+    i32 joint_ids[3];
+    vec3 weights;
+}AnimatedVertex;
+
 typedef struct MeshData{
     vec3* positions; 
     vec3* normals; 

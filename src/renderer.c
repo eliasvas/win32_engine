@@ -143,9 +143,6 @@ renderer_render_scene(Renderer* rend, Shader* shader_to_render_3d)
     glBindVertexArray(0);
 
     
-//    return;
-
-
 
     //NOTE(ilias):drawing models here!!!!
     use_shader(shader_to_render_3d);

@@ -51,9 +51,9 @@ init_terrain(Terrain *terrain,const char *filename)
     {
         for (u32 j = 0; j < VERTEX_COUNT; ++j)
         {
-            vertices[vp*3] = ( (f32)j / (f32)(VERTEX_COUNT - 1) )* MAX_WIDTH; 
+            vertices[vp*3] = ( (f32)j / (f32)(VERTEX_COUNT - 1) ) * MAX_WIDTH; 
             vertices[vp*3 + 1] = get_height_from_heightmap(terrain, i, j) * 2; 
-            vertices[vp*3 + 2] = ( (f32)i / (f32)(VERTEX_COUNT - 1) )* MAX_HEIGHT; 
+            vertices[vp*3 + 2] = ( (f32)i / (f32)(VERTEX_COUNT - 1) ) * MAX_HEIGHT; 
             normals[vp*3] = 0;
             normals[vp*3 + 1] = 1;
             normals[vp*3 + 2] = 0;

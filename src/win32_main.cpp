@@ -228,7 +228,7 @@ WinMain(HINSTANCE Instance,
         QueryPerformanceCounter(&ft);
 
         if (global_platform.vsync){
-            //NOTE(ilias): wait remaining time
+            //NOTE(ilias): wait remaining time --this is wrong
             i64 frame_count = ft.QuadPart - st.QuadPart;
             i64 desired_frame_count = (f32)fr.QuadPart / global_platform.target_fps;
             i64 counts_to_wait = desired_frame_count - frame_count;

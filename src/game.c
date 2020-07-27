@@ -49,9 +49,9 @@ static cs_loaded_sound_t loaded;
 
 #define sound_on 0
 #define colliders_on 1
-#define skybox_on 0
+#define skybox_on 1
 
-static MeshData data;
+static MeshData data; //this should be an AnimatedModel
 
 void init(void)
 {
@@ -91,7 +91,6 @@ void init(void)
         test_model.rotation = quat_from_angle(v3(1,0,0), -PI/2);
 
     }
-
 
 
     //player initializiation
@@ -218,7 +217,7 @@ void update(void)
 
 void render(void)
 {
-    render_sprite(&s, &rend);  //<----------------------------this is for the braid guy
+    render_sprite(&s, &rend);  //we probably dont need this
 #if skybox_on
     render_skybox(&skybox,perspective_matrix, view_matrix);
 #endif
