@@ -51,7 +51,10 @@ static cs_loaded_sound_t loaded;
 #define colliders_on 1
 #define skybox_on 1
 
+static AnimatedModel skel;
 static MeshData data; //this should be an AnimatedModel
+static Animation animation_to_play;
+static Animator anim;
 
 void init(void)
 {
@@ -80,6 +83,13 @@ void init(void)
         teapot_model.position = {0,2.f,0.0};
         teapot_model.scale = {0.02,0.02,0.02};
 
+    }
+    //AnimatedModel initialization
+    {
+        Texture* diff = find_texture(&rend.manager, "red.png");
+        skel = init_animated_model(diff,{0},&data);
+        //animation_to_play = read_animation_from_collada(..);
+        anim = {skel, &animation_to_play, 0.3f};
     }
     //test model
     {
@@ -134,6 +144,7 @@ void init(void)
 
 void update(void)
 {
+    //update_animator(&anim);
 
     teapot_model.position = {0, abs(sin(global_platform.current_time)/4.f) + 4.f,0.0};
     test_model.position = {0, 1.f,0.0};
@@ -250,11 +261,7 @@ void render(void)
 
     }
 
-
-    {
-        //render_cube_textured(&c,&perspective_matrix, &view_matrix, point_light.position, cam.pos);
-    }
-
+    render_animated_model(&skel, &rend.shaders[2], rend.perspective_projection, rend.view_matrix);
 
 #if colliders_on
     //NOTE(ilias): this is for drawing colliders!

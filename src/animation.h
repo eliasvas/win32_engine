@@ -335,55 +335,33 @@ static GLuint create_animated_model_vao(MeshData* data)
 
    glGenVertexArrays(1, &vao);
    glBindVertexArray(vao);
-   glGenBuffers(1,&ebo);
-   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); 
-   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(data->indices_size), &data->indices, GL_STATIC_DRAW);
+   //glGenBuffers(1,&ebo);
+   //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); 
+   //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(data->indices_size), &data->indices, GL_STATIC_DRAW);
 
    //positions
    glEnableVertexAttribArray(0);
 
-   GLuint position_vbo;
-   glGenBuffers(1, &position_vbo);
-   glBindBuffer(GL_ARRAY_BUFFER, position_vbo);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * data->size, &data->positions[0], GL_STATIC_DRAW);
+   GLuint vbo;
+   glGenBuffers(1, &vbo);
+   glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, nullptr);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(AnimatedModel) * data->vertex_count, &data->vertices[0], GL_STATIC_DRAW);
+
+   glEnableVertexAttribArray(0);
+   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*)(0));
    //normals
    glEnableVertexAttribArray(1);
-
-   GLuint normal_vbo;
-   glGenBuffers(1, &normal_vbo);
-   glBindBuffer(GL_ARRAY_BUFFER, normal_vbo);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * data->size, &data->normals[0], GL_STATIC_DRAW);
-
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 3));
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 3));
    //tex_coords
    glEnableVertexAttribArray(2);
-
-   GLuint tex_vbo;
-   glGenBuffers(1, &tex_vbo);
-   glBindBuffer(GL_ARRAY_BUFFER, tex_vbo);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * data->size, &data->tex_coords[0], GL_STATIC_DRAW);
-
-   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 6));
+   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 6));
    //joints (max 3)
    glEnableVertexAttribArray(3);
-
-   GLuint joints_vbo;
-   glGenBuffers(1, &joints_vbo);
-   glBindBuffer(GL_ARRAY_BUFFER, joints_vbo);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(i32) * data->size*3, &data->joint_ids[0], GL_STATIC_DRAW);
-
-   glVertexAttribIPointer(3, 3, GL_INT,sizeof(float) * 8, (void *) (sizeof(float) * 8));
+   glVertexAttribIPointer(3, 3, GL_INT,sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 8));
    //joint weights (max 3)
    glEnableVertexAttribArray(4);
-
-   GLuint weight_vbo;
-   glGenBuffers(1, &weight_vbo);
-   glBindBuffer(GL_ARRAY_BUFFER, weight_vbo);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * data->size, &data->weights[0], GL_STATIC_DRAW);
-
-   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, (void *) (sizeof(float) * 11));
+   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 8 + sizeof(int) * 3));
 
    glBindVertexArray(0);
 
@@ -399,11 +377,12 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
 
     setMat4fv(s, "projection_matrix", (GLfloat*)proj.elements);
     setMat4fv(s, "view_matrix", (GLfloat*)view.elements);
+    setMat4fv(s, "view_matrix", (GLfloat*)mul_mat4(view, quat_to_mat4(quat_from_angle(v3(1,0,0), -PI/2))).elements);
     glUniform3f(glGetUniformLocation(s->ID, "light.direction"), 0.f,-0.7f,0.3f); 
     //no need to set diffuse map .. whatever we get
     
     glBindVertexArray(model->vao);
-    glDrawArrays(GL_TRIANGLES,0, 100000);
+    glDrawArrays(GL_LINES,0, 10000);
     glBindVertexArray(0);
 
 }
@@ -421,6 +400,19 @@ init_animated_model(Texture* diff, Texture* spec, Joint root, u32 cnt)
     calc_inv_bind_transform(&model.root,m4d(1.f));
 
     return model;
+}
+
+static AnimatedModel
+init_animated_model(Texture* diff, Joint root, MeshData* data)
+{
+   AnimatedModel model = {0};
+
+   model.vao = create_animated_model_vao(data);
+   model.diff_tex = diff;
+   model.root = root;
+   calc_inv_bind_transform(&model.root,m4d(1.f));
+   
+   return model;
 }
 
 static void 

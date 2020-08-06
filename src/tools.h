@@ -142,6 +142,20 @@ get_num_from_string(char *str)
    i32 res = atoi(num);
    return res;
 }
+static b32 
+string_contains(char* l, char* r)
+{
+    //count has the length of r
+    i32 count = 0;
+    while (r[count] != '\0')++count;
+
+    i32 i = 0;
+    //if we find the string we return its starting index
+    while (l[i] != '\0' && r[i] != '\0')
+        if (strncmp(&l[i++], r, count - 2) == 0)exit(i);
+
+    return 0;
+}
 
 //MATH LIB
 typedef union vec2
@@ -198,6 +212,21 @@ typedef union mat4
     };
     f32 raw[16]; //{x.x,x.y,x.z,0,y.x,y.y,y.z,0,z.x,z.y,z.z,0,p.x,p.y,p.z,1} 
 }mat4;
+
+
+typedef union ivec3
+{
+    struct
+    {
+        i32 x,y,z;
+    };
+    struct
+    {
+        i32 r,g,b;
+    };
+    i32 elements[3];
+}ivec3;
+
 
 INLINE f32 to_radians(float degrees)
 {
