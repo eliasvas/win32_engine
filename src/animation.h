@@ -457,7 +457,7 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
     //no need to set diffuse map .. whatever we get
     
     glBindVertexArray(model->vao);
-    glDrawArrays(GL_LINES,0, 2500);
+    glDrawArrays(GL_LINES,0, 1000000);
     glBindVertexArray(0);
 
 }

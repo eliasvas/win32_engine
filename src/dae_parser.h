@@ -147,6 +147,7 @@ static MeshData read_collada(String filepath)
             for (i32 i = 0; i < data.vertex_count; ++i)
             {
                 fscanf(file, "%i %i %i", &vec[0], &vec[1], &vec[2]);
+                vertex val = {data.positions[vec[0]], data.normals[vec[1]], data.tex_coords[vec[2]]};
                 verts[i] = {data.positions[vec[0]], data.normals[vec[1]], data.tex_coords[vec[2]]};
                 data.verts[i] = {data.positions[vec[0]], data.normals[vec[1]], data.tex_coords[vec[2]]};
             }
@@ -227,7 +228,8 @@ static MeshData read_collada(String filepath)
                 //we read the count of weights
                 fscanf(file, "%s", count);
                 weights_count = get_num_from_string(count);
-                weights = (f32*)arena_alloc(&global_platform.frame_storage, weights_count * sizeof(f32));
+                //weights = (f32*)arena_alloc(&global_platform.frame_storage, weights_count * sizeof(f32));
+                weights = (f32*)arena_alloc(&global_platform.permanent_storage, weights_count * sizeof(f32));
                 for (i32 i = 0; i < weights_count; ++i)
                 {
                    fscanf(file, "%f", &weights[i]); 
@@ -240,7 +242,8 @@ static MeshData read_collada(String filepath)
    //now lets read the vcount table
    i32* vcount = NULL;
    b32 fin = 0;
-   i32 vertex_count;
+   //the total number of weights for all vertices(?)
+   i32 vertex_weights_count;
    while(!fin)
    {
         i32 res = fscanf(file, "%s", line);
@@ -250,15 +253,16 @@ static MeshData read_collada(String filepath)
         if (strcmp(line, "<vertex_weights") == 0)
         {
            fscanf(file, "%s", count); 
-           vertex_count = get_num_from_string(count);
-           vcount = (i32*)arena_alloc(&global_platform.frame_storage, sizeof(i32) * vertex_count);
+           vertex_weights_count = get_num_from_string(count);
+           //vcount = (i32*)arena_alloc(&global_platform.frame_storage, sizeof(i32) * vertex_count);
+           vcount = (i32*)arena_alloc(&global_platform.permanent_storage, sizeof(i32) * vertex_weights_count);
            while(!fin)
            {
                fscanf(file, "%s", line);
                //now we start reading the vertex number of weights
                if (strcmp(line,"<vcount>") == 0)
                {
-                    for(i32 i = 0; i < vertex_count; ++i)
+                    for(i32 i = 0; i < vertex_weights_count; ++i)
                     {
                         fscanf(file, "%i", &vcount[i]);
                     }
@@ -269,9 +273,10 @@ static MeshData read_collada(String filepath)
    }
     
 
-   ivec3* vertex_joint_ids = (ivec3*)arena_alloc(&global_platform.permanent_storage, sizeof(ivec3) * vertex_count);
-   //zero initialize weights???
-   vec3* vertex_weights = (vec3*)arena_alloc(&global_platform.permanent_storage, sizeof(vec3) * vertex_count);
+   //ivec3* vertex_joint_ids = (ivec3*)arena_alloc(&global_platform.permanent_storage, sizeof(ivec3) * vertex_count);
+   ivec3* vertex_joint_ids = (ivec3*)arena_alloc(&global_platform.frame_storage, sizeof(ivec3) * data.vertex_count);
+   //vec3* vertex_weights = (vec3*)arena_alloc(&global_platform.permanent_storage, sizeof(vec3) * vertex_count);
+   vec3* vertex_weights = (vec3*)arena_alloc(&global_platform.frame_storage, sizeof(vec3) * data.vertex_count);
    while (true)
    {
         i32 res = fscanf(file, "%s", line);
@@ -315,8 +320,8 @@ static MeshData read_collada(String filepath)
         }
    }
    //now lets make the final AnimatedVertex array
-   data.vertices = (AnimatedVertex*)arena_alloc(&global_platform.permanent_storage, sizeof(AnimatedVertex) * vertex_count);
-   for (u32 i = 0; i < vertex_count*3; ++i)
+   data.vertices = (AnimatedVertex*)arena_alloc(&global_platform.permanent_storage, sizeof(AnimatedVertex) * data.vertex_count);
+   for (u32 i = 0; i < data.vertex_count; ++i)
    {
         data.vertices[i] = {verts[i].position, verts[i].normal, verts[i].tex_coord, vertex_joint_ids[i], vertex_weights[i]};
    }
