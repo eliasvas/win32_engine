@@ -15,11 +15,11 @@
  * then we create a Rendering Context with wglCreateContext() and
  * set it as current with wglMakeCurrent()*/
 
-/*The problem is ChoosePixelFormat() and SetPixelFormat() are not extensible
+/*The problem is ChoosePixelFormat() and SetPixelFormat() are not accesible 
  * so you can't enable multisampling, floating-point framebuffers etc.
  * So we need two new functions, wglChoosePixelFormatARB() and wglCreateContextAttribsARB()
  * but to get their function pointers.. we need a Rendering Context! So we have to make a 
- * fake one first obtain the function pointers and then destroy it and make a proper one!*/
+ * fake one first and obtain the function pointers [and then destroy it and make a proper one!]*/
 
 static HGLRC win32_opengl_context;
 

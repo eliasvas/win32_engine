@@ -199,6 +199,9 @@ static MeshData read_collada(String filepath)
             for (i32 i = 0; i < floats_count/16; ++i)
             {
                 fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+
+                //NOTE: we transpose because the matrices are given in row major order!!
+                mat = transpose_mat4(mat);
                 transforms[i] = mat;
             }
             break;
@@ -266,9 +269,9 @@ static MeshData read_collada(String filepath)
    }
     
 
-   ivec3* vertex_joint_ids = (ivec3*)arena_alloc(&global_platform.frame_storage, sizeof(ivec3) * vertex_count);
+   ivec3* vertex_joint_ids = (ivec3*)arena_alloc(&global_platform.permanent_storage, sizeof(ivec3) * vertex_count);
    //zero initialize weights???
-   vec3* vertex_weights = (vec3*)arena_alloc(&global_platform.frame_storage, sizeof(vec3) * vertex_count);
+   vec3* vertex_weights = (vec3*)arena_alloc(&global_platform.permanent_storage, sizeof(vec3) * vertex_count);
    while (true)
    {
         i32 res = fscanf(file, "%s", line);
@@ -280,6 +283,7 @@ static MeshData read_collada(String filepath)
             i32 JW[2];
             for (i32 i = 0; i < weights_count; ++i)
             {
+                vertex_weights[i] =v3(0.f,0.f,0.f);
                 for(i32 j = 0; j < vcount[i]; ++j)
                 {
                     fscanf(file, "%i %i", &JW[0], &JW[1]);
@@ -298,9 +302,13 @@ static MeshData read_collada(String filepath)
                         vertex_weights[i].z = weight;
                         vertex_joint_ids[i].z = JW[0];
                     }
-                    //now we are left with the 3 biggest weights in the arrays
-                    //one small fix, lets crudely normalize to one!
-                    vertex_weights[i].x += 1.f - vertex_weights[i].x - vertex_weights[i].y - vertex_weights[i].z;
+                    continue;
+                    //NOTE: here we normalize in case we had more than 3 weights and they dont add up to 1!!
+                    f32 rat = (vertex_weights[i].x + vertex_weights[i].y + vertex_weights[i].z)/1.f;
+                    f32 to_add = 1.f - vertex_weights[i].x - vertex_weights[i].y - vertex_weights[i].z;
+                    vertex_weights[i].x = (1.f/rat) * vertex_weights[i].x * to_add;
+                    vertex_weights[i].y = (1.f/rat) * vertex_weights[i].y * to_add;
+                    vertex_weights[i].z = (1.f/rat) * vertex_weights[i].z * to_add;
                 }
             }
             break;
@@ -308,7 +316,7 @@ static MeshData read_collada(String filepath)
    }
    //now lets make the final AnimatedVertex array
    data.vertices = (AnimatedVertex*)arena_alloc(&global_platform.permanent_storage, sizeof(AnimatedVertex) * vertex_count);
-   for (u32 i = 0; i < vertex_count*4; ++i)
+   for (u32 i = 0; i < vertex_count*3; ++i)
    {
         data.vertices[i] = {verts[i].position, verts[i].normal, verts[i].tex_coord, vertex_joint_ids[i], vertex_weights[i]};
    }

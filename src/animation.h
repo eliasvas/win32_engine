@@ -199,6 +199,7 @@ typedef struct AnimatedModel
 {
     //skin
     GLuint vao;
+    mat4 * inv_bind_poses;
     Texture * diff_tex;
     Texture * spec_tex;
 
@@ -376,13 +377,87 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
     use_shader(s);
 
     setMat4fv(s, "projection_matrix", (GLfloat*)proj.elements);
-    setMat4fv(s, "view_matrix", (GLfloat*)view.elements);
+    //for(i32 i = 0; i < model->joint_count; ++i)
+    for(i32 i = 0; i < 10; ++i)
+    {
+        String name = str(&global_platform.frame_storage, "joint_transforms[0]");
+        name.data[17] = i + '0';
+        setMat4fv(s, name.data, (GLfloat*)model->inv_bind_poses[i].elements);
+    }
+    {
+        setMat4fv(s, "joint_transforms[0]", (GLfloat*)model->inv_bind_poses[0].elements);
+        setMat4fv(s, "joint_transforms[1]", (GLfloat*)model->inv_bind_poses[1].elements);
+        setMat4fv(s, "joint_transforms[2]", (GLfloat*)model->inv_bind_poses[2].elements);
+        setMat4fv(s, "joint_transforms[3]", (GLfloat*)model->inv_bind_poses[3].elements);
+        setMat4fv(s, "joint_transforms[4]", (GLfloat*)model->inv_bind_poses[4].elements);
+        setMat4fv(s, "joint_transforms[5]", (GLfloat*)model->inv_bind_poses[5].elements);
+        setMat4fv(s, "joint_transforms[6]", (GLfloat*)model->inv_bind_poses[6].elements);
+        setMat4fv(s, "joint_transforms[7]", (GLfloat*)model->inv_bind_poses[7].elements);
+        setMat4fv(s, "joint_transforms[8]", (GLfloat*)model->inv_bind_poses[8].elements);
+        setMat4fv(s, "joint_transforms[9]", (GLfloat*)model->inv_bind_poses[9].elements);
+        setMat4fv(s, "joint_transforms[10]", (GLfloat*)model->inv_bind_poses[10].elements);
+        setMat4fv(s, "joint_transforms[11]", (GLfloat*)model->inv_bind_poses[11].elements);
+        setMat4fv(s, "joint_transforms[12]", (GLfloat*)model->inv_bind_poses[12].elements);
+        setMat4fv(s, "joint_transforms[13]", (GLfloat*)model->inv_bind_poses[13].elements);
+        setMat4fv(s, "joint_transforms[14]", (GLfloat*)model->inv_bind_poses[14].elements);
+        setMat4fv(s, "joint_transforms[15]", (GLfloat*)model->inv_bind_poses[15].elements);
+        setMat4fv(s, "joint_transforms[16]", (GLfloat*)model->inv_bind_poses[16].elements);
+        setMat4fv(s, "joint_transforms[17]", (GLfloat*)model->inv_bind_poses[17].elements);
+        setMat4fv(s, "joint_transforms[18]", (GLfloat*)model->inv_bind_poses[18].elements);
+        setMat4fv(s, "joint_transforms[19]", (GLfloat*)model->inv_bind_poses[19].elements);
+        setMat4fv(s, "joint_transforms[20]", (GLfloat*)model->inv_bind_poses[20].elements);
+        setMat4fv(s, "joint_transforms[21]", (GLfloat*)model->inv_bind_poses[21].elements);
+        setMat4fv(s, "joint_transforms[22]", (GLfloat*)model->inv_bind_poses[22].elements);
+        setMat4fv(s, "joint_transforms[23]", (GLfloat*)model->inv_bind_poses[23].elements);
+        setMat4fv(s, "joint_transforms[24]", (GLfloat*)model->inv_bind_poses[24].elements);
+        setMat4fv(s, "joint_transforms[25]", (GLfloat*)model->inv_bind_poses[25].elements);
+        setMat4fv(s, "joint_transforms[26]", (GLfloat*)model->inv_bind_poses[26].elements);
+        setMat4fv(s, "joint_transforms[27]", (GLfloat*)model->inv_bind_poses[27].elements);
+        setMat4fv(s, "joint_transforms[28]", (GLfloat*)model->inv_bind_poses[28].elements);
+        setMat4fv(s, "joint_transforms[29]", (GLfloat*)model->inv_bind_poses[29].elements);
+        setMat4fv(s, "joint_transforms[30]", (GLfloat*)model->inv_bind_poses[30].elements);
+        setMat4fv(s, "joint_transforms[31]", (GLfloat*)model->inv_bind_poses[31].elements);
+        setMat4fv(s, "joint_transforms[32]", (GLfloat*)model->inv_bind_poses[32].elements);
+        setMat4fv(s, "joint_transforms[33]", (GLfloat*)model->inv_bind_poses[33].elements);
+        setMat4fv(s, "joint_transforms[34]", (GLfloat*)model->inv_bind_poses[34].elements);
+        setMat4fv(s, "joint_transforms[35]", (GLfloat*)model->inv_bind_poses[35].elements);
+        setMat4fv(s, "joint_transforms[36]", (GLfloat*)model->inv_bind_poses[36].elements);
+        setMat4fv(s, "joint_transforms[37]", (GLfloat*)model->inv_bind_poses[37].elements);
+        setMat4fv(s, "joint_transforms[38]", (GLfloat*)model->inv_bind_poses[38].elements);
+        setMat4fv(s, "joint_transforms[39]", (GLfloat*)model->inv_bind_poses[39].elements);
+        setMat4fv(s, "joint_transforms[40]", (GLfloat*)model->inv_bind_poses[40].elements);
+        setMat4fv(s, "joint_transforms[41]", (GLfloat*)model->inv_bind_poses[41].elements);
+        setMat4fv(s, "joint_transforms[42]", (GLfloat*)model->inv_bind_poses[42].elements);
+        setMat4fv(s, "joint_transforms[43]", (GLfloat*)model->inv_bind_poses[43].elements);
+        setMat4fv(s, "joint_transforms[44]", (GLfloat*)model->inv_bind_poses[44].elements);
+        setMat4fv(s, "joint_transforms[45]", (GLfloat*)model->inv_bind_poses[45].elements);
+        setMat4fv(s, "joint_transforms[46]", (GLfloat*)model->inv_bind_poses[46].elements);
+        setMat4fv(s, "joint_transforms[47]", (GLfloat*)model->inv_bind_poses[47].elements);
+        setMat4fv(s, "joint_transforms[48]", (GLfloat*)model->inv_bind_poses[48].elements);
+        setMat4fv(s, "joint_transforms[49]", (GLfloat*)model->inv_bind_poses[49].elements);
+        setMat4fv(s, "joint_transforms[50]", (GLfloat*)model->inv_bind_poses[50].elements);
+        setMat4fv(s, "joint_transforms[51]", (GLfloat*)model->inv_bind_poses[51].elements);
+        setMat4fv(s, "joint_transforms[52]", (GLfloat*)model->inv_bind_poses[52].elements);
+        setMat4fv(s, "joint_transforms[53]", (GLfloat*)model->inv_bind_poses[53].elements);
+        setMat4fv(s, "joint_transforms[54]", (GLfloat*)model->inv_bind_poses[54].elements);
+        setMat4fv(s, "joint_transforms[55]", (GLfloat*)model->inv_bind_poses[55].elements);
+        setMat4fv(s, "joint_transforms[56]", (GLfloat*)model->inv_bind_poses[56].elements);
+        setMat4fv(s, "joint_transforms[57]", (GLfloat*)model->inv_bind_poses[57].elements);
+        setMat4fv(s, "joint_transforms[58]", (GLfloat*)model->inv_bind_poses[58].elements);
+        setMat4fv(s, "joint_transforms[59]", (GLfloat*)model->inv_bind_poses[59].elements);
+        setMat4fv(s, "joint_transforms[60]", (GLfloat*)model->inv_bind_poses[60].elements);
+        setMat4fv(s, "joint_transforms[61]", (GLfloat*)model->inv_bind_poses[61].elements);
+        setMat4fv(s, "joint_transforms[62]", (GLfloat*)model->inv_bind_poses[62].elements);
+        setMat4fv(s, "joint_transforms[63]", (GLfloat*)model->inv_bind_poses[63].elements);
+        setMat4fv(s, "joint_transforms[64]", (GLfloat*)model->inv_bind_poses[64].elements);
+        setMat4fv(s, "joint_transforms[65]", (GLfloat*)model->inv_bind_poses[65].elements);
+    }
     setMat4fv(s, "view_matrix", (GLfloat*)mul_mat4(view, quat_to_mat4(quat_from_angle(v3(1,0,0), -PI/2))).elements);
     glUniform3f(glGetUniformLocation(s->ID, "light.direction"), 0.f,-0.7f,0.3f); 
     //no need to set diffuse map .. whatever we get
     
     glBindVertexArray(model->vao);
-    glDrawArrays(GL_LINES,0, 10000);
+    glDrawArrays(GL_LINES,0, 2500);
     glBindVertexArray(0);
 
 }
@@ -410,6 +485,7 @@ init_animated_model(Texture* diff, Joint root, MeshData* data)
    model.vao = create_animated_model_vao(data);
    model.diff_tex = diff;
    model.root = root;
+   model.inv_bind_poses = data->inv_bind_poses;
    calc_inv_bind_transform(&model.root,m4d(1.f));
    
    return model;
