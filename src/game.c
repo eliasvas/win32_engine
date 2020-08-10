@@ -58,7 +58,7 @@ static Animator anim;
 
 void init(void)
 {
-    data = read_collada(str(&global_platform.permanent_storage,"../assets/man.dae"));
+    data = read_collada(str(&global_platform.permanent_storage,"../assets/sat.dae"));
 
     init_fake_framebuffer();
     init_text(&bmf,"../assets/ASCII_512.png"); 
@@ -72,7 +72,7 @@ void init(void)
         load_model_data(m.vertices, "../assets/huge_plane.obj", "../assets/basic.mtl");
         init_model(&m, m.vertices);
         m.spec_name = "noise.png";
-        //m.position = {0,-5,0};
+        m.position = {0,-2,0};
         //m.scale = v3(0.4,0.1,1);
     }
     //teapot_model initialization

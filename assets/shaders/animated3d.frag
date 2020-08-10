@@ -15,4 +15,5 @@ void main(){
 	vec3 unit_normal = normalize(f_normal);
 	float diff_light = max(dot(-light_direction, unit_normal), 0.0) * light_bias.x + light_bias.y;
 	color = diffuse_color * diff_light;
+	color.a = 1.0;
 }
