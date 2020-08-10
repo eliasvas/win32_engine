@@ -5,7 +5,7 @@
 #include "shader.h"
 #include "physics.h"
 #include "texture.h"
-#include "dae_parser.h"
+#include "collada_parser.h"
 
 // 2D ANIMATION!!!!!
 typedef struct AnimationInfo

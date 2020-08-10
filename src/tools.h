@@ -227,6 +227,11 @@ typedef union ivec3
     i32 elements[3];
 }ivec3;
 
+INLINE b32 equals_ivec3(ivec3 l, ivec3 r)
+{
+    i32 res = ((l.x == r.x) && (l.y == r.y) && (l.z == r.z));
+    return res;
+}
 
 INLINE f32 to_radians(float degrees)
 {
