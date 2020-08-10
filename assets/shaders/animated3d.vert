@@ -1,6 +1,6 @@
 #version 330 core
 
-const int MAX_JOINTS = 66; //max joints in skeleton
+const int MAX_JOINTS = 6; //max joints in skeleton
 const int MAX_BONES = 3; //max bones for each vertex
 
 layout(location = 0) in vec3 position;
@@ -32,6 +32,7 @@ void main(){
 		total_normal += world_normal * weights[i];
 	}
 	total_local_pos = vec4(position, 1.0);
+	//total_normal = vec4(normal,1.0);
 	gl_Position = projection_matrix * view_matrix * total_local_pos;
 	f_normal = total_normal.xyz;
 	f_tex_coords = tex_coords;

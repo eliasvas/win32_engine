@@ -146,7 +146,7 @@ void update(void)
 {
     //update_animator(&anim);
 
-    teapot_model.position = {0, abs(sin(global_platform.current_time)/4.f) + 4.f,0.0};
+    teapot_model.position = {5, abs(sin(global_platform.current_time)/4.f) + 4.f,0.0};
     test_model.position = {0, 1.f,0.0};
     change_to_fake_framebuffer();
 #if sound_on
