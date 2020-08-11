@@ -228,10 +228,12 @@ void update(void)
 
 void render(void)
 {
-    render_sprite(&s, &rend);  //we probably dont need this
+
 #if skybox_on
     render_skybox(&skybox,perspective_matrix, view_matrix);
 #endif
+
+    render_sprite(&s, &rend);  //we probably dont need this
 
     mat4 mat = mul_mat4(perspective_matrix, view_matrix);
     //rendering background 
