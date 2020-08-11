@@ -756,10 +756,10 @@ INLINE mat4 scale_mat4(vec3 s)
 //what the fuuuuuuuck is this shit??
 INLINE mat4 inv_mat4(mat4 m)
 {
-   mat4 res;
+    mat4 res;
     f32 det;
-    mat4 inv, invOut;
-    int i;
+    mat4 inv, inv_out;
+    i32 i;
 
     inv.raw[0] = m.raw[5]  * m.raw[10] * m.raw[15] - 
              m.raw[5]  * m.raw[11] * m.raw[14] - 
@@ -882,9 +882,9 @@ INLINE mat4 inv_mat4(mat4 m)
     det = 1.f / det;
 
     for (i = 0; i < 16; ++i)
-        invOut.raw[i] = inv.raw[i] * det;
+        inv_out.raw[i] = inv.raw[i] * det;
 
-   return invOut;
+    return inv_out;
 }
 
 INLINE mat4 orthographic_proj(f32 l, f32 r, f32 b, f32 t, f32 n, f32 f)

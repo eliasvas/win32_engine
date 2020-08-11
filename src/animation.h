@@ -377,6 +377,8 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
     use_shader(s);
 
     setMat4fv(s, "projection_matrix", (GLfloat*)proj.elements);
+    //glActiveTexture(GL_TEXTURE1);
+    setInt(s, "diffuse_map", 6);
     //for(i32 i = 0; i < model->joint_count; ++i)
     for(i32 i = 0; i < 10; ++i)
     {
@@ -454,11 +456,13 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
     }
     setMat4fv(s, "view_matrix", (GLfloat*)mul_mat4(view, quat_to_mat4(quat_from_angle(v3(1,0,0), -PI/2))).elements);
     glUniform3f(glGetUniformLocation(s->ID, "light_direction"), 0.43,0.34,0.f); 
+    //glUniform3f(glGetUniformLocation(s->ID, "light_direction"), 1.f,0.0f,0.0f); 
     //no need to set diffuse map .. whatever we get
     
+
     glBindVertexArray(model->vao);
-    //glDrawArrays(GL_LINES,0, 1000);
     glDrawArrays(GL_TRIANGLES,0, 1500);
+    //glDrawArrays(GL_LINES,0, 1500);
     glBindVertexArray(0);
 
 }

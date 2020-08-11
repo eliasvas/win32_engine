@@ -66,7 +66,7 @@ void init(void)
     init_camera(&cam);
     init_renderer(&rend);
 
-    init_terrain(&terrain,"../assets/test.png");
+    init_terrain(&terrain,"../assets/noise.png");
     terrain.model = translate_mat4(v3(-8,0,-16));
     {
         load_model_data(m.vertices, "../assets/huge_plane.obj", "../assets/basic.mtl");

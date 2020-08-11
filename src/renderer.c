@@ -97,6 +97,7 @@ init_renderer(Renderer* rend)
     push_texture(&rend->manager, "../assets/braid.png"); //<-- this is "2" somehow FIX
     push_texture(&rend->manager, "../assets/red.png");
     push_texture(&rend->manager, "../assets/white.png");
+    push_texture(&rend->manager, "../assets/sat.png");
 }
 
 static void

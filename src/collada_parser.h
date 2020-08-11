@@ -53,12 +53,14 @@ static MeshData read_collada(String filepath)
    {
         i32 res = fscanf(file, "%s", line);
         if (res == EOF)return data; //we reached the end of the file
-            //first we read the mesh positions array
+        //we find the <library_geometries> subsection of the collada file
         if (strcmp(line, "<library_geometries>") == 0)
         {
             break;
         }
    }
+
+   //first we read the mesh positions array
    while (true)
    {
         i32 res = fscanf(file, "%s", line);
@@ -70,7 +72,7 @@ static MeshData read_collada(String filepath)
             //count now has the count of the positions to come in the form 'count="2424"'
             i32 position_count = get_num_from_string(count);
             //make the position array of size position_count
-            data.positions = (vec3*)arena_alloc(&global_platform.permanent_storage, position_count*sizeof(f32)); //position count is of floats??
+            data.positions = (vec3*)arena_alloc(&global_platform.permanent_storage, position_count*sizeof(f32)); //position count is number of floats?? (yes)
             //now read the position data and put them on the array
             vec3 vec;
             for (i32 i = 0; i < position_count/3; ++i)
@@ -218,12 +220,14 @@ static MeshData read_collada(String filepath)
             transforms = (mat4*)arena_alloc(&global_platform.permanent_storage, floats_count * sizeof(f32)); 
             //read the tex_coords and put them in the array
             mat4 mat;
+            //for (i32 i = 0; i < floats_count/16; ++i)
             for (i32 i = 0; i < floats_count/16; ++i)
             {
                 fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
 
                 //NOTE: we transpose because the matrices are given in row major order!!
-                //mat = transpose_mat4(mat);
+                mat = transpose_mat4(mat);
+                //transforms[i] = mul_mat4(mat, quat_to_mat4(quat_from_angle(v3(1,0,0), 90.f)));
                 transforms[i] = mat;
             }
             break;
@@ -344,7 +348,9 @@ static MeshData read_collada(String filepath)
    data.vertices = (AnimatedVertex*)arena_alloc(&global_platform.permanent_storage, sizeof(AnimatedVertex) * data.vertex_count);
    for (u32 i = 0; i < data.vertex_count; ++i)
    {
-        data.vertices[i] = {data.verts[i].position, data.verts[i].normal, data.verts[i].tex_coord, vertex_joint_ids[skinning_index[i]], vertex_weights[skinning_index[i]]};
+       //the skinning index is used as the 'index' to the vertex joint and vertex_weight arrays which are supposed to be
+       //indexed by the index of the position which can be found on the <vertices> group 
+       data.vertices[i] = {data.verts[i].position, data.verts[i].normal, data.verts[i].tex_coord, vertex_joint_ids[skinning_index[i]], vertex_weights[skinning_index[i]]};
    }
 
 
