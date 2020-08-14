@@ -6,12 +6,6 @@
 #include "vector"
 #include "objloader.h"
 
-typedef struct vertex
-{
-   vec3 position; 
-   vec3 normal;
-   vec2 tex_coord;
-}vertex;
 typedef struct Material
 {
     vec3 ambient;

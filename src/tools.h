@@ -142,6 +142,7 @@ get_num_from_string(char *str)
    i32 res = atoi(num);
    return res;
 }
+
 static b32 
 string_contains(char* l, char* r)
 {
@@ -1687,6 +1688,45 @@ strcmp(String l, String r)
     res =strcmp(l.data,r.data);
     return res;
 }
+
+
+
+
+
+//SHOULDNT be here just a dependency issue
+typedef struct vertex
+{
+   vec3 position; 
+   vec3 normal;
+   vec2 tex_coord;
+}vertex;
+
+typedef struct AnimatedVertex
+{
+    vec3 position;
+    vec3 normal;
+    vec2 tex_coord;
+    ivec3 joint_ids;
+    vec3 weights;
+}AnimatedVertex;
+typedef struct MeshData{
+    vec3* positions; 
+    vec3* normals; 
+    vec2* tex_coords; 
+    vertex* verts; //just for rendering
+    i32 vertex_count;
+    i32* joint_ids; 
+    vec3* weights; 
+    u32 size;
+
+    mat4* inv_bind_poses;
+    i32 inv_bind_poses_count;
+
+    AnimatedVertex* vertices;
+
+}MeshData;
+
+
 
 
 #endif

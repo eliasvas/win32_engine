@@ -2,31 +2,7 @@
 #define COLLADA_PARSER_H
 #include "tools.h"
 
-typedef struct AnimatedVertex
-{
-    vec3 position;
-    vec3 normal;
-    vec2 tex_coord;
-    ivec3 joint_ids;
-    vec3 weights;
-}AnimatedVertex;
 
-typedef struct MeshData{
-    vec3* positions; 
-    vec3* normals; 
-    vec2* tex_coords; 
-    vertex* verts; //just for rendering
-    i32 vertex_count;
-    i32* joint_ids; 
-    vec3* weights; 
-    u32 size;
-
-    mat4* inv_bind_poses;
-    i32 inv_bind_poses_count;
-
-    AnimatedVertex* vertices;
-
-}MeshData;
 
 static b32 
 vert_equals(vertex l, vertex r)
@@ -156,7 +132,8 @@ static MeshData read_collada(String filepath)
    while(true)
    {
         i32 res = fscanf(file, "%s", line);
-        if (res == EOF)return data; //we reached the end of the file
+        if (res == EOF)
+            return data; //we reached the end of the file
 
         //then the uv coordinates
         if (strcmp(line, "<p>") == 0)
@@ -335,6 +312,7 @@ static MeshData read_collada(String filepath)
                     continue;
                     //NOTE: here we normalize in case we had more than 3 weights and they dont add up to 1!!
                     f32 rat = (vertex_weights[i].x + vertex_weights[i].y + vertex_weights[i].z)/1.f;
+                    if (rat < 0.01f)continue;
                     f32 to_add = 1.f - vertex_weights[i].x - vertex_weights[i].y - vertex_weights[i].z;
                     vertex_weights[i].x = (1.f/rat) * vertex_weights[i].x * to_add;
                     vertex_weights[i].y = (1.f/rat) * vertex_weights[i].y * to_add;
@@ -348,11 +326,75 @@ static MeshData read_collada(String filepath)
    data.vertices = (AnimatedVertex*)arena_alloc(&global_platform.permanent_storage, sizeof(AnimatedVertex) * data.vertex_count);
    for (u32 i = 0; i < data.vertex_count; ++i)
    {
-       //the skinning index is used as the 'index' to the vertex joint and vertex_weight arrays which are supposed to be
+       //the skinning_index table is used as the 'index' to the vertex joint and vertex_weight arrays which are supposed to be
        //indexed by the index of the position which can be found on the <vertices> group 
        data.vertices[i] = {data.verts[i].position, data.verts[i].normal, data.verts[i].tex_coord, vertex_joint_ids[skinning_index[i]], vertex_weights[skinning_index[i]]};
    }
 
+   //we find the root joint(s) (multiple root joints are not currently supported)
+   //by reading the first <skeleton> type string
+   String root;
+   while (true)
+   {
+        i32 res = fscanf(file, "%s", line);
+        if (res == EOF)
+            return data;// we reached the end of the file
+        
+        if (strcmp(line, "<skeleton>") == 0)
+        {
+            fscanf(file, "%s", line); //name of the root joint
+
+            root = str(&global_platform.frame_storage, line); 
+            break;
+        }
+   }
+   rewind(file);
+
+   //now we know the root we should read the original transforms of every joint
+   //we do this by reading the <library_visual_scenes> <node>s
+   //if the node is of type "JOINT" it means its a child node..
+   //if its of type "NODE" its a new root (<skeleton> thing), which we would like right now..
+
+   //as for the hierarchy of joints.. each <node> we read is a child of the previous node that has
+   //not been closed (by </node>)
+  //Joint *root = arena_alloc(&global_platform.permanent_storage, sizeof(Joint));
+  while (true)
+   {
+        i32 res = fscanf(file, "%s", line);
+        if (res == EOF)
+            return data;// we reached the end of the file
+        
+        if (strcmp(line, "<library_visual_scenes>") == 0)
+        {
+            fscanf(file, "%s %s", garbage, garbage);
+            //read the only node info (we need to read joints_count data(??))
+            //static String str(Arena* arena, char* characters)
+            //" <node "
+            fscanf(file, "%s", garbage);
+            //" id = "ABC" "
+            fscanf(file, "%s", line);
+            line[str_size(line)-2] = '\0';
+            String id = str(&global_platform.permanent_storage, (char*)(line + 4*sizeof(char))); 
+            //" name= "ABC" "
+            fscanf(file, "%s", line);
+            line[str_size(line)-2] = '\0';
+            String name = str(&global_platform.permanent_storage, (char*)(line + 4*sizeof(char))); 
+            i32 joint_index = -1;
+            for (i32 i = 0; i < joints_count;++i)
+            {
+                if (strcmp(id.data, joint_names[i].data) == 0)
+                    joint_index = i;
+            }
+            fscanf(file, "%s", garbage); //THIS IS WETHER ITS JOINT OR NODE
+            //now read the transform
+            mat4 mat;
+            fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+            Joint root = joint(joint_index, name, mat);
+            
+            
+            mat4 maesdft;
+        }
+   }
 
    return data;
 }

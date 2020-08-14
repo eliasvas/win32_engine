@@ -149,7 +149,7 @@
       <skin source="#Circle_008-mesh">
         <bind_shape_matrix> -0.4996958 0.8662008 2.20664e-7 -7.71631e-7 -0.8662008 -0.4996958 -2.44051e-5 9.23872e-7 -2.10295e-5 -1.23863e-5 1 -1.54326e-6 0 0 0 1</bind_shape_matrix>
         <source id="Armature_001_Circle_003-skin-joints">
-          <Name_array id="Armature_001_Circle_003-skin-joints-array" count="6">Bone Bone_001 Bone_002 Bone_003 Bone_005 Bone_006</Name_array>
+          <Name_array id="Armature_001_Circle_003-skin-joints-array" count="6"> Bone Bone_001 Bone_002 Bone_003 Bone_005 Bone_006</Name_array>
           <technique_common>
             <accessor source="#Armature_001_Circle_003-skin-joints-array" count="6" stride="1">
               <param name="JOINT" type="name"/>
@@ -311,9 +311,10 @@
         </node>
         <node id="Circle_003" name="Circle_003" type="NODE">
           <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+		  
           <instance_controller url="#Armature_001_Circle_003-skin">
-            <skeleton>#Armature_001_Bone_006</skeleton>
-            <skeleton>#Armature_001_Bone_004</skeleton>
+            <skeleton> #Armature_001_Bone_006 </skeleton>
+            <skeleton> #Armature_001_Bone_004 </skeleton>
             <bind_material>
               <technique_common>
                 <instance_material symbol="Material_013-material" target="#Material_013-material">

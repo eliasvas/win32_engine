@@ -5,8 +5,6 @@
 #include "shader.h"
 #include "physics.h"
 #include "texture.h"
-#include "collada_parser.h"
-
 
 
 
@@ -14,6 +12,7 @@ typedef struct Joint
 {
     u32 index;
     String name;
+    String id;
     std::vector<Joint> children;
     //Joint* children;
     //u32 num_of_children;
@@ -26,9 +25,12 @@ static Joint
 joint(u32 index, String name, mat4 local_bind_transform)
 {
     Joint j;
+
     j.index = index;
     j.name = name;
     j.local_bind_transform = local_bind_transform;
+
+    return j;
 }
 
 static void
@@ -274,12 +276,6 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
     //glActiveTexture(GL_TEXTURE1);
     setInt(s, "diffuse_map", 6);
     //for(i32 i = 0; i < model->joint_count; ++i)
-    for(i32 i = 0; i < 10; ++i)
-    {
-        String name = str(&global_platform.frame_storage, "joint_transforms[0]");
-        name.data[17] = i + '0';
-        setMat4fv(s, name.data, (GLfloat*)model->inv_bind_poses[i].elements);
-    }
     {
         setMat4fv(s, "joint_transforms[0]", (GLfloat*)model->inv_bind_poses[0].elements);
         setMat4fv(s, "joint_transforms[1]", (GLfloat*)model->inv_bind_poses[1].elements);
@@ -361,23 +357,8 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
 
 }
 
-static AnimatedModel 
-init_animated_model(Texture* diff, Texture* spec, Joint root, u32 cnt)
-{
-    AnimatedModel model = {0};
-    
-    model.vao = create_animated_model_vao((MeshData*)0);
-    model.diff_tex = diff;
-    model.spec_tex = spec;
-    model.root = root;
-    model.joint_count = cnt;
-    calc_inv_bind_transform(&model.root,m4d(1.f));
-
-    return model;
-}
-
 static AnimatedModel
-init_animated_model(Texture* diff, Joint root, MeshData* data)
+init_animated_model(Texture* diff, Joint root,MeshData* data)
 {
    AnimatedModel model = {0};
 

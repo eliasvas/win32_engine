@@ -16,6 +16,7 @@
 #include "physics.h"
 #include "postproc.h"
 #include "terrain.h"
+#include "collada_parser.h"
 #include "shadowmap.h"
 #define CUTE_SOUND_IMPLEMENTATION
 #include "ext/cute_sound.h"
@@ -58,7 +59,7 @@ static Animator anim;
 
 void init(void)
 {
-    data = read_collada(str(&global_platform.permanent_storage,"../assets/sat.dae"));
+    data = read_collada(str(&global_platform.permanent_storage,"../assets/sat_simple.dae"));
 
     init_fake_framebuffer();
     init_text(&bmf,"../assets/ASCII_512.png"); 
