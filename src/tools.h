@@ -32,6 +32,7 @@ typedef char      b8;
 //#define internal static
 //#define local_persist  static
 #define INLINE static inline
+#define INTERNAL static
 
 #define equalf(a, b, epsilon) (fabs(b - a) <= epsilon)
 #define maximum(a, b) ((a) > (b) ? (a) : (b))

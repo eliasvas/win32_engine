@@ -10,7 +10,9 @@ vert_equals(vertex l, vertex r)
     i32 res = ( equalf(l.position.x, r.position.x, 0.001f) && equalf(l.position.y, r.position.y, 0.001f) && equalf(l.position.z, r.position.z, 0.001f)  && equalf(l.normal.x, r.normal.x, 0.001f) && equalf(l.normal.y, r.normal.y, 0.001f) && equalf(l.normal.z, r.normal.z, 0.001f) && equalf(l.tex_coord.x, r.tex_coord.x, 0.001f) && equalf(l.tex_coord.y, r.tex_coord.y, 0.001f));
     return res;
 }
-static MeshData read_collada(String filepath)
+
+static MeshData 
+read_collada(String filepath)
 {
    MeshData data = {0}; 
 
@@ -167,7 +169,7 @@ static MeshData read_collada(String filepath)
         {
             fscanf(file, "%s", garbage);
             fscanf(file, "%s", count);
-            i32 joints_count = get_num_from_string(count);
+            joints_count = get_num_from_string(count);
             joint_names = (String*)arena_alloc(&global_platform.frame_storage, sizeof(String) * joints_count);
             for (i32 i = 0; i< joints_count; ++i)
             {
@@ -366,33 +368,129 @@ static MeshData read_collada(String filepath)
         
         if (strcmp(line, "<library_visual_scenes>") == 0)
         {
-            fscanf(file, "%s %s", garbage, garbage);
+            //NOTE:read the "NODE" node
+            fscanf(file, "%s %s %s", garbage, garbage, garbage);
             //read the only node info (we need to read joints_count data(??))
             //static String str(Arena* arena, char* characters)
             //" <node "
             fscanf(file, "%s", garbage);
             //" id = "ABC" "
             fscanf(file, "%s", line);
-            line[str_size(line)-2] = '\0';
+            line[str_size(line)-1] = '\0';
             String id = str(&global_platform.permanent_storage, (char*)(line + 4*sizeof(char))); 
             //" name= "ABC" "
             fscanf(file, "%s", line);
-            line[str_size(line)-2] = '\0';
-            String name = str(&global_platform.permanent_storage, (char*)(line + 4*sizeof(char))); 
-            i32 joint_index = -1;
-            for (i32 i = 0; i < joints_count;++i)
+            line[str_size(line)-1] = '\0';
+            String name = str(&global_platform.permanent_storage, (char*)(line + 6*sizeof(char))); 
+            u32 joint_index = 0;
+            //for (u32 i = 0; i < joints_count;++i)
+            //{
+            //    if (strcmp(id.data, joint_names[i].data) == 0)
+            //        joint_index = i;
+            //}
+            fscanf(file, "%s", garbage); //THIS IS WETHER ITS JOINT OR NODE
+            //now read the transform
+            mat4 mat;
+            fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+
+            fscanf(file, "%s", garbage); // <\matrix>
+            
+            //NOTE:read the root joint
+            fscanf(file, "%s", garbage);
+            fscanf(file, "%s %s",garbage, garbage);
+            //read the only node info (we need to read joints_count data(??))
+            //static String str(Arena* arena, char* characters)
+            //" <node "
+            fscanf(file, "%s", garbage);
+            //" id ="ABC" "
+            fscanf(file, "%s", line);
+            line[str_size(line)-1] = '\0';
+            id = str(&global_platform.permanent_storage, (char*)(line + 4*sizeof(char))); 
+            //" name="ABC" "
+            fscanf(file, "%s", line);
+            line[str_size(line)-1] = '\0';
+            name = str(&global_platform.permanent_storage, (char*)(line + 6*sizeof(char))); 
+            //" sid="ABC" "
+            fscanf(file, "%s", line);
+            line[str_size(line)-1] = '\0';
+            String sid = str(&global_platform.permanent_storage, (char*)(line + 5*sizeof(char))); 
+
+            joint_index = 0;
+            for (u32 i = 0; i < joints_count;++i)
             {
                 if (strcmp(id.data, joint_names[i].data) == 0)
                     joint_index = i;
             }
             fscanf(file, "%s", garbage); //THIS IS WETHER ITS JOINT OR NODE
+            if (garbage[6] == 'N')memcpy(infoLog,"Multiple root bones not suppored for collada files.. sorry o_o", 64);
             //now read the transform
-            mat4 mat;
             fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+            //Joint joint = joint(joint_index, name, mat);
             Joint root = joint(joint_index, name, mat);
+            root.parent = &root;
             
-            
-            mat4 maesdft;
+            i32 open_nodes_count = 1; //we have read the "NODE" node
+            Joint *current = &root;
+            fscanf(file, "%s", garbage); // <\matrix>
+
+            //NOTE: read the rest of the joints
+            while (open_nodes_count > 0)
+            {
+                i32 res = fscanf(file, "%s", garbage);
+                if (res == EOF)break;
+                else if (strcmp(garbage, "</node>") == 0)
+                {
+                    open_nodes_count--;
+                    current = current->parent;
+                    continue;
+                }else if (strcmp(garbage, "<node") ==0)open_nodes_count++;
+                else continue;
+
+                fscanf(file, "%s %s",garbage, garbage);
+                //read the only node info (we need to read joints_count data(??))
+                //static String str(Arena* arena, char* characters)
+                //" <node "
+                fscanf(file, "%s", garbage);
+                //" id ="ABC" "
+                fscanf(file, "%s", line);
+                line[str_size(line)-1] = '\0';
+                id = str(&global_platform.permanent_storage, (char*)(line + 4*sizeof(char))); 
+                //" name="ABC" "
+                fscanf(file, "%s", line);
+                line[str_size(line)-1] = '\0';
+                name = str(&global_platform.permanent_storage, (char*)(line + 6*sizeof(char))); 
+                //" sid="ABC" "
+                fscanf(file, "%s", line);
+                line[str_size(line)-1] = '\0';
+                sid = str(&global_platform.permanent_storage, (char*)(line + 5*sizeof(char))); 
+
+                u32 joint_index = 0;
+                for (u32 i = 0; i < joints_count;++i)
+                {
+                    if (strcmp(id.data, joint_names[i].data) == 0)
+                        joint_index = i;
+                }
+                fscanf(file, "%s", garbage); //THIS IS WETHER ITS JOINT OR NODE
+                //if (garbage[6] == 'N')memcpy(infoLog,"Multiple root bones not suppored for collada files.. sorry o_o", 64);
+                //now read the transform
+                fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+                Joint j = joint(joint_index, name, mat);
+                current->children.push_back(j);
+
+                fscanf(file, "%s", garbage); // <\matrix>
+
+            }
+
+
+
+
+
+
+
+
+
+
+           break; 
         }
    }
 

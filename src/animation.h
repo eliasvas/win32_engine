@@ -14,6 +14,7 @@ typedef struct Joint
     String name;
     String id;
     std::vector<Joint> children;
+    Joint *parent;
     //Joint* children;
     //u32 num_of_children;
     mat4 animated_transform; 

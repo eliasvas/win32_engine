@@ -199,7 +199,7 @@
         <node id="Circle_003" name="Circle_003" type="NODE">
           <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
           <instance_controller url="#Armature_001_Circle_003-skin">
-            <skeleton>#Armature_001_Bone_006</skeleton>
+            <skeleton> #Armature_001_Bone_006 </skeleton>
             <bind_material>
               <technique_common>
                 <instance_material symbol="Material_013-material" target="#Material_013-material">
