@@ -12,7 +12,7 @@ typedef struct Joint
 {
     u32 index;
     String name;
-    String id;
+    String sid;
     std::vector<Joint> children;
     Joint *parent;
     //Joint* children;
@@ -29,7 +29,24 @@ joint(u32 index, String name, mat4 local_bind_transform)
 
     j.index = index;
     j.name = name;
-    j.local_bind_transform = local_bind_transform;
+    j.local_bind_transform = {local_bind_transform};
+    j.inv_local_bind_transform = {0};
+    j.animated_transform = {0};
+
+    return j;
+}
+
+static Joint 
+joint(u32 index, String name,String sid, mat4 local_bind_transform)
+{
+    Joint j;
+
+    j.index = index;
+    j.name = name;
+    j.sid = sid;
+    j.local_bind_transform = {local_bind_transform};
+    j.inv_local_bind_transform = {0};
+    j.animated_transform = {0};
 
     return j;
 }

@@ -123,7 +123,7 @@
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
       <node id="Armature_001" name="Armature_001" type="NODE">
-        <matrix sid="transform"> 0.6179599 0 0 0 0 0.6179599 0 -0.1268297 0 0 0.6179599 0 0 0 0 1 </matrix>
+        <matrix id="transform"> 0.6179599 0 0 0 0 0.6179599 0 -0.1268297 0 0 0.6179599 0 0 0 0 1 </matrix>
         <node id="Armature_001_Bone_006" name="Bone.006" sid="Bone_006" type="JOINT">
           <matrix sid="transform"> 3.13916e-7 0 -1 0.01364547 0 1 0 0.002718121 1 0 3.13916e-7 -9.53675e-7 0 0 0 1 </matrix>
           <node id="Armature_001_Bone" name="Bone" sid="Bone" type="JOINT">
