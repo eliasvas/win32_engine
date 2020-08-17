@@ -70,10 +70,11 @@ calc_inv_bind_transform(Joint* joint, mat4 parent_bind_transform) //needs to be 
     for (Joint& j : joint->children)
         calc_inv_bind_transform(&j, bind_transform);
 }
+
 static void
 put_inv_bind_transforms_in_array(Joint* joint, mat4* transforms) //needs to be called only on the root joint of each model
 {
-    transforms[joint->index] = mul_mat4(joint->inv_local_bind_transform,transforms[joint->index]);
+    transforms[joint->index] = joint->inv_local_bind_transform;//mul_mat4(joint->inv_local_bind_transform,transforms[joint->index]);
     for (Joint& j : joint->children)
         put_inv_bind_transforms_in_array(&j, transforms);
 }

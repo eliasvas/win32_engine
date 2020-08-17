@@ -631,7 +631,7 @@ INLINE mat4 transpose_mat4(mat4 m)
     {
         for (u32 j = 0; j< 4;++j)
         {
-            res.elements[i][j] = m.elements[j][i];
+            res.elements[j][i] = m.elements[i][j];
         }
     }
     return res;

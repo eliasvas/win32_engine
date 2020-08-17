@@ -394,6 +394,7 @@ read_collada(String filepath)
             //now read the transform
             mat4 mat;
             fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+                mat = transpose_mat4(mat);
 
             fscanf(file, "%s", garbage); // <\matrix>
             
@@ -426,7 +427,9 @@ read_collada(String filepath)
             if (garbage[6] == 'N')memcpy(infoLog,"Multiple root bones not suppored for collada files.. sorry o_o", 64);
             //now read the transform
             fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+                mat = transpose_mat4(mat);
             //Joint joint = joint(joint_index, name, mat);
+            //mat = transforms[joint_index];//NONONOOO
             root = joint(joint_index, name,sid, mat);
             root.parent = &root;
             
@@ -474,9 +477,11 @@ read_collada(String filepath)
                 if (garbage[6] == 'N')memcpy(infoLog,"Multiple root bones not suppored for collada files.. sorry o_o", 64);
                 //now read the transform
                 fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+                mat = transpose_mat4(mat);
 
 
 
+            //mat = transforms[joint_index];//NONONOOO
 
                 Joint j = joint(joint_index, name, sid, mat);
                 j.parent = current;
