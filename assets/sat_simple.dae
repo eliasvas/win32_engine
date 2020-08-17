@@ -84,7 +84,7 @@
       <skin source="#Circle_008-mesh">
         <bind_shape_matrix> -0.4996958 0.8662008 2.20699e-7 -7.71631e-7 -0.8662008 -0.4996958 -2.44051e-5 8.64267e-7 -2.10294e-5 -1.23863e-5 1 -1.54326e-6 0 0 0 1</bind_shape_matrix>
         <source id="Armature_001_Circle_003-skin-joints">
-          <Name_array id="Armature_001_Circle_003-skin-joints-array" count="6"> Bone Bone_001 Bone_002 Bone_003 Bone_005 Bone_006</Name_array>
+          <Name_array id="Armature_001_Circle_003-skin-joints-array" count="6"> Bone Bone_001 Bone_002 Bone_003 Bone_005 Bone_006 </Name_array>
           <technique_common>
             <accessor source="#Armature_001_Circle_003-skin-joints-array" count="6" stride="1">
               <param name="JOINT" type="name"/>

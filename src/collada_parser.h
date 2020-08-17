@@ -418,7 +418,7 @@ read_collada(String filepath)
             joint_index = 0;
             for (u32 i = 0; i < joints_count;++i)
             {
-                if (strcmp(id.data, joint_names[i].data) == 0)
+                if (strcmp(sid.data, joint_names[i].data) == 0)
                     joint_index = i;
             }
             fscanf(file, "%s", garbage); //THIS IS WETHER ITS JOINT OR NODE
@@ -448,10 +448,8 @@ read_collada(String filepath)
                 }else if (strcmp(garbage, "<node") ==0)open_nodes_count++;
                 else continue;
 
-                //read the only node info (we need to read joints_count data(??))
-                //static String str(Arena* arena, char* characters)
-                //" <node "
-                fscanf(file, "%s", garbage);
+
+
                 //" id ="ABC" "
                 fscanf(file, "%s", line);
                 line[str_size(line)-1] = '\0';
@@ -459,24 +457,28 @@ read_collada(String filepath)
                 //" name="ABC" "
                 fscanf(file, "%s", line);
                 line[str_size(line)-1] = '\0';
-                name = str(&global_platform.permanent_storage, (char*)(line + 5*sizeof(char))); 
+                name = str(&global_platform.permanent_storage, (char*)(line + 6*sizeof(char))); 
                 //" sid="ABC" "
                 fscanf(file, "%s", line);
                 line[str_size(line)-1] = '\0';
-                sid = str(&global_platform.permanent_storage, (char*)(line + 5*sizeof(char))); 
+                String sid = str(&global_platform.permanent_storage, (char*)(line + 5*sizeof(char))); 
 
-                u32 joint_index = 0;
+                joint_index = 0;
                 for (u32 i = 0; i < joints_count;++i)
                 {
-                    if (strcmp(id.data, joint_names[i].data) == 0)
+                    if (strcmp(sid.data, joint_names[i].data) == 0)
                         joint_index = i;
                 }
                 fscanf(file, "%s", garbage); //THIS IS WETHER ITS JOINT OR NODE
                 fscanf(file, "%s %s", garbage, garbage); // <matrix sid="ABC"
-                //if (garbage[6] == 'N')memcpy(infoLog,"Multiple root bones not suppored for collada files.. sorry o_o", 64);
+                if (garbage[6] == 'N')memcpy(infoLog,"Multiple root bones not suppored for collada files.. sorry o_o", 64);
                 //now read the transform
                 fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
-                Joint j = joint(joint_index, name, mat);
+
+
+
+
+                Joint j = joint(joint_index, name, sid, mat);
                 j.parent = current;
                 current->children.push_back(j);
 
@@ -485,18 +487,12 @@ read_collada(String filepath)
 
             }
 
-
-
-
-
-
-
-
-
-
            break; 
         }
    }
+
+   calc_inv_bind_transform(&root, m4d(1.f));
+   put_inv_bind_transforms_in_array(&root, transforms);
 
    return data;
 }

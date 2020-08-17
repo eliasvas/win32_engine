@@ -23,18 +23,13 @@ typedef struct Joint
 } Joint;
 
 static Joint 
-joint(u32 index, String name, mat4 local_bind_transform)
-{
-    Joint j;
+joint(u32 index, String name,String sid, mat4 local_bind_transform);
 
-    j.index = index;
-    j.name = name;
-    j.local_bind_transform = {local_bind_transform};
-    j.inv_local_bind_transform = {0};
-    j.animated_transform = {0};
+static Joint 
+joint(u32 index, String name, mat4 local_bind_transform);
 
-    return j;
-}
+static void
+calc_inv_bind_transform(Joint* joint, mat4 parent_bind_transform); //needs to be called only on the root joint of each model
 
 static Joint 
 joint(u32 index, String name,String sid, mat4 local_bind_transform)
@@ -51,15 +46,39 @@ joint(u32 index, String name,String sid, mat4 local_bind_transform)
     return j;
 }
 
+
+static Joint 
+joint(u32 index, String name, mat4 local_bind_transform)
+{
+    Joint j;
+
+    j.index = index;
+    j.name = name;
+    j.local_bind_transform = {local_bind_transform};
+    j.inv_local_bind_transform = {0};
+    j.animated_transform = {0};
+
+    return j;
+}
+
 static void
 calc_inv_bind_transform(Joint* joint, mat4 parent_bind_transform) //needs to be called only on the root joint of each model
 {
     mat4 bind_transform = mul_mat4(parent_bind_transform, joint->local_bind_transform); //transform in relation to origin
     mat4 inv_bind_transform = inv_mat4(bind_transform);
     joint->inv_local_bind_transform = inv_bind_transform; //??
-    for (Joint j : joint->children)
+    for (Joint& j : joint->children)
         calc_inv_bind_transform(&j, bind_transform);
 }
+static void
+put_inv_bind_transforms_in_array(Joint* joint, mat4* transforms) //needs to be called only on the root joint of each model
+{
+    transforms[joint->index] = mul_mat4(joint->inv_local_bind_transform,transforms[joint->index]);
+    for (Joint& j : joint->children)
+        put_inv_bind_transforms_in_array(&j, transforms);
+}
+
+
 
 //represents the position and rotation of a joint in an animation frame (wrt parent)
 typedef struct JointTransform
