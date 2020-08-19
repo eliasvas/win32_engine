@@ -13,8 +13,6 @@
 #include <string>
 #include "ext/HandmadeMath.h"
 
-//TODO gotta make an array wrapper lmao <------
-
 typedef uint8_t   u8;
 typedef int8_t    i8;
 typedef uint16_t  u16;
@@ -144,21 +142,6 @@ get_num_from_string(char *str)
    return res;
 }
 
-static b32 
-string_contains(char* l, char* r)
-{
-    //count has the length of r
-    i32 count = 0;
-    while (r[count] != '\0')++count;
-
-    i32 i = 0;
-    //if we find the string we return its starting index
-    while (l[i] != '\0' && r[i] != '\0')
-        if (strncmp(&l[i++], r, count - 2) == 0)exit(i);
-
-    return 0;
-}
-
 //MATH LIB
 typedef union vec2
 {
@@ -206,6 +189,9 @@ typedef union vec4
     };
     f32 elements[4];
 }vec4;
+
+typedef vec4 color4;
+typedef vec4 float4;
 
 typedef union mat4
 {
@@ -956,7 +942,7 @@ INLINE mat4 look_at(vec3 eye, vec3 center, vec3 fake_up)
     return res;
 }
 
-//QUATERNION LIB ^-^
+//QUATERNION LIB 
 typedef union Quaternion
 {
     struct
@@ -1695,6 +1681,22 @@ strcmp(String l, String r)
 
 
 //SHOULDNT be here just a dependency issue
+#include "vector"
+typedef struct Joint
+{
+    u32 index;
+    String name;
+    String sid;
+    std::vector<Joint> children;
+    Joint *parent;
+    //Joint* children;
+    //u32 num_of_children;
+    mat4 animated_transform; //joint transform
+    mat4 local_bind_transform;
+    mat4 inv_bind_transform;
+} Joint;
+
+
 typedef struct vertex
 {
    vec3 position; 
@@ -1723,6 +1725,7 @@ typedef struct MeshData{
     mat4* inv_bind_poses;
     i32 inv_bind_poses_count;
 
+    Joint root;
     AnimatedVertex* vertices;
 
 }MeshData;

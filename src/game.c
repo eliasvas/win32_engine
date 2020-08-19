@@ -59,7 +59,7 @@ static Animator anim;
 
 void init(void)
 {
-    data = read_collada(str(&global_platform.permanent_storage,"../assets/sat_simple.dae"));
+    data = read_collada(str(&global_platform.permanent_storage,"../assets/sat.dae"));
 
     init_fake_framebuffer();
     init_text(&bmf,"../assets/ASCII_512.png"); 
@@ -88,7 +88,7 @@ void init(void)
     //AnimatedModel initialization
     {
         Texture* diff = find_texture(&rend.manager, "red.png");
-        skel = init_animated_model(diff,{0},&data);
+        skel = init_animated_model(diff,data.root,&data);
         //animation_to_play = read_animation_from_collada(..);
         anim = {skel, &animation_to_play, 0.3f};
     }

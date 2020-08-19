@@ -8,20 +8,6 @@
 
 
 
-typedef struct Joint
-{
-    u32 index;
-    String name;
-    String sid;
-    std::vector<Joint> children;
-    Joint *parent;
-    //Joint* children;
-    //u32 num_of_children;
-    mat4 animated_transform; 
-    mat4 local_bind_transform;
-    mat4 inv_local_bind_transform;
-} Joint;
-
 static Joint 
 joint(u32 index, String name,String sid, mat4 local_bind_transform);
 
@@ -40,7 +26,7 @@ joint(u32 index, String name,String sid, mat4 local_bind_transform)
     j.name = name;
     j.sid = sid;
     j.local_bind_transform = {local_bind_transform};
-    j.inv_local_bind_transform = {0};
+    j.inv_bind_transform = {0};
     j.animated_transform = {0};
 
     return j;
@@ -55,7 +41,7 @@ joint(u32 index, String name, mat4 local_bind_transform)
     j.index = index;
     j.name = name;
     j.local_bind_transform = {local_bind_transform};
-    j.inv_local_bind_transform = {0};
+    j.inv_bind_transform = {0};
     j.animated_transform = {0};
 
     return j;
@@ -66,7 +52,7 @@ calc_inv_bind_transform(Joint* joint, mat4 parent_bind_transform) //needs to be 
 {
     mat4 bind_transform = mul_mat4(parent_bind_transform, joint->local_bind_transform); //transform in relation to origin
     mat4 inv_bind_transform = inv_mat4(bind_transform);
-    joint->inv_local_bind_transform = inv_bind_transform; //??
+    joint->inv_bind_transform = inv_bind_transform;
     for (Joint& j : joint->children)
         calc_inv_bind_transform(&j, bind_transform);
 }
@@ -74,7 +60,7 @@ calc_inv_bind_transform(Joint* joint, mat4 parent_bind_transform) //needs to be 
 static void
 put_inv_bind_transforms_in_array(Joint* joint, mat4* transforms) //needs to be called only on the root joint of each model
 {
-    transforms[joint->index] = joint->inv_local_bind_transform;//mul_mat4(joint->inv_local_bind_transform,transforms[joint->index]);
+    transforms[joint->index] = joint->inv_bind_transform;//mul_mat4(joint->inv_bind_transform,transforms[joint->index]);
     for (Joint& j : joint->children)
         put_inv_bind_transforms_in_array(&j, transforms);
 }
@@ -248,7 +234,7 @@ apply_pose_to_joints(Animator* anim,KeyFrame current_pose, Joint j, mat4 parent_
         apply_pose_to_joints(anim, current_pose, child_joint, current_transform);
     
     //the transform to go from the original joint pos to the desired in world space 
-    current_transform = mul_mat4(current_transform, j.inv_local_bind_transform);
+    current_transform = mul_mat4(current_transform, j.inv_bind_transform);
     j.animated_transform = current_transform;
 }
 
@@ -322,65 +308,6 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
         setMat4fv(s, "joint_transforms[4]", (GLfloat*)model->inv_bind_poses[4].elements);
         setMat4fv(s, "joint_transforms[5]", (GLfloat*)model->inv_bind_poses[5].elements);
         setMat4fv(s, "joint_transforms[6]", (GLfloat*)model->inv_bind_poses[6].elements);
-        setMat4fv(s, "joint_transforms[7]", (GLfloat*)model->inv_bind_poses[7].elements);
-        setMat4fv(s, "joint_transforms[8]", (GLfloat*)model->inv_bind_poses[8].elements);
-        setMat4fv(s, "joint_transforms[9]", (GLfloat*)model->inv_bind_poses[9].elements);
-        setMat4fv(s, "joint_transforms[10]", (GLfloat*)model->inv_bind_poses[10].elements);
-        setMat4fv(s, "joint_transforms[11]", (GLfloat*)model->inv_bind_poses[11].elements);
-        setMat4fv(s, "joint_transforms[12]", (GLfloat*)model->inv_bind_poses[12].elements);
-        setMat4fv(s, "joint_transforms[13]", (GLfloat*)model->inv_bind_poses[13].elements);
-        setMat4fv(s, "joint_transforms[14]", (GLfloat*)model->inv_bind_poses[14].elements);
-        setMat4fv(s, "joint_transforms[15]", (GLfloat*)model->inv_bind_poses[15].elements);
-        setMat4fv(s, "joint_transforms[16]", (GLfloat*)model->inv_bind_poses[16].elements);
-        setMat4fv(s, "joint_transforms[17]", (GLfloat*)model->inv_bind_poses[17].elements);
-        setMat4fv(s, "joint_transforms[18]", (GLfloat*)model->inv_bind_poses[18].elements);
-        setMat4fv(s, "joint_transforms[19]", (GLfloat*)model->inv_bind_poses[19].elements);
-        setMat4fv(s, "joint_transforms[20]", (GLfloat*)model->inv_bind_poses[20].elements);
-        setMat4fv(s, "joint_transforms[21]", (GLfloat*)model->inv_bind_poses[21].elements);
-        setMat4fv(s, "joint_transforms[22]", (GLfloat*)model->inv_bind_poses[22].elements);
-        setMat4fv(s, "joint_transforms[23]", (GLfloat*)model->inv_bind_poses[23].elements);
-        setMat4fv(s, "joint_transforms[24]", (GLfloat*)model->inv_bind_poses[24].elements);
-        setMat4fv(s, "joint_transforms[25]", (GLfloat*)model->inv_bind_poses[25].elements);
-        setMat4fv(s, "joint_transforms[26]", (GLfloat*)model->inv_bind_poses[26].elements);
-        setMat4fv(s, "joint_transforms[27]", (GLfloat*)model->inv_bind_poses[27].elements);
-        setMat4fv(s, "joint_transforms[28]", (GLfloat*)model->inv_bind_poses[28].elements);
-        setMat4fv(s, "joint_transforms[29]", (GLfloat*)model->inv_bind_poses[29].elements);
-        setMat4fv(s, "joint_transforms[30]", (GLfloat*)model->inv_bind_poses[30].elements);
-        setMat4fv(s, "joint_transforms[31]", (GLfloat*)model->inv_bind_poses[31].elements);
-        setMat4fv(s, "joint_transforms[32]", (GLfloat*)model->inv_bind_poses[32].elements);
-        setMat4fv(s, "joint_transforms[33]", (GLfloat*)model->inv_bind_poses[33].elements);
-        setMat4fv(s, "joint_transforms[34]", (GLfloat*)model->inv_bind_poses[34].elements);
-        setMat4fv(s, "joint_transforms[35]", (GLfloat*)model->inv_bind_poses[35].elements);
-        setMat4fv(s, "joint_transforms[36]", (GLfloat*)model->inv_bind_poses[36].elements);
-        setMat4fv(s, "joint_transforms[37]", (GLfloat*)model->inv_bind_poses[37].elements);
-        setMat4fv(s, "joint_transforms[38]", (GLfloat*)model->inv_bind_poses[38].elements);
-        setMat4fv(s, "joint_transforms[39]", (GLfloat*)model->inv_bind_poses[39].elements);
-        setMat4fv(s, "joint_transforms[40]", (GLfloat*)model->inv_bind_poses[40].elements);
-        setMat4fv(s, "joint_transforms[41]", (GLfloat*)model->inv_bind_poses[41].elements);
-        setMat4fv(s, "joint_transforms[42]", (GLfloat*)model->inv_bind_poses[42].elements);
-        setMat4fv(s, "joint_transforms[43]", (GLfloat*)model->inv_bind_poses[43].elements);
-        setMat4fv(s, "joint_transforms[44]", (GLfloat*)model->inv_bind_poses[44].elements);
-        setMat4fv(s, "joint_transforms[45]", (GLfloat*)model->inv_bind_poses[45].elements);
-        setMat4fv(s, "joint_transforms[46]", (GLfloat*)model->inv_bind_poses[46].elements);
-        setMat4fv(s, "joint_transforms[47]", (GLfloat*)model->inv_bind_poses[47].elements);
-        setMat4fv(s, "joint_transforms[48]", (GLfloat*)model->inv_bind_poses[48].elements);
-        setMat4fv(s, "joint_transforms[49]", (GLfloat*)model->inv_bind_poses[49].elements);
-        setMat4fv(s, "joint_transforms[50]", (GLfloat*)model->inv_bind_poses[50].elements);
-        setMat4fv(s, "joint_transforms[51]", (GLfloat*)model->inv_bind_poses[51].elements);
-        setMat4fv(s, "joint_transforms[52]", (GLfloat*)model->inv_bind_poses[52].elements);
-        setMat4fv(s, "joint_transforms[53]", (GLfloat*)model->inv_bind_poses[53].elements);
-        setMat4fv(s, "joint_transforms[54]", (GLfloat*)model->inv_bind_poses[54].elements);
-        setMat4fv(s, "joint_transforms[55]", (GLfloat*)model->inv_bind_poses[55].elements);
-        setMat4fv(s, "joint_transforms[56]", (GLfloat*)model->inv_bind_poses[56].elements);
-        setMat4fv(s, "joint_transforms[57]", (GLfloat*)model->inv_bind_poses[57].elements);
-        setMat4fv(s, "joint_transforms[58]", (GLfloat*)model->inv_bind_poses[58].elements);
-        setMat4fv(s, "joint_transforms[59]", (GLfloat*)model->inv_bind_poses[59].elements);
-        setMat4fv(s, "joint_transforms[60]", (GLfloat*)model->inv_bind_poses[60].elements);
-        setMat4fv(s, "joint_transforms[61]", (GLfloat*)model->inv_bind_poses[61].elements);
-        setMat4fv(s, "joint_transforms[62]", (GLfloat*)model->inv_bind_poses[62].elements);
-        setMat4fv(s, "joint_transforms[63]", (GLfloat*)model->inv_bind_poses[63].elements);
-        setMat4fv(s, "joint_transforms[64]", (GLfloat*)model->inv_bind_poses[64].elements);
-        setMat4fv(s, "joint_transforms[65]", (GLfloat*)model->inv_bind_poses[65].elements);
     }
     setMat4fv(s, "view_matrix", (GLfloat*)mul_mat4(view, quat_to_mat4(quat_from_angle(v3(1,0,0), -PI/2))).elements);
     glUniform3f(glGetUniformLocation(s->ID, "light_direction"), 0.43,0.34,0.f); 
@@ -404,7 +331,7 @@ init_animated_model(Texture* diff, Joint root,MeshData* data)
    model.diff_tex = diff;
    model.root = root;
    model.inv_bind_poses = data->inv_bind_poses;
-   calc_inv_bind_transform(&model.root,m4d(1.f));
+   //calc_inv_bind_transform(&model.root,m4d(1.f));
    
    return model;
 }

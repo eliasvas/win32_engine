@@ -206,6 +206,14 @@ read_collada(String filepath)
 
                 //NOTE: we transpose because the matrices are given in row major order!!
                 mat = transpose_mat4(mat);
+                //mat = inv_mat4(mat); //i think this should be here no?
+                /*
+                for(i32 i = 0; i < 16; ++i)
+                {
+                    if (equalf(mat.raw[i],0.f, 0.06f))continue;
+                    mat.raw[i] = 1.f / mat.raw[i];
+                }
+                */
                 //transforms[i] = mul_mat4(mat, quat_to_mat4(quat_from_angle(v3(1,0,0), 90.f)));
                 transforms[i] = mat;
             }
@@ -360,7 +368,6 @@ read_collada(String filepath)
    //as for the hierarchy of joints.. each <node> we read is a child of the previous node that has
    //not been closed (by </node>)
   //Joint *root = arena_alloc(&global_platform.permanent_storage, sizeof(Joint));
-  Joint root;
   while (true)
    {
         i32 res = fscanf(file, "%s", line);
@@ -430,11 +437,11 @@ read_collada(String filepath)
                 mat = transpose_mat4(mat);
             //Joint joint = joint(joint_index, name, mat);
             //mat = transforms[joint_index];//NONONOOO
-            root = joint(joint_index, name,sid, mat);
-            root.parent = &root;
+            data.root = joint(joint_index, name,sid, mat);
+            data.root.parent = &data.root;
             
             i32 open_nodes_count = 1; //we have read the "NODE" node
-            Joint *current = &root;
+            Joint *current = &data.root;
             fscanf(file, "%s", garbage); // <\matrix>
 
             //NOTE: read the rest of the joints
@@ -474,7 +481,7 @@ read_collada(String filepath)
                 }
                 fscanf(file, "%s", garbage); //THIS IS WETHER ITS JOINT OR NODE
                 fscanf(file, "%s %s", garbage, garbage); // <matrix sid="ABC"
-                if (garbage[6] == 'N')memcpy(infoLog,"Multiple root bones not suppored for collada files.. sorry o_o", 64);
+                if (garbage[6] == 'N')memcpy(infoLog,"Multiple root bones not suppored for collada files.. sorry o_o", 64); //its a NODE.. we cant have more than 1
                 //now read the transform
                 fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
                 mat = transpose_mat4(mat);
@@ -496,10 +503,52 @@ read_collada(String filepath)
         }
    }
 
-   calc_inv_bind_transform(&root, m4d(1.f));
-   put_inv_bind_transforms_in_array(&root, transforms);
+   calc_inv_bind_transform(&data.root, m4d(1.f));
+   //put_inv_bind_transforms_in_array(&data.root, transforms);
+
+   //for (i32 i = 0; i < joints_count; ++i)
+       //data.inv_bind_poses[i] = inv_mat4(transforms[i]);
 
    return data;
+}
+
+/*
+typedef struct Animation{
+    f32 length;
+    KeyFrame* key_frames;
+    u32 frame_count;
+} Animation;
+*/
+static Animation 
+read_collada_animation(String filepath)
+{
+   Animation anim;    
+   FILE* file = fopen(filepath.data, "r");
+   if (file == NULL)
+   {
+       printf("Error Opening .dae file!!\n");
+       return {0};
+   }
+   char line[256];
+   char garbage[256];
+   char count[256];
+
+ while (true)
+   {
+        i32 res = fscanf(file, "%s", line);
+        if (res == EOF)return anim;// we reached the end of the file
+
+        if (strcmp(line, "<library_animations>") == 0)
+        {
+            fscanf(file, "%s", garbage);
+            fscanf(file, "%s", count);
+        }
+   }
+
+
+
+
+    return anim;
 }
 
 #endif
