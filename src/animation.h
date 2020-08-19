@@ -102,18 +102,40 @@ interpolate_joint_transforms(JointTransform l, JointTransform r, f32 time)
     return res;
 }
 
-typedef struct KeyFrame{
+typedef struct KeyFrame
+{
     f32 timestamp;
     String* joint_names;
     JointTransform* joint_transforms;
     i32 joint_num;
 }KeyFrame;
 
-typedef struct Animation{
+typedef struct Animation
+{
     f32 length;
     KeyFrame* key_frames;
     u32 frame_count;
 } Animation;
+
+typedef struct JointKeyFrame
+{
+    f32 timestamp;
+    JointTransform transform;
+};
+
+typedef struct JointAnimation
+{
+    JointKeyFrame* keyframes;
+    u32 keyframe_count; 
+};
+
+/*
+typedef struct Animation
+{
+    JointAnimation* joint_anims;
+    u32 joint_anims_count;
+};
+*/
 
 typedef struct AnimatedModel
 {

@@ -60,6 +60,7 @@ static Animator anim;
 void init(void)
 {
     data = read_collada(str(&global_platform.permanent_storage,"../assets/sat.dae"));
+    animation_to_play = read_collada_animation(str(&global_platform.permanent_storage,"../assets/sat.dae"));
 
     init_fake_framebuffer();
     init_text(&bmf,"../assets/ASCII_512.png"); 

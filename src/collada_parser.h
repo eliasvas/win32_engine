@@ -532,19 +532,56 @@ read_collada_animation(String filepath)
    char line[256];
    char garbage[256];
    char count[256];
+   u32 number_of_joint_animations = 0;
 
- while (true)
+   while (true)
    {
-        i32 res = fscanf(file, "%s", line);
-        if (res == EOF)return anim;// we reached the end of the file
+       i32 res = fscanf(file, "%s", line);
+       if (res == EOF)return anim;// we reached the end of the file
+ 
+       //count number of joint animations
+       if (strcmp(line, "<library_animations>") == 0)
+       {
+           //<animation id="ABC" name="ABC" <--skeleton data not needed?
+           fscanf(file, "%s %s %s", garbage, garbage, garbage);
+           while (res != EOF){
+               res = fscanf(file, "%s", line);
+               if (strcmp(line, "<animation") == 0)
+                   number_of_joint_animations++;
+           }
+           break;
+      }
+   }
+   rewind(file);
+   //now lets starting reading the actual animations
 
-        if (strcmp(line, "<library_animations>") == 0)
-        {
-            fscanf(file, "%s", garbage);
-            fscanf(file, "%s", count);
-        }
+   while (true)
+   {
+       i32 res = fscanf(file, "%s", line);
+       if (res == EOF)return anim;// we reached the end of the file
+       if (strcmp(line, "<library_animations>") == 0)
+       {
+          //<animation id="ABC" name="ABC" <--skeleton data not needed?
+          fscanf(file, "%s %s %s", garbage, garbage, garbage);
+       }
    }
 
+   JointKeyFrame* keyframes;
+   i32 keyframe_count;
+   while (true)
+   {
+       i32 res = fscanf(file, "%s", line);
+       if (res == EOF)return anim;// we reached the end of the file
+       if (strcmp(line, "<animation") == 0)
+       {
+           fscanf(file, "%s %s %s %s %s",garbage, garbage, garbage, garbage, garbage, garbage);
+           fscanf(file, "%s", count);
+           keyframe_count = get_num_from_string(count);
+           keyframes = (JointKeyFrame*)arena_alloc(&global_platform.permanent_storage,sizeof(JointKeyFrame) * keyframe_count);
+       }
+   }
+
+       
 
 
 
