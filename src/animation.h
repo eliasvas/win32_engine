@@ -102,24 +102,10 @@ interpolate_joint_transforms(JointTransform l, JointTransform r, f32 time)
     return res;
 }
 
-typedef struct KeyFrame
-{
-    f32 timestamp;
-    String* joint_names;
-    JointTransform* joint_transforms;
-    i32 joint_num;
-}KeyFrame;
-
-typedef struct Animation
-{
-    f32 length;
-    KeyFrame* key_frames;
-    u32 frame_count;
-} Animation;
-
 typedef struct JointKeyFrame
 {
     f32 timestamp;
+    u32 joint_index;
     JointTransform transform;
 };
 
@@ -129,13 +115,12 @@ typedef struct JointAnimation
     u32 keyframe_count; 
 };
 
-/*
 typedef struct Animation
 {
-    JointAnimation* joint_anims;
+    JointAnimation* joint_animations;
     u32 joint_anims_count;
+    f32 length; //max timestamp?
 };
-*/
 
 typedef struct AnimatedModel
 {
@@ -154,9 +139,26 @@ typedef struct AnimatedModel
 typedef struct Animator
 {
     AnimatedModel model;
-    Animation* current_animation;
+    Animation* anim;
     f32 animation_time;
 }Animator;
+
+/*
+typedef struct KeyFrame
+{
+    f32 timestamp;
+    String* joint_names;
+    JointTransform* joint_transforms;
+    i32 joint_num;
+}KeyFrame;
+
+typedef struct Animation
+{
+    f32 length;
+    KeyFrame* key_frames;
+    u32 frame_count;
+} Animation;
+
 
 static KeyFrame 
 init_keyframe(Arena* arena, i32 joint_num)
@@ -181,7 +183,7 @@ do_animation(Animator* anim, Animation* animation)
 
 static void increase_animation_time(Animator* anim)
 {
-    anim->animation_time += 1.f/60; //this should be the Δt from global platform but its bugged
+    anim->animation_time += 1.f/60; //this should be the Δt from global platform but its bugged rn
     if (anim->animation_time > anim->current_animation->length)
         anim->animation_time -= anim->current_animation->length;
 }
@@ -208,7 +210,7 @@ static f32 calc_progress(Animator* anim, KeyFrame prev, KeyFrame next)
 {
     f32 total_time = next.timestamp - prev.timestamp;
     f32 current_time = anim->animation_time - prev.timestamp;
-    return current_time / total_time;
+    return current_tatorime / total_time;
 }
 
 //we say keyframe because we have no maps and we need one :( :(
@@ -269,6 +271,101 @@ update_animator(Animator* anim)
     KeyFrame current_pose = calc_current_animation_pose(anim); 
     apply_pose_to_joints(anim, current_pose, anim->model.root, m4d(1.f));
 }
+*/
+
+static void increase_animation_time(Animator* anim)
+{
+    anim->animation_time += 1.f/60; //this should be the Δt from global platform but its bugged rn
+    if (anim->animation_time > anim->anim->length)
+        anim->animation_time -= anim->anim->length;
+}
+
+
+static void
+put_joint_transform_in_correct_joint(Joint* joint, JointKeyFrame keyframe) //needs to be called only on the root joint of each model
+{
+    if (joint->index == keyframe.joint_index)joint->animated_transform = get_joint_transform_matrix(keyframe.transform);
+    for (Joint& j : joint->children)
+        put_joint_transform_in_correct_joint(&j, keyframe);
+}
+
+static void 
+apply_pose_to_joints(Animator* anim,JointKeyFrame current_pose, Joint j, mat4 parent_transform)
+{
+    JointTransform local_joint_transform = current_pose.transform;
+
+    //the local bone space transform of joint j
+    mat4 current_local_transform = mul_mat4(translate_mat4(local_joint_transform.position), quat_to_mat4(local_joint_transform.rotation));
+
+    //the world position of our joint j
+    mat4 current_transform = mul_mat4(parent_transform, current_local_transform);//why parent transform first??
+    for(Joint child_joint : j.children)
+        apply_pose_to_joints(anim, current_pose, child_joint, current_transform);
+    
+    //the transform to go from the original joint pos to the desired in world space 
+    current_transform = mul_mat4(current_transform, j.inv_bind_transform);
+    j.animated_transform = current_transform;
+}
+
+
+static JointKeyFrame* get_previous_and_next_keyframes(Animator* animator, i32 joint_animation_index)
+{
+    JointKeyFrame frames[2];
+    JointKeyFrame* all_frames = animator->anim->joint_animations[joint_animation_index].keyframes;
+    JointKeyFrame prev = all_frames[0];
+    JointKeyFrame next = all_frames[0];
+    for (int i = 1; i < animator->anim->joint_animations[joint_animation_index].keyframe_count; ++i)
+    {
+        next = all_frames[i];
+        if (next.timestamp > animator->animation_time)
+            break;
+        prev = all_frames[i];
+    }
+    frames[0] = prev;
+    frames[1] = next;
+    return (frames);
+}
+
+static f32 calc_progress(Animator* animator, JointKeyFrame prev, JointKeyFrame next)
+{
+    f32 total_time = next.timestamp - prev.timestamp;
+    f32 current_time = animator->animation_time - prev.timestamp;
+    return current_time / total_time;
+}
+
+JointKeyFrame interpolate_poses(JointKeyFrame prev, JointKeyFrame next, f32 x)
+{
+    JointKeyFrame res;
+
+    res.transform.position = lerp_vec3(prev.transform.position, next.transform.position, x);
+    res.transform.rotation = nlerp(prev.transform.rotation, next.transform.rotation, x);
+
+    return res;
+
+}
+
+static JointKeyFrame calc_current_animation_pose(Animator* animator, u32 joint_animation_index)
+{
+   JointKeyFrame* frames = get_previous_and_next_keyframes(animator, joint_animation_index);
+   f32 x = calc_progress(animator, frames[0],frames[1]);
+   return interpolate_poses(frames[0],frames[1], x); //this has to be done!!!!!
+}
+
+static void
+update_animator(Animator* animator)
+{
+    if (animator->anim == NULL)return;
+    increase_animation_time(animator);
+    //this should be a Map<String, JointTransform> but i am lazy af
+    for (u32 i = 0; i < animator->anim->joint_anims_count; ++i)
+    {
+        JointKeyFrame current_pose = calc_current_animation_pose(animator, i); 
+        //apply_pose_to_joints(animator, current_pose, animator->model.root, m4d(1.f));
+    }
+}
+
+
+
 
 
 static GLuint create_animated_model_vao(MeshData* data)
@@ -380,15 +477,6 @@ get_all_joint_transforms(AnimatedModel* model) //get all joint transforms for th
     add_joints_to_array(model->root, transforms);
     return transforms;
 }
-
-
-
-
-
-
-
-
-
 
 #endif
 

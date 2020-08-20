@@ -188,7 +188,6 @@ read_collada(String filepath)
         i32 res = fscanf(file, "%s", line);
         if (res == EOF)return data; //we reached the end of the file
 
-        //then the uv coordinates
         if (strstr(line, "bind_poses") != NULL)
         {
             fscanf(file, "%s %s %s", garbage,garbage, count);
@@ -534,6 +533,43 @@ read_collada_animation(String filepath)
    char count[256];
    u32 number_of_joint_animations = 0;
 
+   //first go FP UNTIL <library_controllers> 
+   while (true)
+   {
+       i32 res = fscanf(file, "%s", line);
+       if (res == EOF)return anim;// we reached the end of the file
+       if (strcmp(line, "<library_controllers>") == 0)
+       {
+          break;
+       }
+   }
+
+   //read the joint names array
+   i32 joints_count;
+   String* joint_names;
+   while (true)
+   {
+        i32 res = fscanf(file, "%s", line);
+        if (res == EOF)return anim;// we reached the end of the file
+
+        if (strcmp(line, "<Name_array") == 0)
+        {
+            fscanf(file, "%s", garbage);
+            fscanf(file, "%s", count);
+            joints_count = get_num_from_string(count);
+            joint_names = (String*)arena_alloc(&global_platform.frame_storage, sizeof(String) * joints_count);
+            for (i32 i = 0; i< joints_count; ++i)
+            {
+                fscanf(file, "%s", line);
+                joint_names[i] = str(&global_platform.frame_storage, line);
+            }
+            break;
+        }
+   }
+
+
+
+   //go until the start of the first animation
    while (true)
    {
        i32 res = fscanf(file, "%s", line);
@@ -553,8 +589,8 @@ read_collada_animation(String filepath)
       }
    }
    rewind(file);
-   //now lets starting reading the actual animations
 
+   //now lets starting reading the actual animation
    while (true)
    {
        i32 res = fscanf(file, "%s", line);
@@ -563,10 +599,12 @@ read_collada_animation(String filepath)
        {
           //<animation id="ABC" name="ABC" <--skeleton data not needed?
           fscanf(file, "%s %s %s", garbage, garbage, garbage);
+          break;
        }
    }
 
    JointKeyFrame* keyframes;
+   i32 joint_index = 0;
    i32 keyframe_count;
    while (true)
    {
@@ -574,10 +612,43 @@ read_collada_animation(String filepath)
        if (res == EOF)return anim;// we reached the end of the file
        if (strcmp(line, "<animation") == 0)
        {
-           fscanf(file, "%s %s %s %s %s",garbage, garbage, garbage, garbage, garbage, garbage);
+           fscanf(file, "%s %s %s %s %s %s",garbage, garbage, garbage, garbage, garbage, garbage);
+           for (u32 i = joints_count-1; i >=0; --i) //bigbrain Bone Bone_01 .... Bone gets popped first..
+           {
+               if (strstr(garbage, joint_names[i].data) != NULL)
+               {
+                   joint_index = i;
+                   break;
+               }
+                   
+           }
            fscanf(file, "%s", count);
            keyframe_count = get_num_from_string(count);
            keyframes = (JointKeyFrame*)arena_alloc(&global_platform.permanent_storage,sizeof(JointKeyFrame) * keyframe_count);
+           for (u32 i = 0; i < keyframe_count; ++i)
+           {
+                fscanf(file, "%f", &keyframes[i].timestamp);
+           }
+           mat4 mat;
+           //now lets read the matrices for each timestamp
+           while (true)
+           {
+               res = fscanf(file, "%s", line);
+               if (strcmp(line, "<float_array") == 0)
+               {
+                   fscanf(file,"%s %s", garbage, count);
+                   for (u32 i = 0; i < keyframe_count; ++i)
+                   {
+                       fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+                       mat = transpose_mat4(mat);
+                       JointTransform t = {6.f};
+                       keyframes[i].transform = t;
+                       keyframes[i].joint_index = joint_index;
+                   }
+                   break;
+               }
+           }
+           break;
        }
    }
 
