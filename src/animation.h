@@ -65,6 +65,14 @@ put_inv_bind_transforms_in_array(Joint* joint, mat4* transforms) //needs to be c
         put_inv_bind_transforms_in_array(&j, transforms);
 }
 
+static void
+initialize_joint_pos_array(Joint* joint, mat4* transforms)
+{
+    transforms[joint->index] = m4d(1.f);
+    for(Joint& j : joint->children)
+        initialize_joint_pos_array(&j, transforms);
+}
+
 
 
 //represents the position and rotation of a joint in an animation frame (wrt parent)
@@ -452,6 +460,7 @@ init_animated_model(Texture* diff, Joint root,MeshData* data)
    model.inv_bind_poses = data->inv_bind_poses;
    //calc_inv_bind_transform(&model.root,m4d(1.f));
    
+   initialize_joint_pos_array(&model.root,data->inv_bind_poses);
    return model;
 }
 
@@ -477,6 +486,8 @@ get_all_joint_transforms(AnimatedModel* model) //get all joint transforms for th
     add_joints_to_array(model->root, transforms);
     return transforms;
 }
+
+
 
 #endif
 
