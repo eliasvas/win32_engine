@@ -297,9 +297,16 @@ put_joint_transform_in_correct_joint(Joint* joint, JointKeyFrame keyframe) //nee
         put_joint_transform_in_correct_joint(&j, keyframe);
 }
 
-static void 
-apply_pose_to_joints(Animator* anim,JointKeyFrame current_pose, Joint j, mat4 parent_transform)
+static mat4 
+calc_pose_of_joints(Animator* anim,JointKeyFrame current_pose, Joint j, mat4 parent_transform)
 {
+    u32 i; 
+    for(i = 0; i < anim->model.joint_count; ++i)
+    {
+        if (current_pose.joint_index == j.index)
+            break;//we have found the index of our joint j
+    }
+
     JointTransform local_joint_transform = current_pose.transform;
 
     //the local bone space transform of joint j
@@ -308,12 +315,25 @@ apply_pose_to_joints(Animator* anim,JointKeyFrame current_pose, Joint j, mat4 pa
     //the world position of our joint j
     mat4 current_transform = mul_mat4(parent_transform, current_local_transform);//why parent transform first??
     for(Joint child_joint : j.children)
-        apply_pose_to_joints(anim, current_pose, child_joint, current_transform);
+        calc_pose_of_joints(anim, current_pose, child_joint, current_transform);
     
+    return current_transform;
     //the transform to go from the original joint pos to the desired in world space 
     current_transform = mul_mat4(current_transform, j.inv_bind_transform);
     j.animated_transform = current_transform;
 }
+
+static void 
+apply_pose_to_joints(Animator* animator, Joint* j, mat4* transforms)
+{
+    i32 index = j->index;
+    //the transform to go from the original joint pos to the desired in world space 
+    mat4 current_transform = mul_mat4(transforms[index], j->inv_bind_transform);
+    j->animated_transform = current_transform;
+    for (Joint& child : j->children)
+        apply_pose_to_joints(animator, &child, transforms); 
+}
+
 
 
 static JointKeyFrame* get_previous_and_next_keyframes(Animator* animator, i32 joint_animation_index)
@@ -347,6 +367,7 @@ JointKeyFrame interpolate_poses(JointKeyFrame prev, JointKeyFrame next, f32 x)
 
     res.transform.position = lerp_vec3(prev.transform.position, next.transform.position, x);
     res.transform.rotation = nlerp(prev.transform.rotation, next.transform.rotation, x);
+    res.joint_index = prev.joint_index;
 
     return res;
 
@@ -364,12 +385,15 @@ update_animator(Animator* animator)
 {
     if (animator->anim == NULL)return;
     increase_animation_time(animator);
+    //the world positions of our joints j
+    mat4 *current_transforms = (mat4*)arena_alloc(&global_platform.frame_storage, sizeof(mat4) * animator->anim->joint_anims_count);
     //this should be a Map<String, JointTransform> but i am lazy af
     for (u32 i = 0; i < animator->anim->joint_anims_count; ++i)
     {
         JointKeyFrame current_pose = calc_current_animation_pose(animator, i); 
-        //apply_pose_to_joints(animator, current_pose, animator->model.root, m4d(1.f));
+        current_transforms[current_pose.joint_index] = calc_pose_of_joints(animator, current_pose, animator->model.root, m4d(1.f));
     }
+    apply_pose_to_joints(animator,&animator->model.root, current_transforms);
 }
 
 

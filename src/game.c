@@ -55,7 +55,7 @@ static cs_loaded_sound_t loaded;
 static AnimatedModel skel;
 static MeshData data; //this should be an AnimatedModel
 static Animation animation_to_play;
-static Animator anim;
+static Animator animator;
 
 void init(void)
 {
@@ -91,7 +91,7 @@ void init(void)
         Texture* diff = find_texture(&rend.manager, "red.png");
         skel = init_animated_model(diff,data.root,&data);
         //animation_to_play = read_animation_from_collada(..);
-        anim = {skel, &animation_to_play, 0.3f};
+        animator = {skel, &animation_to_play, 0.3f};
     }
     //test model
     {
@@ -146,7 +146,7 @@ void init(void)
 
 void update(void)
 {
-    //update_animator(&anim);
+    update_animator(&animator);
 
     teapot_model.position = {5, abs(sin(global_platform.current_time)/4.f) + 4.f,0.0};
     test_model.position = {0, 1.f,0.0};

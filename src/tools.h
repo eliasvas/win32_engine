@@ -1163,13 +1163,56 @@ INLINE mat4 quat_to_mat4(Quaternion l)
     return res;
 }
 
-INLINE Quaternion mat4_to_quat(mat4 m)
+//taken directly from HandmadeMath.. investigate its authenticity 
+INLINE Quaternion 
+mat4_to_quat(mat4 m)
 {
-    Quaternion res;
+    float T;
+    Quaternion Q;
 
-    //some complex shit
+    if (m.elements[2][2] < 0.0f) {
+        if (m.elements[0][0] > m.elements[1][1]) {
+            T = 1 + m.elements[0][0] - m.elements[1][1] - m.elements[2][2];
+            Q = quat(
+                T,
+                m.elements[0][1] + m.elements[1][0],
+                m.elements[2][0] + m.elements[0][2],
+                m.elements[1][2] - m.elements[2][1]
+            );
+        } else {
+            T = 1 - m.elements[0][0] + m.elements[1][1] - m.elements[2][2];
+            Q = quat(
+                m.elements[0][1] + m.elements[1][0],
+                T,
+                m.elements[1][2] + m.elements[2][1],
+                m.elements[2][0] - m.elements[0][2]
+            );
+        }
+    } else {
+        if (m.elements[0][0] < -m.elements[1][1]) {
+            ASSERT_COVERED(HMM_Mat4ToQuaternion);
 
-    return res;
+            T = 1 - m.elements[0][0] - m.elements[1][1] + m.elements[2][2];
+            Q = quat(
+                m.elements[2][0] + m.elements[0][2],
+                m.elements[1][2] + m.elements[2][1],
+                T,
+                m.elements[0][1] - m.elements[1][0]
+            );
+        } else {
+            T = 1 + m.elements[0][0] + m.elements[1][1] + m.elements[2][2];
+            Q = quat(
+                m.elements[1][2] - m.elements[2][1],
+                m.elements[2][0] - m.elements[0][2],
+                m.elements[0][1] - m.elements[1][0],
+                T
+            );
+        }
+    }
+
+    Q = mul_quatf(Q, 0.5f / sqrt(T));
+
+    return Q;
 }
 
 

@@ -588,7 +588,15 @@ read_collada_animation(String filepath)
            break;
       }
    }
+   anim.joint_animations = (JointAnimation*)arena_alloc(&global_platform.permanent_storage, sizeof(JointAnimation) * number_of_joint_animations);
+   anim.joint_anims_count = number_of_joint_animations;
    rewind(file);
+
+
+
+
+   i32 current_joint_animation = 0;
+   
 
    //now lets starting reading the actual animation
    while (true)
@@ -623,8 +631,8 @@ read_collada_animation(String filepath)
                    
            }
            fscanf(file, "%s", count);
-           keyframe_count = get_num_from_string(count);
-           keyframes = (JointKeyFrame*)arena_alloc(&global_platform.permanent_storage,sizeof(JointKeyFrame) * keyframe_count);
+           anim.joint_animations[current_joint_animation].keyframe_count = get_num_from_string(count);
+           anim.joint_animations[current_joint_animation].keyframes = (JointKeyFrame*)arena_alloc(&global_platform.permanent_storage,sizeof(JointKeyFrame) * keyframe_count);
            for (u32 i = 0; i < keyframe_count; ++i)
            {
                 fscanf(file, "%f", &keyframes[i].timestamp);
@@ -641,9 +649,9 @@ read_collada_animation(String filepath)
                    {
                        fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
                        mat = transpose_mat4(mat);
-                       JointTransform t = {6.f};
-                       keyframes[i].transform = t;
-                       keyframes[i].joint_index = joint_index;
+                       JointTransform t = {v3(mat.elements[3][0],mat.elements[3][1],mat.elements[3][2]), mat4_to_quat(mat)};
+                       anim.joint_animations[current_joint_animation].keyframes[i].transform = t;
+                       anim.joint_animations[current_joint_animation].keyframes[i].joint_index = joint_index;
                    }
                    break;
                }
