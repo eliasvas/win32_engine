@@ -331,7 +331,7 @@ char *joint_transforms = "joint_transforms[3]";
 static void 
 set_joint_transform_uniforms(AnimatedModel* model,Shader* s, Joint *j)
 {
-    if (j->index == 3)
+    if (j->index == 0)
         setMat4fv(s, joint_transforms, (f32*)mul_mat4f(j->animated_transform,1.f).elements);
     for (Joint& child : j->children)
         set_joint_transform_uniforms(model,s, &child); 

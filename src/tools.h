@@ -740,7 +740,6 @@ INLINE mat4 scale_mat4(vec3 s)
     res.elements[2][2] *= s.z;
     return res;
 }
-
 //what the fuuuuuuuck is this shit??
 INLINE mat4 inv_mat4(mat4 m)
 {
@@ -942,6 +941,53 @@ INLINE mat4 look_at(vec3 eye, vec3 center, vec3 fake_up)
     return res;
 }
 
+INLINE mat4 
+swap_cols_mat4(mat4 mat, u32 col1, u32 col2)
+{
+    vec4 second_column = v4(mat.elements[col2][0],mat.elements[col2][1], mat.elements[col2][2], mat.elements[col2][3]);
+    for (u32 i = 0; i < 4; ++i)
+        mat.elements[col2][i] = mat.elements[col1][i];
+    for (u32 i = 0; i < 4; ++i)
+        mat.elements[col1][i] = second_column.elements[i];
+    return mat;
+}
+
+INLINE mat4
+swap_rows_mat4(mat4 mat, u32 row1, u32 row2)
+{
+   vec4 second_row = v4(mat.elements[0][row2], mat.elements[1][row2], mat.elements[2][row2], mat.elements[3][row2]); 
+   for (u32 i = 0; i < 4; ++i)
+       mat.elements[i][row2] = mat.elements[i][row1];
+   for (u32 i = 0; i < 4; ++i)
+       mat.elements[i][row1] = second_row.elements[i];
+   return mat;
+}
+
+INLINE mat4 negate_row_mat4(mat4 mat, u32 row)
+{
+    for (u32 i = 0; i < 4; ++i)
+        mat.elements[i][row] = -1.f * mat.elements[i][row];
+    return mat;
+}
+
+INLINE mat4 negate_col_mat4(mat4 mat, u32 col)
+{
+    for (u32 i = 0; i < 4; ++i)
+        mat.elements[col][i] = -1.f * mat.elements[col][i];
+    return mat;
+}
+//we must swap columns 2 and 3 then swap rows 2 and 3
+//and then negate column 3 and row 3 TODO(ilias): check this shit
+INLINE mat4
+blender_to_opengl_mat4(mat4 mat)
+{
+   mat = swap_cols_mat4(mat, 2,3);
+   mat = swap_rows_mat4(mat,2,3);
+   mat = negate_col_mat4(mat, 3);
+   mat = negate_row_mat4(mat, 3);
+   return mat;
+}
+
 //QUATERNION LIB 
 typedef union Quaternion
 {
@@ -1075,19 +1121,6 @@ INLINE Quaternion inv_quat(Quaternion l)
     return res;
 }
 
-INLINE Quaternion nlerp(Quaternion l, Quaternion r, f32 time)
-{
-    Quaternion res;
-
-    //we gotta interpolate all quaternion components
-    res.x = lerp(l.x, r.x, time);
-    res.y = lerp(l.y, r.y, time);
-    res.z = lerp(l.z, r.z, time);
-    res.w = lerp(l.w, r.w, time);
-    
-    return res;
-}
-
 INLINE Quaternion slerp(Quaternion l, Quaternion r, f32 time)
 {
     Quaternion res;
@@ -1118,6 +1151,21 @@ INLINE Quaternion normalize_quat(Quaternion l)
     f32 len = sqrt(dot_quat(l,l)) ;
     res = div_quatf(l,len);
 
+    return res;
+}
+
+INLINE Quaternion nlerp(Quaternion l, Quaternion r, f32 time)
+{
+    Quaternion res;
+
+    //we gotta interpolate all quaternion components
+    res.x = lerp(l.x, r.x, time);
+    res.y = lerp(l.y, r.y, time);
+    res.z = lerp(l.z, r.z, time);
+    res.w = lerp(l.w, r.w, time);
+
+    res = normalize_quat(res);
+    
     return res;
 }
 
