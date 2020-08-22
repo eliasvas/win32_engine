@@ -283,27 +283,20 @@ update_animator(Animator* anim)
 
 static void increase_animation_time(Animator* anim)
 {
-    anim->animation_time += 1.f/60; //this should be the Δt from global platform but its bugged rn
+    anim->animation_time += 1.f/60.f; //this should be the Δt from global platform but its bugged rn
     if (anim->animation_time > anim->anim->length)
         anim->animation_time -= anim->anim->length;
 }
 
 
-static void
-put_joint_transform_in_correct_joint(Joint* joint, JointKeyFrame keyframe) //needs to be called only on the root joint of each model
-{
-    if (joint->index == keyframe.joint_index)joint->animated_transform = get_joint_transform_matrix(keyframe.transform);
-    for (Joint& j : joint->children)
-        put_joint_transform_in_correct_joint(&j, keyframe);
-}
 
 static mat4 
-calc_pose_of_joints(Animator* anim,JointKeyFrame current_pose, Joint j, mat4 parent_transform)
+calc_pose_of_joints(Animator* anim,JointKeyFrame current_pose, Joint *j, mat4 parent_transform)
 {
     u32 i; 
     for(i = 0; i < anim->model.joint_count; ++i)
     {
-        if (current_pose.joint_index == j.index)
+        if (current_pose.joint_index == j->index)
             break;//we have found the index of our joint j
     }
 
@@ -314,13 +307,13 @@ calc_pose_of_joints(Animator* anim,JointKeyFrame current_pose, Joint j, mat4 par
 
     //the world position of our joint j
     mat4 current_transform = mul_mat4(parent_transform, current_local_transform);//why parent transform first??
-    for(Joint child_joint : j.children)
-        calc_pose_of_joints(anim, current_pose, child_joint, current_transform);
+    for(Joint child_joint : j->children)
+        calc_pose_of_joints(anim, current_pose, &child_joint, current_transform);
     
-    return current_transform;
     //the transform to go from the original joint pos to the desired in world space 
-    current_transform = mul_mat4(current_transform, j.inv_bind_transform);
-    j.animated_transform = current_transform;
+    //current_transform = mul_mat4(current_transform, j.inv_bind_transform);
+    //j.animated_transform = current_transform;
+    return current_transform;
 }
 
 static void 
@@ -333,6 +326,17 @@ apply_pose_to_joints(Animator* animator, Joint* j, mat4* transforms)
     for (Joint& child : j->children)
         apply_pose_to_joints(animator, &child, transforms); 
 }
+
+char *joint_transforms = "joint_transforms[3]";
+static void 
+set_joint_transform_uniforms(AnimatedModel* model,Shader* s, Joint *j)
+{
+    if (j->index == 3)
+        setMat4fv(s, joint_transforms, (f32*)mul_mat4f(j->animated_transform,1.f).elements);
+    for (Joint& child : j->children)
+        set_joint_transform_uniforms(model,s, &child); 
+}
+
 
 
 
@@ -387,11 +391,10 @@ update_animator(Animator* animator)
     increase_animation_time(animator);
     //the world positions of our joints j
     mat4 *current_transforms = (mat4*)arena_alloc(&global_platform.frame_storage, sizeof(mat4) * animator->anim->joint_anims_count);
-    //this should be a Map<String, JointTransform> but i am lazy af
     for (u32 i = 0; i < animator->anim->joint_anims_count; ++i)
     {
         JointKeyFrame current_pose = calc_current_animation_pose(animator, i); 
-        current_transforms[current_pose.joint_index] = calc_pose_of_joints(animator, current_pose, animator->model.root, m4d(1.f));
+        current_transforms[current_pose.joint_index] = calc_pose_of_joints(animator, current_pose, &animator->model.root, m4d(1.f));
     }
     apply_pose_to_joints(animator,&animator->model.root, current_transforms);
 }
@@ -460,6 +463,7 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
         setMat4fv(s, "joint_transforms[5]", (GLfloat*)model->inv_bind_poses[5].elements);
         setMat4fv(s, "joint_transforms[6]", (GLfloat*)model->inv_bind_poses[6].elements);
     }
+    set_joint_transform_uniforms(model, s, &model->root);
     setMat4fv(s, "view_matrix", (GLfloat*)mul_mat4(view, quat_to_mat4(quat_from_angle(v3(1,0,0), -PI/2))).elements);
     glUniform3f(glGetUniformLocation(s->ID, "light_direction"), 0.43,0.34,0.f); 
     //glUniform3f(glGetUniformLocation(s->ID, "light_direction"), 1.f,0.0f,0.0f); 
@@ -486,29 +490,6 @@ init_animated_model(Texture* diff, Joint root,MeshData* data)
    
    initialize_joint_pos_array(&model.root,data->inv_bind_poses);
    return model;
-}
-
-static void 
-update_animated_model(AnimatedModel* model)
-{
-    //hmmmm
-    //maybe do something with the AnimatorComponent IDK
-}
-
-static void
-add_joints_to_array(Joint root, mat4* arr)
-{
-    arr[root.index] = root.animated_transform;
-    for (Joint j : root.children)
-        add_joints_to_array(j, arr);
-}
-
-static mat4*
-get_all_joint_transforms(AnimatedModel* model) //get all joint transforms for the shaders
-{
-    mat4* transforms = (mat4*)arena_alloc(&global_platform.frame_storage,sizeof(mat4) * model->joint_count); //frame_storage??? really??
-    add_joints_to_array(model->root, transforms);
-    return transforms;
 }
 
 
