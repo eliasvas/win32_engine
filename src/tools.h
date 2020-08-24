@@ -507,6 +507,11 @@ INLINE vec3 cross_vec3(vec3 l,vec3 r)
     return (res);
 }
 
+INLINE vec3 blender_to_opengl_vec3(vec3 v)
+{
+    return v3(v.x, -v.z, v.y);
+}
+
 INLINE vec4 add_vec4(vec4 l, vec4 r)
 {
     vec4 res;
@@ -1803,6 +1808,7 @@ typedef struct AnimatedVertex
     ivec3 joint_ids;
     vec3 weights;
 }AnimatedVertex;
+
 typedef struct MeshData{
     vec3* positions; 
     vec3* normals; 

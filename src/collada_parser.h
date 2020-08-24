@@ -204,8 +204,8 @@ read_collada(String filepath)
                 fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
 
                 //NOTE: we transpose because the matrices are given in row major order!!
+                //mat = blender_to_opengl_mat4(mat);
                 mat = transpose_mat4(mat);
-                //mat = inv_mat4(mat); //i think this should be here no?
                 /*
                 for(i32 i = 0; i < 16; ++i)
                 {
@@ -400,6 +400,7 @@ read_collada(String filepath)
             //now read the transform
             mat4 mat;
             fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+                //mat = blender_to_opengl_mat4(mat);
                 mat = transpose_mat4(mat);
 
             fscanf(file, "%s", garbage); // <\matrix>
@@ -433,9 +434,9 @@ read_collada(String filepath)
             if (garbage[6] == 'N')memcpy(infoLog,"Multiple root bones not suppored for collada files.. sorry o_o", 64);
             //now read the transform
             fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+                //mat = blender_to_opengl_mat4(mat);
                 mat = transpose_mat4(mat);
             //Joint joint = joint(joint_index, name, mat);
-            //mat = transforms[joint_index];//NONONOOO
             data.root = joint(joint_index, name,sid, mat);
             data.root.parent = &data.root;
             
@@ -483,11 +484,11 @@ read_collada(String filepath)
                 if (garbage[6] == 'N')memcpy(infoLog,"Multiple root bones not suppored for collada files.. sorry o_o", 64); //its a NODE.. we cant have more than 1
                 //now read the transform
                 fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+                //mat = blender_to_opengl_mat4(mat);
                 mat = transpose_mat4(mat);
 
 
 
-            //mat = transforms[joint_index];//NONONOOO
 
                 Joint j = joint(joint_index, name, sid, mat);
                 j.parent = current;
@@ -648,6 +649,7 @@ read_collada_animation(String filepath)
                    for (u32 i = 0; i < keyframe_count; ++i)
                    {
                        fscanf(file, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat.raw[0],&mat.raw[1],&mat.raw[2],&mat.raw[3],&mat.raw[4],&mat.raw[5],&mat.raw[6],&mat.raw[7],&mat.raw[8],&mat.raw[9],&mat.raw[10],&mat.raw[11],&mat.raw[12],&mat.raw[13],&mat.raw[14],&mat.raw[15]);
+                       //mat = blender_to_opengl_mat4(mat);
                        mat = transpose_mat4(mat);
                        //JointTransform t = {v3(mat.elements[3][0],mat.elements[3][1],mat.elements[3][2]), mat4_to_quat(mat)};
                        JointTransform t = {v3(mat.elements[3][0],mat.elements[3][1],mat.elements[3][2]), mat4_to_quat(mat)};

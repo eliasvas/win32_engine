@@ -146,7 +146,6 @@ void init(void)
 
 void update(void)
 {
-    update_animator(&animator);
 
     teapot_model.position = {5, abs(sin(global_platform.current_time)/4.f) + 4.f,0.0};
     test_model.position = {0, 1.f,0.0};
@@ -265,7 +264,8 @@ void render(void)
 
     }
 
-    render_animated_model(&skel, &rend.shaders[2], rend.perspective_projection, rend.view_matrix);
+    update_animator(&animator);
+    render_animated_model(&animator.model, &rend.shaders[2], rend.perspective_projection, rend.view_matrix);
 
 #if colliders_on
     //NOTE(ilias): this is for drawing colliders!
