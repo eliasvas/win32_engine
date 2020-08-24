@@ -186,6 +186,36 @@ calc_pose_of_joints(Animator* anim,JointKeyFrame current_pose, Joint *j, mat4 pa
     return current_transform;
 }
 
+//this update the whole transforms table
+static void 
+calc_pose_of_joints(Animator* anim,mat4 * transforms,JointKeyFrame current_pose, Joint *j, mat4 parent_transform)
+{
+    /*
+    u32 i; 
+    for(i = 0; i < anim->model.joint_count; ++i)
+    {
+        if (current_pose.joint_index == j->index)
+            break;//we have found the index of our joint j
+    }
+    */
+
+    JointTransform local_joint_transform = current_pose.transform;
+
+    //the local bone space transform of joint j
+    mat4 current_local_transform = mul_mat4(translate_mat4(local_joint_transform.position), quat_to_mat4(local_joint_transform.rotation));
+
+    //the world position of our joint j
+    mat4 current_transform = mul_mat4(parent_transform, current_local_transform);//why parent transform first??
+    for(Joint child_joint : j->children)
+        calc_pose_of_joints(anim,transforms, current_pose, &child_joint, current_transform);
+    
+    //the transform to go from the original joint pos to the desired in world space 
+    //current_transform = mul_mat4(current_transform, j.inv_bind_transform);
+    //j.animated_transform = current_transform;
+    transforms[j->index] = current_transform;
+}
+
+
 static void 
 apply_pose_to_joints(Animator *animator, Joint *j, mat4 *transforms)
 {
@@ -209,11 +239,12 @@ count_joints(Joint* j)
 
 
 
-char *joint_transforms = "joint_transforms[3]";
+char joint_transforms[20] = "joint_transforms[0]";
 static void 
 set_joint_transform_uniforms(AnimatedModel* model,Shader* s, Joint *j)
 {
-    if (j->index == 0)
+    joint_transforms[17] = '0' + j->index;
+    if (j->index == 0 || j->index == 1)
         setMat4fv(s, joint_transforms, (f32*)j->animated_transform.elements);
     for (Joint& child : j->children)
         set_joint_transform_uniforms(model,s, &child); 
@@ -273,11 +304,19 @@ update_animator(Animator* animator)
     increase_animation_time(animator);
     //the world positions of our joints j
     mat4 *current_transforms = (mat4*)arena_alloc(&global_platform.frame_storage, sizeof(mat4) * animator->anim->joint_anims_count);
+    /*
     for (u32 i = 0; i < animator->anim->joint_anims_count; ++i)
     {
         JointKeyFrame current_pose = calc_current_animation_pose(animator, i); 
         current_transforms[current_pose.joint_index] = calc_pose_of_joints(animator, current_pose, &animator->model.root, m4d(1.f));
     }
+    */
+    for (u32 i = 0; i < animator->anim->joint_anims_count; ++i)
+    {
+        JointKeyFrame current_pose = calc_current_animation_pose(animator, i); 
+        calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
+    }
+
     apply_pose_to_joints(animator,&animator->model.root, current_transforms);
 }
 
@@ -353,8 +392,8 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
     
 
     glBindVertexArray(model->vao);
-    glDrawArrays(GL_TRIANGLES,0, 1500);
-    //glDrawArrays(GL_LINES,0, 1500);
+    //glDrawArrays(GL_TRIANGLES,0, 1500);
+    glDrawArrays(GL_LINES,0, 1500);
     glBindVertexArray(0);
 
 }
