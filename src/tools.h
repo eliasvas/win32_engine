@@ -188,6 +188,9 @@ typedef union vec4
         f32 r,g,b,a;
     };
     f32 elements[4];
+#ifdef TOOLS_SSE
+    __m128 elements_sse; //because __m128 = 128 = 4 * float = 4*32 = 128 bits
+#endif
 }vec4;
 
 typedef vec4 color4;
@@ -195,10 +198,14 @@ typedef vec4 float4;
 
 typedef union mat4
 {
-    struct{
-        f32 elements[4][4];//{x.x,x.y,x.z,0,y.x,y.y,y.z,0,z.x,z.y,z.z,0,p.x,p.y,p.z,1} 
-    };
+    f32 elements[4][4];//{x.x,x.y,x.z,0,y.x,y.y,y.z,0,z.x,z.y,z.z,0,p.x,p.y,p.z,1} 
+
     f32 raw[16]; //{x.x,x.y,x.z,0,y.x,y.y,y.z,0,z.x,z.y,z.z,0,p.x,p.y,p.z,1} 
+
+#ifdef TOOLS_SSE
+    __m128 cols[4]; //same as elements (our matrices are column major)
+#endif
+
 }mat4;
 
 
@@ -515,60 +522,86 @@ INLINE vec3 blender_to_opengl_vec3(vec3 v)
 INLINE vec4 add_vec4(vec4 l, vec4 r)
 {
     vec4 res;
+#ifdef TOOLS_SSE
+    res.elements_sse = _mm_add_ps(l.elements_sse, r.elements_sse);
+#else
     res.x = l.x + r.x;
     res.y = l.y + r.y;
     res.z = l.z + r.z;
     res.w = l.w + r.w;
+#endif
     return res;
 }
 
 INLINE vec4 sub_vec4(vec4 l, vec4 r)
 {
     vec4 res;
+#ifdef TOOLS_SSE
+    res.elements_sse = _mm_sub_ps(l.elements_sse, r.elements_sse);
+#else
     res.x = l.x - r.x;
     res.y = l.y - r.y;
     res.z = l.z - r.z;
     res.w = l.w - r.w;
+#endif
     return res;
 }
 
 INLINE vec4 mul_vec4(vec4 l, vec4 r)
 {
     vec4 res;
+#ifdef TOOLS_SSE
+    res.selements_sse = _mm_mul_ps(l.elements_sse, r.elements_sse);
+#else
     res.x = l.x * r.x;
     res.y = l.y * r.y;
     res.z = l.z * r.z;
     res.w = l.w * r.w;
+#endif
     return res;
 }
 
 INLINE vec4 mul_vec4f(vec4 l, f32 r)
 {
     vec4 res;
+#ifdef TOOLS_SSE
+    __m128 scalar = _mm_set1_ps(r); // [r r r r]
+    res.elements_sse = _mm_mul_ps(l.elements_sse, scalar);
+#else
     res.x = l.x * r;
     res.y = l.y * r;
     res.z = l.z * r;
     res.w = l.w * r;
+#endif
     return res;
 }
 
 INLINE vec4 div_vec4(vec4 l, vec4 r)
 {
     vec4 res;
+#ifdef TOOLS_SSE
+    res.elements_sse = _mm_div_ps(l.elements_sse, r.elements_sse);
+#else
     res.x = l.x / r.x;
     res.y = l.y / r.y;
     res.z = l.z / r.z;
     res.w = l.w / r.w;
+#endif
     return res;
 }
 
 INLINE vec4 div_vec4f(vec4 l, f32 r)
 {
     vec4 res;
+#ifdef TOOLS_SSE
+    __m128 scalar = _mm_set1_ps(r);
+    res.elements_sse = _mm_div_ps(l.elements_sse, r.elements_sse);
+#else
     res.x = l.x / r;
     res.y = l.y / r;
     res.z = l.z / r;
     res.w = l.w / r;
+#endif
     return res;
 }
 
@@ -639,6 +672,42 @@ INLINE mat4 mul_mat4f(mat4 m, f32 s)
     }
     return res;
 }
+
+
+#ifdef TOOLS_SSE
+INLINE __m128 linear_combine_sse(__m128 l, mat4 r)
+{
+    __m128 res;
+    //some complex shit
+    return (res);
+}
+#endif
+/*
+ TODO add this to matrix to matrix multiplication
+if USE_SSE
+HMM_INLINE __m128 linear_combine_sse(__m128 Left, hmm_mat4 Right)
+{
+    ASSERT_COVERED(linear_combine_sse);
+
+    __m128 Result;
+    Result = _mm_mul_ps(_mm_shuffle_ps(Left, Left, 0x00), Right.Columns[0]);
+    Result = _mm_add_ps(Result, _mm_mul_ps(_mm_shuffle_ps(Left, Left, 0x55), Right.Columns[1]));
+    Result = _mm_add_ps(Result, _mm_mul_ps(_mm_shuffle_ps(Left, Left, 0xaa), Right.Columns[2]));
+    Result = _mm_add_ps(Result, _mm_mul_ps(_mm_shuffle_ps(Left, Left, 0xff), Right.Columns[3]));
+
+    return (Result);
+}
+endif
+
+
+
+if USE_SSE
+Result.Columns[0] = linear_combine_sse(Right.Columns[0], Left);
+Result.Columns[1] = linear_combine_sse(Right.Columns[1], Left);
+Result.Columns[2] = linear_combine_sse(Right.Columns[2], Left);
+Result.Columns[3] = linear_combine_sse(Right.Columns[3], Left);
+endif
+*/
 
 INLINE mat4 div_mat4f(mat4 m, f32 s)
 {

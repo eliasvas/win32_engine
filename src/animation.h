@@ -153,7 +153,7 @@ typedef struct Animator
 
 static void increase_animation_time(Animator* anim)
 {
-    anim->animation_time += 1.f/60.f; //this should be the Δt from global platform but its bugged rn
+    anim->animation_time += 1.f/90.f; //this should be the Δt from global platform but its bugged rn
     if (anim->animation_time > anim->anim->length)
         anim->animation_time -= anim->anim->length;
 }
@@ -244,7 +244,8 @@ static void
 set_joint_transform_uniforms(AnimatedModel* model,Shader* s, Joint *j)
 {
     joint_transforms[17] = '0' + j->index;
-    if (j->index == 0 || j->index == 1)
+    //if (j->index == 0 || j->index == 1)
+    if (j->index == 0)
         setMat4fv(s, joint_transforms, (f32*)j->animated_transform.elements);
     for (Joint& child : j->children)
         set_joint_transform_uniforms(model,s, &child); 
@@ -314,7 +315,8 @@ update_animator(Animator* animator)
     for (u32 i = 0; i < animator->anim->joint_anims_count; ++i)
     {
         JointKeyFrame current_pose = calc_current_animation_pose(animator, i); 
-        calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
+        //calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
+        current_transforms[i] = calc_pose_of_joints(animator, current_pose, &animator->model.root, m4d(1.f));
     }
 
     apply_pose_to_joints(animator,&animator->model.root, current_transforms);
@@ -373,9 +375,10 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
 
     setMat4fv(s, "projection_matrix", (GLfloat*)proj.elements);
     //glActiveTexture(GL_TEXTURE1);
-    setInt(s, "diffuse_map", 6);
+    setInt(s, "diffuse_map", 6); //we should really make the texture manager global or something(per Scene?)... sigh
     //for(i32 i = 0; i < model->joint_count; ++i)
     {
+        //these uniforms in the beginning are set as identities
         setMat4fv(s, "joint_transforms[0]", (GLfloat*)model->inv_bind_poses[0].elements);
         setMat4fv(s, "joint_transforms[1]", (GLfloat*)model->inv_bind_poses[1].elements);
         setMat4fv(s, "joint_transforms[2]", (GLfloat*)model->inv_bind_poses[2].elements);
@@ -392,8 +395,8 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
     
 
     glBindVertexArray(model->vao);
-    //glDrawArrays(GL_TRIANGLES,0, 1500);
-    glDrawArrays(GL_LINES,0, 1500);
+    glDrawArrays(GL_TRIANGLES,0, 1500);
+    //glDrawArrays(GL_LINES,0, 1500);
     glBindVertexArray(0);
 
 }

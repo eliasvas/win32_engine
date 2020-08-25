@@ -16,6 +16,7 @@ static HWND WND;
 #include "ext/HandmadeMath.h"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "ext/tiny_obj_loader.h"
+#define TOOLS_SSE
 #include "tools.h"
 
 static LARGE_INTEGER fr,st,ft;
