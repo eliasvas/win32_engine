@@ -7,6 +7,7 @@ static HDC global_device_context;
 static HWND WND;
 #include <windows.h>
 #include "win32_opengl.cpp"
+#include "audio.h"
 #include "game.c"
 #include "skybox.h"
 #include "text.h"

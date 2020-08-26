@@ -1,6 +1,7 @@
 #include "ext/HandmadeMath.h"
 #include "tools.h"
 
+#include "audio.h"
 #include "shader.h"
 #include "platform.h"
 #include "texture.h"
@@ -59,6 +60,7 @@ static Animator animator;
 
 void init(void)
 {
+
     data = read_collada(str(&global_platform.permanent_storage,"../assets/sat.dae"));
     animation_to_play = read_collada_animation(str(&global_platform.permanent_storage,"../assets/sat.dae"));
 
@@ -143,6 +145,8 @@ void init(void)
     cs_insert_sound(ctx, &sound);
 #endif
 }
+
+
 
 void update(void)
 {
