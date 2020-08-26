@@ -186,7 +186,6 @@ calc_pose_of_joints(Animator* anim,JointKeyFrame current_pose, Joint *j, mat4 pa
     return current_transform;
 }
 
-//this update the whole transforms table
 static void 
 calc_pose_of_joints(Animator* anim,mat4 * transforms,JointKeyFrame current_pose, Joint *j, mat4 parent_transform)
 {
@@ -316,6 +315,7 @@ update_animator(Animator* animator)
     {
         JointKeyFrame current_pose = calc_current_animation_pose(animator, i); 
         //calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
+        //calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
         current_transforms[i] = calc_pose_of_joints(animator, current_pose, &animator->model.root, m4d(1.f));
     }
 
@@ -395,8 +395,8 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
     
 
     glBindVertexArray(model->vao);
-    glDrawArrays(GL_TRIANGLES,0, 1500);
-    //glDrawArrays(GL_LINES,0, 1500);
+    //glDrawArrays(GL_TRIANGLES,0, 1500);
+    glDrawArrays(GL_LINES,0, 1500);
     glBindVertexArray(0);
 
 }
