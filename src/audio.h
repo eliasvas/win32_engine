@@ -30,6 +30,7 @@ play_sound(void)
         waveFormat.wBitsPerSample = 16;
         waveFormat.nChannels = 2;
         waveFormat.nBlockAlign = (waveFormat.wBitsPerSample / 8) * waveFormat.nChannels;
+        
         waveFormat.nAvgBytesPerSec = waveFormat.nSamplesPerSec * waveFormat.nBlockAlign;
         waveFormat.cbSize = 0;
 

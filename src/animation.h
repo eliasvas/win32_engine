@@ -21,14 +21,14 @@ static Joint
 joint(u32 index, String name,String sid, mat4 local_bind_transform)
 {
     Joint j;
-
     j.index = index;
     j.name = name;
+    
     j.sid = sid;
     j.local_bind_transform = {local_bind_transform};
     j.inv_bind_transform = {};
     j.animated_transform = {};
-
+    
     return j;
 }
 
@@ -37,13 +37,13 @@ static Joint
 joint(u32 index, String name, mat4 local_bind_transform)
 {
     Joint j;
-
+    
     j.index = index;
     j.name = name;
     j.local_bind_transform = {local_bind_transform};
     j.inv_bind_transform = {0};
     j.animated_transform = {0};
-
+    
     return j;
 }
 
@@ -137,11 +137,11 @@ typedef struct AnimatedModel
     mat4 * inv_bind_poses;
     Texture * diff_tex;
     Texture * spec_tex;
-
+    
     //skeleton
     Joint root;
     u32 joint_count;
-
+    
 }AnimatedModel;
 
 typedef struct Animator
@@ -169,12 +169,12 @@ calc_pose_of_joints(Animator* anim,JointKeyFrame current_pose, Joint *j, mat4 pa
         if (current_pose.joint_index == j->index)
             break;//we have found the index of our joint j
     }
-
+    
     JointTransform local_joint_transform = current_pose.transform;
-
+    
     //the local bone space transform of joint j
     mat4 current_local_transform = mul_mat4(translate_mat4(local_joint_transform.position), quat_to_mat4(local_joint_transform.rotation));
-
+    
     //the world position of our joint j
     mat4 current_transform = mul_mat4(parent_transform, current_local_transform);//why parent transform first??
     for(Joint child_joint : j->children)
@@ -197,12 +197,12 @@ calc_pose_of_joints(Animator* anim,mat4 * transforms,JointKeyFrame current_pose,
             break;//we have found the index of our joint j
     }
     */
-
+    
     JointTransform local_joint_transform = current_pose.transform;
-
+    
     //the local bone space transform of joint j
     mat4 current_local_transform = mul_mat4(translate_mat4(local_joint_transform.position), quat_to_mat4(local_joint_transform.rotation));
-
+    
     //the world position of our joint j
     mat4 current_transform = mul_mat4(parent_transform, current_local_transform);//why parent transform first??
     for(Joint child_joint : j->children)
@@ -281,20 +281,20 @@ static f32 calc_progress(Animator* animator, JointKeyFrame prev, JointKeyFrame n
 JointKeyFrame interpolate_poses(JointKeyFrame prev, JointKeyFrame next, f32 x)
 {
     JointKeyFrame res;
-
+    
     res.transform.position = lerp_vec3(prev.transform.position, next.transform.position, x);
     res.transform.rotation = nlerp(prev.transform.rotation, next.transform.rotation, x);
     res.joint_index = prev.joint_index;
-
+    
     return res;
-
+    
 }
 
 static JointKeyFrame calc_current_animation_pose(Animator* animator, u32 joint_animation_index)
 {
-   JointKeyFrame* frames = get_previous_and_next_keyframes(animator, joint_animation_index);
-   f32 x = calc_progress(animator, frames[0],frames[1]);
-   return interpolate_poses(frames[0],frames[1], x); //this has to be done!!!!!
+    JointKeyFrame* frames = get_previous_and_next_keyframes(animator, joint_animation_index);
+    f32 x = calc_progress(animator, frames[0],frames[1]);
+    return interpolate_poses(frames[0],frames[1], x); //this has to be done!!!!!
 }
 
 static void
@@ -318,7 +318,7 @@ update_animator(Animator* animator)
         //calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
         current_transforms[i] = calc_pose_of_joints(animator, current_pose, &animator->model.root, m4d(1.f));
     }
-
+    
     apply_pose_to_joints(animator,&animator->model.root, current_transforms);
 }
 
@@ -328,43 +328,43 @@ update_animator(Animator* animator)
 
 static GLuint create_animated_model_vao(MeshData* data)
 {
-   GLuint vao;
-   GLuint ebo;
-
-   glGenVertexArrays(1, &vao);
-   glBindVertexArray(vao);
-   //glGenBuffers(1,&ebo);
-   //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); 
-   //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(data->indices_size), &data->indices, GL_STATIC_DRAW);
-
-   //positions
-   glEnableVertexAttribArray(0);
-
-   GLuint vbo;
-   glGenBuffers(1, &vbo);
-   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-   glBufferData(GL_ARRAY_BUFFER, sizeof(AnimatedModel) * data->vertex_count, &data->vertices[0], GL_STATIC_DRAW);
-
-   glEnableVertexAttribArray(0);
-   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*)(0));
-   //normals
-   glEnableVertexAttribArray(1);
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 3));
-   //tex_coords
-   glEnableVertexAttribArray(2);
-   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 6));
-   //joints (max 3)
-   glEnableVertexAttribArray(3);
-   glVertexAttribIPointer(3, 3, GL_INT,sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 8));
-   //joint weights (max 3)
-   glEnableVertexAttribArray(4);
-   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 8 + sizeof(int) * 3));
-
-   glBindVertexArray(0);
-
-
-   return vao;
+    GLuint vao;
+    GLuint ebo;
+    
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    //glGenBuffers(1,&ebo);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); 
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(data->indices_size), &data->indices, GL_STATIC_DRAW);
+    
+    //positions
+    glEnableVertexAttribArray(0);
+    
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(AnimatedModel) * data->vertex_count, &data->vertices[0], GL_STATIC_DRAW);
+    
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*)(0));
+    //normals
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 3));
+    //tex_coords
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 6));
+    //joints (max 3)
+    glEnableVertexAttribArray(3);
+    glVertexAttribIPointer(3, 3, GL_INT,sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 8));
+    //joint weights (max 3)
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11 + sizeof(int) * 3, (void*) (sizeof(float) * 8 + sizeof(int) * 3));
+    
+    glBindVertexArray(0);
+    
+    
+    return vao;
 }
 
 //this is so bad
@@ -372,7 +372,7 @@ static void
 render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
 {
     use_shader(s);
-
+    
     setMat4fv(s, "projection_matrix", (GLfloat*)proj.elements);
     //glActiveTexture(GL_TEXTURE1);
     setInt(s, "diffuse_map", 6); //we should really make the texture manager global or something(per Scene?)... sigh
@@ -393,28 +393,28 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
     //glUniform3f(glGetUniformLocation(s->ID, "light_direction"), 1.f,0.0f,0.0f); 
     //no need to set diffuse map .. whatever we get
     
-
+    
     glBindVertexArray(model->vao);
-    //glDrawArrays(GL_TRIANGLES,0, 1500);
-    glDrawArrays(GL_LINES,0, 1500);
+    glDrawArrays(GL_TRIANGLES,0, 1500);
+    //glDrawArrays(GL_LINES,0, 1500);
     glBindVertexArray(0);
-
+    
 }
 
 static AnimatedModel
 init_animated_model(Texture* diff, Joint root,MeshData* data)
 {
-   AnimatedModel model = {0};
-
-   model.vao = create_animated_model_vao(data);
-   model.diff_tex = diff;
-   model.root = root;
-   model.inv_bind_poses = data->inv_bind_poses;
-   model.joint_count = count_joints(&model.root);
-   //calc_inv_bind_transform(&model.root,m4d(1.f));
-   
-   initialize_joint_pos_array(&model.root,data->inv_bind_poses);
-   return model;
+    AnimatedModel model = {0};
+    
+    model.vao = create_animated_model_vao(data);
+    model.diff_tex = diff;
+    model.root = root;
+    model.inv_bind_poses = data->inv_bind_poses;
+    model.joint_count = count_joints(&model.root);
+    //calc_inv_bind_transform(&model.root,m4d(1.f));
+    
+    initialize_joint_pos_array(&model.root,data->inv_bind_poses);
+    return model;
 }
 
 

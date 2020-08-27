@@ -19,8 +19,6 @@
 #include "terrain.h"
 #include "collada_parser.h"
 #include "shadowmap.h"
-#define CUTE_SOUND_IMPLEMENTATION
-#include "ext/cute_sound.h"
 #include <string>  //just for to_string
 
 static Camera cam;
@@ -44,10 +42,6 @@ static Skybox skybox;
 
 b32 debug_menu = 1;
 f32 inverted = 0.f;
-
-static cs_context_t* ctx;
-static cs_playing_sound_t sound;
-static cs_loaded_sound_t loaded;
 
 #define sound_on 0
 #define colliders_on 1
@@ -138,12 +132,6 @@ void init(void)
     }
 
 
-#if sound_on
-    ctx =cs_make_context(WND,44000,8192,0,0);
-    loaded = cs_load_wav("../assets/background_music.wav");
-    sound = cs_make_playing_sound(&loaded);
-    cs_insert_sound(ctx, &sound);
-#endif
 }
 
 
@@ -154,9 +142,6 @@ void update(void)
     teapot_model.position = {5, abs(sin(global_platform.current_time)/4.f) + 4.f,0.0};
     test_model.position = {0, 1.f,0.0};
     change_to_fake_framebuffer();
-#if sound_on
-    cs_mix(ctx);
-#endif
 
     global_platform.vsync = 1;
     renderer_begin(&rend);
@@ -176,6 +161,42 @@ void update(void)
         inverted = 0.f;
 
     {
+      if(global_platform.key_pressed[KEY_RIGHT])
+        {
+            s.flip = 0;
+            if (s.box.velocity.x < 0.f)s.box.velocity.x += 6.f * global_platform.dt;
+            s.box.velocity.x += 6.f* global_platform.dt; //constant must be speed
+        }
+        if (global_platform.key_pressed[KEY_LEFT])
+        {
+            s.flip = 1;
+            if (s.box.velocity.x > 0.f)s.box.velocity.x -= 6.f * global_platform.dt;
+            s.box.velocity.x -= 6.f * global_platform.dt;
+        }
+        if (global_platform.key_pressed[KEY_UP])
+        {
+            if (s.box.velocity.y < 0.f)s.box.velocity.y += 6.f * global_platform.dt;
+            s.box.velocity.y += 6.f * global_platform.dt;
+        }
+
+      if(global_platform.key_pressed[KEY_RIGHT])
+        {
+            s.flip = 0;
+            if (s.box.velocity.x < 0.f)s.box.velocity.x += 6.f * global_platform.dt;
+            s.box.velocity.x += 6.f* global_platform.dt; //constant must be speed
+        }
+        if (global_platform.key_pressed[KEY_LEFT])
+        {
+            s.flip = 1;
+            if (s.box.velocity.x > 0.f)s.box.velocity.x -= 6.f * global_platform.dt;
+            s.box.velocity.x -= 6.f * global_platform.dt;
+        }
+        if (global_platform.key_pressed[KEY_UP])
+        {
+            if (s.box.velocity.y < 0.f)s.box.velocity.y += 6.f * global_platform.dt;
+            s.box.velocity.y += 6.f * global_platform.dt;
+        }
+
       if(global_platform.key_pressed[KEY_RIGHT])
         {
             s.flip = 0;
