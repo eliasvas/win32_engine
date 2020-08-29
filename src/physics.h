@@ -138,14 +138,14 @@ render_collider(mat4 mat, Box* b)
 //NEW VERSION OF PHYSICS ENGINE
 
 
-typedef struct AABB
+typedef struct AABB2D
 {
     vec2 min;
     vec2 max;
-}AABB;
+}AABB2D;
 
 
-b32 AABBvsAABB(AABB a, AABB b)
+b32 AABB2DvsAABB2D(AABB2D a, AABB2D b)
 {
     //search for a Separating Axis 
     if (a.max.x < b.min.x || a.min.x > b.max.x)return 0;
@@ -155,18 +155,18 @@ b32 AABBvsAABB(AABB a, AABB b)
     return 1;
 }
 
-typedef struct Circle
+typedef struct Circle2D
 {
     f32 radius;
     vec2 position;
-}Circle;
+}Circle2D;
 
 f32 dist(vec2 a, vec2 b)
 {
     return sqrt((a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y));
 }
 
-b32 CirclevsCircle(Circle c1, Circle c2)
+b32 Circle2DvsCircle2D(Circle2D c1, Circle2D c2)
 {
     f32 r = c1.radius + c2.radius;
     return (r < dist(c1.position, c2.position));
@@ -174,9 +174,9 @@ b32 CirclevsCircle(Circle c1, Circle c2)
 
 typedef enum ShapeType 
 {
-   CIRCLE = 1,
-   BOX,
-   CAPSULE
+   CIRCLE2D = 1,
+   BOX2D,
+   CAPSULE2D
 }ShapeType;
 
 
@@ -188,7 +188,7 @@ struct PhysicsMaterial
 struct MassData
 {
     f32 mass;
-    f32 inv_mass;
+    f32 inv_mass; //this is the one we need ..
 
     f32 inertia;
     f32 inv_inertia;
@@ -198,8 +198,8 @@ typedef struct Shape
 {
     union
     {
-        Circle circle;
-        AABB box;
+        Circle2D circle;
+        AABB2D box;
     };
     ShapeType type;
 }Shape;
@@ -212,10 +212,10 @@ typedef struct Manifold
     vec2 normal;
 };
 
-static b32 CirclevsCircle(Manifold* m)
+static b32 Circle2DvsCircle2D(Manifold* m)
 {
-    Circle* c1 = &m->c1->circle;
-    Circle* c2 = &m->c2->circle;
+    Circle2D* c1 = &m->c1->circle;
+    Circle2D* c2 = &m->c2->circle;
 
     //collision normal
     vec2 n = sub_vec2(c2->position , c1->position);
@@ -249,10 +249,10 @@ static b32 CirclevsCircle(Manifold* m)
 }
 
 static void
-AABBvsAABB(Manifold* m)
+AABB2DvsAABB2D(Manifold* m)
 {
-    AABB b1 = m->c1->box;
-    AABB b2 = m->c2->box;
+    AABB2D b1 = m->c1->box;
+    AABB2D b2 = m->c2->box;
 
     vec2 b1_mid = mul_vec2f(add_vec2(b1.min, b1.max), 0.5f);
     vec2 b2_mid = mul_vec2f(add_vec2(b2.min, b2.max), 0.5f);
@@ -311,7 +311,7 @@ AABBvsAABB(Manifold* m)
 
 }
 
-static void aabb_update(AABB* aabb, vec2 pos, f32 w, f32 h)
+static void aabb_update(AABB2D* aabb, vec2 pos, f32 w, f32 h)
 {
     vec2 min = pos;
     vec2 max = v2(pos.x+w, pos.y + h);
@@ -337,7 +337,7 @@ struct PhysicsBody2DComponent
 {
     vec2 min;
     f32 w, h;
-    AABB collider;
+    AABB2D collider;
 
     vec2 velocity;
     f32 restitution = 1.f;

@@ -190,6 +190,7 @@ read_collada(String filepath)
 
         if (strstr(line, "bind_poses") != NULL)
         {
+            //fscanf(file, "%s %s %s", garbage,count, garbage);
             fscanf(file, "%s %s %s", garbage,garbage, count);
             //count the number of tex_coords
             i32 floats_count = get_num_from_string(count);
@@ -318,6 +319,7 @@ read_collada(String filepath)
                         vertex_weights[i].z = weight;
                         vertex_joint_ids[i].z = JW[0];
                     }
+                    vertex_weights[i].x += 1.f - vertex_weights[i].x - vertex_weights[i].y - vertex_weights[i].z;
                     continue;
                     //NOTE: here we normalize in case we had more than 3 weights and they dont add up to 1!!
                     f32 rat = (vertex_weights[i].x + vertex_weights[i].y + vertex_weights[i].z)/1.f;

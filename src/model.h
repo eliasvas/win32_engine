@@ -52,6 +52,19 @@ typedef struct Model{
     std::string spec_name;
 }Model;
 
+typedef struct ModelRaw{
+    GLuint vao;
+    Shader s;
+    vertex* vertices;
+    u32 vertices_count;
+    Material m;
+    Texture* diff;
+    Texture* spec;
+    String diff_name;
+    String spec_name;
+}ModelRaw;
+
+
 static void
 load_model_data(std::vector<vertex>& vec, const char * obj_path, const char * mtl_path)
 {

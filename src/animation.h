@@ -153,9 +153,10 @@ typedef struct Animator
 
 static void increase_animation_time(Animator* anim)
 {
-    anim->animation_time += 1.f/90.f; //this should be the Δt from global platform but its bugged rn
+    anim->animation_time += 1.f/60.f; //this should be the Δt from global platform but its bugged rn
     if (anim->animation_time > anim->anim->length)
-        anim->animation_time -= anim->anim->length;
+        //anim->animation_time -= anim->anim->length;
+        anim->animation_time = 0;
 }
 
 
@@ -189,15 +190,6 @@ calc_pose_of_joints(Animator* anim,JointKeyFrame current_pose, Joint *j, mat4 pa
 static void 
 calc_pose_of_joints(Animator* anim,mat4 * transforms,JointKeyFrame current_pose, Joint *j, mat4 parent_transform)
 {
-    /*
-    u32 i; 
-    for(i = 0; i < anim->model.joint_count; ++i)
-    {
-        if (current_pose.joint_index == j->index)
-            break;//we have found the index of our joint j
-    }
-    */
-    
     JointTransform local_joint_transform = current_pose.transform;
     
     //the local bone space transform of joint j
@@ -243,8 +235,7 @@ static void
 set_joint_transform_uniforms(AnimatedModel* model,Shader* s, Joint *j)
 {
     joint_transforms[17] = '0' + j->index;
-    //if (j->index == 0 || j->index == 1)
-    if (j->index == 0)
+    if (j->index == 0 || j->index == 1)
         setMat4fv(s, joint_transforms, (f32*)j->animated_transform.elements);
     for (Joint& child : j->children)
         set_joint_transform_uniforms(model,s, &child); 
@@ -253,13 +244,14 @@ set_joint_transform_uniforms(AnimatedModel* model,Shader* s, Joint *j)
 
 
 
-static JointKeyFrame* get_previous_and_next_keyframes(Animator* animator, i32 joint_animation_index)
+static JointKeyFrame* 
+get_previous_and_next_keyframes(Animator* animator, i32 joint_animation_index)
 {
     JointKeyFrame frames[2];
     JointKeyFrame* all_frames = animator->anim->joint_animations[joint_animation_index].keyframes;
     JointKeyFrame prev = all_frames[0];
     JointKeyFrame next = all_frames[0];
-    for (int i = 1; i < animator->anim->joint_animations[joint_animation_index].keyframe_count; ++i)
+    for (i32 i = 1; i < animator->anim->joint_animations[joint_animation_index].keyframe_count; ++i)
     {
         next = all_frames[i];
         if (next.timestamp > animator->animation_time)
@@ -316,7 +308,7 @@ update_animator(Animator* animator)
         JointKeyFrame current_pose = calc_current_animation_pose(animator, i); 
         //calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
         //calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
-        current_transforms[i] = calc_pose_of_joints(animator, current_pose, &animator->model.root, m4d(1.f));
+        calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
     }
     
     apply_pose_to_joints(animator,&animator->model.root, current_transforms);

@@ -2,6 +2,7 @@
 #include "tools.h"
 
 #include "audio.h"
+#include "entity.h"
 #include "shader.h"
 #include "platform.h"
 #include "texture.h"
@@ -26,6 +27,8 @@ static BitmapFont bmf;
 static Sprite s;
 static Cube c;
 static Terrain terrain;
+
+static PositionManager position_manager;
 
 static Model m;
 static Model teapot_model;
