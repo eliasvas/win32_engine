@@ -4,7 +4,7 @@
 #include "ext/tiny_obj_loader.h"
 #include "ext/HandmadeMath.h"
 #include "vector"
-#include "objloader.h"
+#include "obj_loader.h"
 
 typedef struct Material
 {
@@ -51,18 +51,6 @@ typedef struct Model{
     std::string diff_name;
     std::string spec_name;
 }Model;
-
-typedef struct ModelRaw{
-    GLuint vao;
-    Shader s;
-    vertex* vertices;
-    u32 vertices_count;
-    Material m;
-    Texture* diff;
-    Texture* spec;
-    String diff_name;
-    String spec_name;
-}ModelRaw;
 
 
 static void

@@ -85,6 +85,34 @@ void remove_entity(PositionManager* manager, Entity entity)
     manager->lookup.erase(entity);
   }
 }
+
+PositionComponent* get_component(PositionManager* manager, Entity entity)
+{
+    auto it = manager->lookup.find(entity);
+    if (it != manager->lookup.end())
+    {
+        return &manager->positions[it->second];
+    }
+    return NULL;
+}
+
+//NOTE: maybe I should make a component.h for all different components no?
+typedef struct TransformComponent
+{
+    vec3 position;
+    vec3 scale;
+    Quaternion rotation;
+};
+typedef struct TransformManager
+{
+     //maybe make them pointers into an arena allocator???
+    TransformComponent transforms[MAX_ENTITY];
+    Entity entities[MAX_ENTITY];
+    u32 next_index = 0;
+    std::unordered_map<Entity, u32> lookup;
+
+}TransformManager;
+
 /* Entity test
     {
         for (u32 i = 0; i < 100; ++i){

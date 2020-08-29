@@ -1869,6 +1869,15 @@ typedef struct vertex
    vec2 tex_coord;
 }vertex;
 
+static vertex vert(vec3 p, vec3 n, vec2 t)
+{
+    vertex res;
+    res.position = p;
+    res.normal = n;
+    res.tex_coord = t;
+    return res;
+}
+
 typedef struct AnimatedVertex
 {
     vec3 position;

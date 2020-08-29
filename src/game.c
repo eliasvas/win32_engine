@@ -78,7 +78,7 @@ void init(void)
     }
     //teapot_model initialization
     {
-        load_model_data(teapot_model.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
+        load_model_dataOG(teapot_model.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&teapot_model, teapot_model.vertices);
         teapot_model.diff_name = "red.png";
         teapot_model.position = {0,2.f,0.0};
