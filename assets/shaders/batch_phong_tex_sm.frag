@@ -77,7 +77,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 	return shadow;
 }
 
-vec3 calculate_directional_lightORIGINAL(DirLight light, vec3 normal, vec3 viewDir)
+vec3 calculate_directional_lightOLD(DirLight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(-light.direction);
     // diffuse shading
@@ -86,7 +86,7 @@ vec3 calculate_directional_lightORIGINAL(DirLight light, vec3 normal, vec3 viewD
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), m.shininess);
     // combine results
-    vec3 ambient  = 0.3 * vec3(texture(m.diffuse, f_texcoords));
+    vec3 ambient  = light.ambient * vec3(texture(m.diffuse, f_texcoords));
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(m.diffuse, f_texcoords));
     vec3 specular = light.specular * spec * vec3(texture(m.specular, f_texcoords));
 	
@@ -100,14 +100,14 @@ vec3 calculate_directional_light(DirLight light, vec3 normal, vec3 viewDir)
 {
 	vec3 light_pos = view_pos;
 	
-    vec3 lightDir = normalize(-light_pos - w_frag_pos);
+    vec3 lightDir = normalize(light_pos - w_frag_pos);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), m.shininess);
     // combine results
-    vec3 ambient  = 0.3 * vec3(texture(m.diffuse, f_texcoords));
+    vec3 ambient  = light.ambient * vec3(texture(m.diffuse, f_texcoords));
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(m.diffuse, f_texcoords));
     vec3 specular = light.specular * spec * vec3(texture(m.specular, f_texcoords));
 	

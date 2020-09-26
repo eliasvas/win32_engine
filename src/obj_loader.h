@@ -1,4 +1,6 @@
-#pragma once
+#ifndef OBJ_LOADER_H
+#define OBJ_LOADER_H
+
 #include <vector> //TODO(ilias): drop vector dependency
 #include "stdlib.h"
 #include "stdio.h"
@@ -103,6 +105,7 @@ typedef struct ModelRaw{
 
 
 //maybe supply a version with pointers to pos/normal/tex_coord arrays so as to not lose so much space allocating
+//NOTE: the mesh MUST be triangulated
 static ModelRaw 
 load_obj(char * filename){
     ModelRaw res;
@@ -172,3 +175,4 @@ load_obj(char * filename){
 
 
 
+#endif

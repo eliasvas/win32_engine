@@ -1,5 +1,8 @@
-#pragma once
+#ifndef PHYSICS_H
+#define PHYSICS_H
+
 #include "tools.h"
+#include "entity.h"
 #include "quad.h"
 #define MAX_COLLIDERS 100
 #include <vector>
@@ -40,7 +43,7 @@ static void init_Box(Box* b,vec2 min,f32 w, f32 h)
     b->hb = {{0,0},1.f,1.f};
 }
 //NOTE(ilias): this is not performant and it's called a LOT of times, optimize!
-i32 collide(Box *b1, Box *b2)
+static i32 collide(Box *b1, Box *b2)
 {
     //render_collider_in_pos (mat, {b->min.x + b->hb.min.x,b->min.y + b->hb.min.y,-1.f}, {b->w * b->hb.w, b->h * b->hb.h}, (float)b->is_colliding);
     if ((b1 == NULL || b2 == NULL || b1 == b2 || !b1->active || !b2->active))return 0;
@@ -54,7 +57,7 @@ i32 collide(Box *b1, Box *b2)
 
 }
 
-Box* check_collision(Box b1)
+static Box* check_collision(Box b1)
 {
     for (Box * b : colliders)
     {
@@ -137,6 +140,11 @@ render_collider(mat4 mat, Box* b)
 
 //NEW VERSION OF PHYSICS ENGINE
 
+typedef struct AABB
+{
+    vec3 min;
+    vec3 max;
+}AABB;
 
 typedef struct AABB2D
 {
@@ -144,8 +152,16 @@ typedef struct AABB2D
     vec2 max;
 }AABB2D;
 
+static AABB2D
+aabb2d(vec2 min, vec2 max)
+{
+    AABB2D res;
+    res.min = min;
+    res.max = max;
+    return res;
+}
 
-b32 AABB2DvsAABB2D(AABB2D a, AABB2D b)
+static b32 AABB2DvsAABB2D(AABB2D a, AABB2D b)
 {
     //search for a Separating Axis 
     if (a.max.x < b.min.x || a.min.x > b.max.x)return 0;
@@ -161,12 +177,12 @@ typedef struct Circle2D
     vec2 position;
 }Circle2D;
 
-f32 dist(vec2 a, vec2 b)
+static f32 dist(vec2 a, vec2 b)
 {
     return sqrt((a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y));
 }
 
-b32 Circle2DvsCircle2D(Circle2D c1, Circle2D c2)
+static b32 Circle2DvsCircle2D(Circle2D c1, Circle2D c2)
 {
     f32 r = c1.radius + c2.radius;
     return (r < dist(c1.position, c2.position));
@@ -180,19 +196,20 @@ typedef enum ShapeType
 }ShapeType;
 
 
-struct PhysicsMaterial
+typedef struct PhysicsMaterial
 {
     f32 density;
     f32 restitution;
-};
-struct MassData
+}PhysicsMaterial;
+
+typedef struct MassData
 {
     f32 mass;
     f32 inv_mass; //this is the one we need ..
 
     f32 inertia;
     f32 inv_inertia;
-};
+}MassData;
 
 typedef struct Shape 
 {
@@ -210,7 +227,7 @@ typedef struct Manifold
     Shape* c2;
     f32 penetration;
     vec2 normal;
-};
+}Manifold;
 
 static b32 Circle2DvsCircle2D(Manifold* m)
 {
@@ -324,20 +341,19 @@ static void aabb_update(AABB2D* aabb, vec2 pos, f32 w, f32 h)
 typedef struct PhysicsBodyComponent  //managers??
 {
   Shape *shape;
-  mat4 transform;
+  mat4 transform; //transform could be just another component we look up?
   PhysicsMaterial material;
   MassData mass_data;
-  vec2 velocity;
-  vec2 force;
+  vec3 velocity;
+  vec3 force;
   f32 gravity_scale;
-}PhysicsBody;
+}PhysicsBodyComponent;
 
 
-struct PhysicsBody2DComponent
+typedef struct PhysicsBody2DComponent
 {
-    vec2 min;
-    f32 w, h;
-    AABB2D collider;
+    vec2 pos;
+    Shape collider;
 
     vec2 velocity;
     f32 restitution = 1.f;
@@ -346,37 +362,85 @@ struct PhysicsBody2DComponent
     b32 is_colliding;
     b32 active = 1;
     b32 is_destroyed;
-};
+}PhysicsBody2DComponent;
 
 #define MAX_SHAPES 1000
-typedef struct ColliderManager
-{
-    Shape* shapes;
-    u32 current_index;
-    u32 max_shapes;
-}ColliderManager;
 
-static ColliderManager 
-colldier_manager_init()
+typedef struct Physics2DManager 
 {
-    ColliderManager m = {0};
-    m.shapes = (Shape*)arena_alloc(&global_platform.permanent_storage, MAX_SHAPES * sizeof(Shape));
-    m.current_index = 0;
-    m.max_shapes = MAX_SHAPES;
+    //maybe make them pointers into an arena allocator???
+    PhysicsBody2DComponent bodies[MAX_ENTITY];
+    Entity entities[MAX_ENTITY];
+    u32 next_index = 0;
+    EntityHashMap table;
+    
+}Physics2DManager;
 
-    return m;
+
+
+static void 
+init_physics2d_manager(Physics2DManager *m)
+{
+    m->table = create_hashmap(20);
+}
+//creates an empty component of type position TODO generalize?
+static PhysicsBody2DComponent*
+add_component(Physics2DManager *manager, Entity entity)
+{
+  // INVALID_ENTITY is not allowed!
+  assert(entity != INVALID_ENTITY);
+
+  // Only one of this component type per entity is allowed!
+  //assert(lookup_hashmap(&manager->table, entity) == -1);
+
+  // Update the entity lookup table:
+  insert_hashmap(&manager->table, entity, manager->next_index);
+
+  // New components are always pushed to the end:
+  manager->bodies[manager->next_index] = {0}; 
+
+  // Also push corresponding entity:
+  manager->entities[manager->next_index] = entity;
+
+  return &manager->bodies[manager->next_index++];
 }
 
-static Shape* 
-collider_manager_add(ColliderManager* m, Shape shape)
+//removes an entity and its component from the manager's data TODO generalize?
+static void 
+remove_entity(Physics2DManager *manager, Entity entity)
 {
-    if (m->current_index < m->max_shapes)
+  u32 index = lookup_hashmap(&manager->table, entity);
+  if (index != -1)
+  {
+    // Directly index into components and entities array:
+    Entity entity = manager->entities[index];
+
+    if (index < manager->next_index)
     {
-        m->shapes[m->current_index++] = shape;
-        return &m->shapes[m->current_index - 1];
-    }else
-        return NULL;
+      // Swap out the dead element with the last one:
+      manager->bodies[index] = manager->bodies[manager->next_index-1];// try to use move
+      manager->entities[index] = manager->entities[manager->next_index-1];
+
+      //NOTE: this is not over performant..
+      remove_hashmap(&manager->table,entity);
+      remove_hashmap(&manager->table,manager->entities[index]);
+      insert_hashmap(&manager->table,manager->entities[index], index); 
+    }
+
+    // Shrink the container
+    manager->next_index--;
+  }
 }
 
+static PhysicsBody2DComponent* 
+get_component(Physics2DManager * manager, Entity entity)
+{
+    i32 index = lookup_hashmap(&manager->table, entity);
+    if (index != -1)
+    {
+        return &manager->bodies[index];
+    }
+    return NULL;
+}
 
-
+#endif

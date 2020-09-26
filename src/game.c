@@ -1,10 +1,9 @@
-#include "ext/HandmadeMath.h"
-#include "tools.h"
-
+#include "platform.h"
+#include "ext/HandmadeMath.h" #include "tools.h"
 #include "audio.h"
 #include "entity.h"
 #include "shader.h"
-#include "platform.h"
+#include "shadowmap.h"
 #include "texture.h"
 #include "camera.h"
 #include "quad.h"
@@ -19,7 +18,6 @@
 #include "postproc.h"
 #include "terrain.h"
 #include "collada_parser.h"
-#include "shadowmap.h"
 #include <string>  //just for to_string
 
 static Camera cam;
@@ -29,8 +27,10 @@ static Cube c;
 static Terrain terrain;
 
 static PositionManager position_manager;
+static Physics2DManager physics2d_manager;
 
 static Model m;
+static Model cubes[9];
 static Model teapot_model;
 static Model test_model;
 
@@ -46,42 +46,60 @@ static Skybox skybox;
 b32 debug_menu = 1;
 f32 inverted = 0.f;
 
-#define sound_on 0
-#define colliders_on 1
-#define skybox_on 1
+#define SOUND_ON 0
+#define COLLIDERS_ON 1
+#define SKYBOX_ON 1
 
 static AnimatedModel skel;
 static MeshData data; //this should be an AnimatedModel
 static Animation animation_to_play;
 static Animator animator;
 
+
+static Entity braid_guy;
+
 void init(void)
 {
-
+    play_sound();
     data = read_collada(str(&global_platform.permanent_storage,"../assets/sat.dae"));
     animation_to_play = read_collada_animation(str(&global_platform.permanent_storage,"../assets/sat.dae"));
 
     init_fake_framebuffer();
     init_text(&bmf,"../assets/ASCII_512.png"); 
-
+    
     init_camera(&cam);
     init_renderer(&rend);
 
     init_terrain(&terrain,"../assets/noise.png");
-    terrain.model = translate_mat4(v3(-8,0,-16));
+    //initializing all component managers
     {
-        load_model_data(m.vertices, "../assets/huge_plane.obj", "../assets/basic.mtl");
+        init_physics2d_manager(&physics2d_manager);
+    }
+    //entity init
+    {
+        braid_guy = create_entity();
+        PhysicsBody2DComponent *c = add_component(&physics2d_manager, braid_guy);
+        c->pos = v2(5,0);
+        c->collider.box = aabb2d(s.box.min, s.box.min + s.scale);
+        c->collider.type = BOX2D;
+    }
+    {
+        load_model_data(m.vertices, "../assets/cube.obj", "../assets/basic.mtl");
         init_model(&m, m.vertices);
-        m.spec_name = "noise.png";
-        m.position = {0,-2,0};
-        //m.scale = v3(0.4,0.1,1);
+        m.spec_name = "white.png";
+        m.diff_name = "green.png";
+        m.scale = v3(1,1,1);
+        for (i32 i = 0; i < 9; ++i)
+        {
+            cubes[i] = m;
+            cubes[i].position = v3(i%3 + 5, 0, (i) / 3);
+        }
     }
     //teapot_model initialization
     {
         load_model_dataOG(teapot_model.vertices, "../assets/utah_teapot.obj", "../assets/basic.mtl");
         init_model(&teapot_model, teapot_model.vertices);
         teapot_model.diff_name = "red.png";
-        teapot_model.position = {0,2.f,0.0};
         teapot_model.scale = {0.02,0.02,0.02};
 
     }
@@ -103,12 +121,10 @@ void init(void)
 
     }
 
-
     //player initializiation
     {
 
         AnimationInfo info; 
-        //init_animation_info(AnimationInfo* info, vec2 bl, i32 frames_per_row, i32 frames_per_col, f32 tex_unit, i32 frame_count, f32 time_per_frame, b32 play_once)
         init_animation_info(&info,{0.0f,1.f - 1.f/4.f}, 7, 4, 3, 27, 0.025f, 0);
         //init_animation_info(&info,{0.0f,0.0f}, 1, 1, 1, 1, 300000.f, 0);
         init_sprite(&s, {-2.5,0.0},{1.f,1.3f}, 3, 1.f, info);
@@ -127,13 +143,7 @@ void init(void)
         init_skybox(&skybox, faces);
     }
     //init lights
-    {
-         point_light = {{0,1,1},1.f,0.022f,0.0019f,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
-
-         dir_light = {{0,-1,0},{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{0.3,0.3,0.3}};
-
-    }
-
+     point_light = {{0,1,1},1.f,0.022f,0.0019f,{0.2f, 0.2f, 0.2f},{0.7f, 0.7f, 0.7f},{1.0f, 1.0f, 1.0f}};
 
 }
 
@@ -142,7 +152,22 @@ void init(void)
 void update(void)
 {
 
-    teapot_model.position = {5, abs(sin(global_platform.current_time)/4.f) + 4.f,0.0};
+    dir_light = {normalize_vec3(v3(0.2f,-0.7f,0.2f)),{0.4f, 0.4f, 0.4f},{0.7f, 0.7f, 0.7f},{0.1,0.1,0.1}};
+    //if key K is pressed take a screenshot
+    if (global_platform.key_pressed[KEY_K])
+    {
+        f32 *pixels = (f32*)malloc(sizeof(f32) * 3 * global_platform.window_width* global_platform.window_height); 
+        glReadPixels(0, 0, global_platform.window_width,global_platform.window_height,GL_RGB, GL_FLOAT, pixels);
+        ppm_save_current_framebuffer( global_platform.window_width, global_platform.window_height, pixels);
+        free(pixels);
+    }
+
+    if (global_platform.key_pressed[KEY_L])
+       play_sound(); 
+
+
+    m.position = {5.f,0,0};
+    teapot_model.position = {6, abs(sin(global_platform.current_time)/4.f) + 2.f,sin(global_platform.current_time) * 1.5f};
     test_model.position = {0, 1.f,0.0};
     change_to_fake_framebuffer();
 
@@ -236,39 +261,54 @@ void update(void)
 
     teapot_model.rotation = quat_from_angle(v3(0,1,0), 2 * PI *( sin(global_platform.current_time)));
 
-    point_light.position = {sin(global_platform.current_time)* 3, 8,10};
+    point_light.position = v3(sin(global_platform.current_time)* 3, 8,10);
     //point_light.position = {0, 8,3};
 
     view_matrix = get_view_mat(&cam);
     perspective_matrix = perspective_proj(45.f,global_platform.window_width / (float)global_platform.window_height, 0.1f,100.f); 
     ortho_matrix = orthographic_proj(-6.f,6.f,-6.f,6.f, 0.1, 100.f);
 
+
+#if COLLIDERS_ON 
+    //--------YES---------
+    renderer_push_AABB(&rend, {v3(-1,0,1),v3(1, 5, 2.5)}); //eyeballed for animated model
+    renderer_push_rect(&rend,{s.box.min, s.scale.y,s.scale.x});
+    
+    //---------NO---------
+    //renderer_push_rect(&rend,{v2(3,3), 1,1});
+    //renderer_push_rect(&rend,{v2(2,2), 2,4});
+    //renderer_push_rect(&rend,{v2(1,1), 2,1});
+#endif
     renderer_push_dir_light(&rend,&dir_light);
-    renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
+    //renderer_push_point_light_info(&rend,point_light.position,point_light.ambient , point_light.diffuse, point_light.specular);
     renderer_push_mesh(&rend,&teapot_model, teapot_model.vertices.size());
-    //renderer_push_mesh(&rend,&test_model, data.vertex_count);
-    renderer_push_mesh(&rend,&m, m.vertices.size());
+    //renderer_push_mesh(&rend,&m, m.vertices.size());
+    for (i32 i = 0; i < 9; ++i)
+        renderer_push_mesh(&rend,&cubes[i], cubes[i].vertices.size());
     renderer_set_projection_matrix(&rend, perspective_matrix);
     renderer_set_view_matrix(&rend, view_matrix);
     renderer_set_camera_pos(&rend, cam.pos);
     mat4 ortho = orthographic_proj(-10.f,10.f,-10.f,10.f,0.1f,9.f); //we use orthographic projection because we do direction lights..
     renderer_set_ortho_matrix(&rend, ortho);
+#if COLLIDERS_ON
+    render_colliders(&physics2d_manager,&rend);
+#endif
+
 }
 
 void render(void)
 {
 
-#if skybox_on
+#if SKYBOX_ON
     render_skybox(&skybox,perspective_matrix, view_matrix);
 #endif
 
+
     render_sprite(&s, &rend);  //we probably dont need this
+    //renderer_push_rect(&rend,{s.pos , s.scale.y,s.scale.x});
 
     mat4 mat = mul_mat4(perspective_matrix, view_matrix);
-    //rendering background 
-    {
-        //render_quad(&background, mat);
-    }
+
     renderer_render(&rend);
     
     //render_terrain(&terrain, perspective_matrix, view_matrix);
@@ -292,19 +332,9 @@ void render(void)
 
     }
 
+    //update should be at update(void) but whatever
     update_animator(&animator);
     render_animated_model(&animator.model, &rend.shaders[2], rend.perspective_projection, rend.view_matrix);
-
-#if colliders_on
-    //NOTE(ilias): this is for drawing colliders!
-    glDisable(GL_DEPTH_TEST); //NOTE(ilias): this is used only for collider visualization
-    glLineWidth(2);
-    for (Box *b : colliders)
-        render_collider_in_pos (mat, v3(b->min.x + b->hb.min.x,b->min.y + b->hb.min.y,-1.f), v2(b->w * b->hb.w, b->h * b->hb.h), (float)b->is_colliding);
-    glLineWidth(1);
-    glEnable(GL_DEPTH_TEST);
-#endif
-
 
     render_to_framebuffer0(inverted);
 

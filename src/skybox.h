@@ -45,9 +45,9 @@ load_cubemap(std::vector<std::string> faces)
 typedef struct Skybox {
 	
 	u32 vao;
-	u32 vbo; //remove this boi
+	u32 vbo;
     u32 tex_id;
-    std::vector<std::string> faces; //names??
+    std::vector<std::string> faces; //TODO: convert to homemade String implementation (also we know size)
     Shader shader;
 }Skybox;
 

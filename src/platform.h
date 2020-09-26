@@ -1,8 +1,16 @@
-#pragma once
-#include "tools.h" //TODO(ilias): maybe make a types.h ??
+#ifndef PLATFORM_H
+#define PLATFORM_H
+
+//these are here just for compatibility
+#include <windows.h>
+#include <gl/gl.h>
+#include "ext/glext.h"
+#include "ext/wglext.h"
+
+#include "tools.h"
 #define KEY_MAX 100
 
-
+extern char infoLog[512]; //errors are written here, the program will crash and produce an error
 typedef struct Platform
 {
     i32 window_width;
@@ -28,6 +36,9 @@ typedef struct Platform
     Arena permanent_storage;
     Arena frame_storage;
 }Platform;
+
+extern Platform global_platform;
+//static  Platform global_platform;
 
 enum keyboard_keys
 {
@@ -128,4 +139,57 @@ enum keyboard_keys
     KEY_F12,
 };
 
+//TODO: these should probably go in a preproccesor directive so we can define for many different builds
 
+extern PFNWGLCHOOSEPIXELFORMATARBPROC     wglChoosePixelFormatARB;
+extern PFNWGLCREATECONTEXTATTRIBSARBPROC  wglCreateContextAttribsARB;
+extern PFNWGLMAKECONTEXTCURRENTARBPROC    wglMakeContextCurrentARB;
+extern PFNWGLSWAPINTERVALEXTPROC          wglSwapIntervalEXT;
+extern PFNGLGENBUFFERSPROC glGenBuffers;
+extern PFNGLBINDBUFFERPROC glBindBuffer;
+extern PFNGLDRAWBUFFERSPROC glDrawBuffers;
+extern PFNGLUSEPROGRAMPROC glUseProgram;
+extern PFNGLSHADERSOURCEPROC glShaderSource;
+extern PFNGLCOMPILESHADERPROC glCompileShader;
+extern PFNGLGETSHADERIVPROC glGetShaderiv;
+extern PFNGLMAPBUFFERRANGEPROC glMapBufferRange;
+extern PFNGLMAPBUFFERPROC glMapBuffer;
+extern PFNGLCREATESHADERPROC glCreateShader;
+extern PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog;
+extern PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
+extern PFNGLCREATEPROGRAMPROC glCreateProgram;
+extern PFNGLATTACHSHADERPROC glAttachShader;
+extern PFNGLDELETESHADERPROC glDeleteShader;
+extern PFNGLDELETEPROGRAMPROC glDeleteProgram;
+extern PFNGLLINKPROGRAMPROC glLinkProgram;
+extern PFNGLGETPROGRAMIVPROC glGetProgramiv;
+extern PFNGLUNIFORM1IPROC glUniform1i;
+extern PFNGLUNIFORM3FPROC glUniform3f;
+extern PFNGLUNIFORM1IVPROC glUniform1iv;
+extern PFNGLUNIFORM2FVPROC glUniform2fv;
+extern PFNGLUNIFORM1FPROC glUniform1f;
+extern PFNGLACTIVETEXTUREPROC glActiveTexture;
+extern PFNGLVERTEXATTRIBDIVISORPROC glVertexAttribDivisor;
+extern PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
+extern PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
+extern PFNGLDRAWELEMENTSINSTANCEDPROC glDrawElementsInstanced;
+extern PFNGLDRAWARRAYSINSTANCEDPROC glDrawArraysInstanced;
+extern PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
+extern PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
+extern PFNGLBUFFERDATAPROC glBufferData;
+extern PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
+extern PFNGLVERTEXATTRIBIPOINTERPROC glVertexAttribIPointer;
+extern PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
+extern PFNGLGENERATEMIPMAPPROC glGenerateMipmap;
+extern PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
+extern PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
+extern PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
+extern PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
+extern PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer;
+extern PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage;
+extern PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers;
+extern PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer;
+
+
+
+#endif

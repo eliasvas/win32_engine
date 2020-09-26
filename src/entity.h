@@ -1,10 +1,8 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 #include "tools.h"
-#include <unordered_map> //TODO this has to GOO
 
 //TODO completely remove sparse entity system....
-
 #define MAX_ENTITY 1000
 #define INVALID_ENTITY 0
 static u32 entity_id = 1;
@@ -21,23 +19,28 @@ static b32 entity_equals(Entity l, Entity r)
     return (l == r);
 }
 
-
 typedef struct PositionComponent
 {
     vec3 pos;
 
 }PositionComponent;
 
-typedef struct PosisitonManager
+typedef IntHashMap EntityHashMap;
+typedef struct PositionManager
 {
     //maybe make them pointers into an arena allocator???
     PositionComponent positions[MAX_ENTITY];
     Entity entities[MAX_ENTITY];
     u32 next_index = 0;
-    std::unordered_map<Entity, u32> lookup;
+    EntityHashMap table;
     
 }PositionManager;
 
+static void 
+init_position_manager(PositionManager* m)
+{
+    m->table = create_hashmap(20);
+}
 //creates an empty component of type position TODO generalize?
 static PositionComponent*
 add_component(PositionManager* manager, Entity entity)
@@ -46,10 +49,10 @@ add_component(PositionManager* manager, Entity entity)
   assert(entity != INVALID_ENTITY);
 
   // Only one of this component type per entity is allowed!
-  assert(manager->lookup.find(entity) == manager->lookup.end());
+  //assert(lookup_hashmap(&manager->table, entity) == -1);
 
   // Update the entity lookup table:
-  manager->lookup[entity] = manager->next_index;
+  insert_hashmap(&manager->table, entity, manager->next_index);
 
   // New components are always pushed to the end:
   manager->positions[manager->next_index] = {0}; 
@@ -61,13 +64,12 @@ add_component(PositionManager* manager, Entity entity)
 }
 
 //removes an entity and its component from the manager's data TODO generalize?
-void remove_entity(PositionManager* manager, Entity entity)
+static void remove_entity(PositionManager* manager, Entity entity)
 {
-  auto it = manager->lookup.find(entity);
-  if (it != manager->lookup.end())
+  u32 index = lookup_hashmap(&manager->table, entity);
+  if (index != -1)
   {
     // Directly index into components and entities array:
-    u32 index = it->second;
     Entity entity = manager->entities[index];
 
     if (index < manager->next_index)
@@ -76,22 +78,23 @@ void remove_entity(PositionManager* manager, Entity entity)
       manager->positions[index] = manager->positions[manager->next_index-1];// try to use move
       manager->entities[index] = manager->entities[manager->next_index-1];
 
-      // Update the lookup table:
-      manager->lookup[manager->entities[index]] = index;
+      //NOTE: this is not ver performant..
+      remove_hashmap(&manager->table,entity);
+      remove_hashmap(&manager->table,manager->entities[index]);
+      insert_hashmap(&manager->table,manager->entities[index], index); 
     }
 
-    // Shrink the container:
+    // Shrink the container
     manager->next_index--;
-    manager->lookup.erase(entity);
   }
 }
 
-PositionComponent* get_component(PositionManager* manager, Entity entity)
+static PositionComponent* get_component(PositionManager* manager, Entity entity)
 {
-    auto it = manager->lookup.find(entity);
-    if (it != manager->lookup.end())
+    i32 index = lookup_hashmap(&manager->table, entity);
+    if (index != -1)
     {
-        return &manager->positions[it->second];
+        return &manager->positions[index];
     }
     return NULL;
 }
@@ -102,15 +105,14 @@ typedef struct TransformComponent
     vec3 position;
     vec3 scale;
     Quaternion rotation;
-};
+}TransformComponent;
 typedef struct TransformManager
 {
      //maybe make them pointers into an arena allocator???
     TransformComponent transforms[MAX_ENTITY];
     Entity entities[MAX_ENTITY];
     u32 next_index = 0;
-    std::unordered_map<Entity, u32> lookup;
-
+    EntityHashMap table;
 }TransformManager;
 
 /* Entity test
@@ -125,4 +127,8 @@ typedef struct TransformManager
         remove_entity(&position_manager,3);
     }
 */
+
+
+
+
 #endif

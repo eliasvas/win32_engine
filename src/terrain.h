@@ -15,14 +15,14 @@
 
 
 
-struct Terrain
+typedef struct Terrain
 {
     GLuint vao;
     Texture tex;
     Shader shader;
     Image image;
     mat4 model;
-};
+}Terrain;
 
 static f32 
 get_height_from_heightmap(Terrain* terrain, u32 x, u32 z)

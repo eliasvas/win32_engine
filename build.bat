@@ -6,11 +6,11 @@ if ERRORLEVEL 1 (
 
 
 set application_name=game.exe
-set build_options= -DBUILD_WIN32=1
-set compile_flags= -nologo /W0 /Zi /EHsc
-set link_flags= gdi32.lib opengl32.lib user32.lib dsound.lib dxguid.lib winmm.lib
+set build_options= -DBUILD_DEVELOPER=1 -DBUILD_DEBUG=1 -DBUILD_WIN32=1
+set compile_flags= -nologo -FC /W0 /Zi /EHsc -I../src
+set link_flags= -incremental:no -opt:ref gdi32.lib opengl32.lib user32.lib dsound.lib dxguid.lib winmm.lib
 
 if not exist build mkdir build
 pushd build
-start /b /wait "" "cl.exe"  %build_options% %compile_flags% ../src/win32_main.cpp /link %link_flags% /out:%application_name%
+start /b /wait "" "cl.exe" %compile_flags% %build_options% ..\src\win32_main.cpp ..\src\quad.cpp ..\src\sprite.cpp ..\src\renderer.cpp -I../src/ /link %link_flags% /out:%application_name%
 popd

@@ -115,20 +115,20 @@ typedef struct JointKeyFrame
     f32 timestamp;
     u32 joint_index;
     JointTransform transform;
-};
+}JointKeyFrame;
 
 typedef struct JointAnimation
 {
     JointKeyFrame* keyframes;
     u32 keyframe_count; 
-};
+}JointAnimation;
 
 typedef struct Animation
 {
     JointAnimation* joint_animations;
     u32 joint_anims_count;
     f32 length; //max timestamp?
-};
+}Animation;
 
 typedef struct AnimatedModel
 {
@@ -164,12 +164,14 @@ static void increase_animation_time(Animator* anim)
 static mat4 
 calc_pose_of_joints(Animator* anim,JointKeyFrame current_pose, Joint *j, mat4 parent_transform)
 {
+    //this shouldn't be here
     u32 i; 
     for(i = 0; i < anim->model.joint_count; ++i)
     {
         if (current_pose.joint_index == j->index)
             break;//we have found the index of our joint j
     }
+    //-------
     
     JointTransform local_joint_transform = current_pose.transform;
     
@@ -235,8 +237,10 @@ static void
 set_joint_transform_uniforms(AnimatedModel* model,Shader* s, Joint *j)
 {
     joint_transforms[17] = '0' + j->index;
+    //these are the joints being tested..
     if (j->index == 0 || j->index == 1)
         setMat4fv(s, joint_transforms, (f32*)j->animated_transform.elements);
+
     for (Joint& child : j->children)
         set_joint_transform_uniforms(model,s, &child); 
 }
@@ -294,7 +298,7 @@ update_animator(Animator* animator)
 {
     if (animator->anim == NULL)return;
     increase_animation_time(animator);
-    //the world positions of our joints j
+    //the world positions of our joints j  NOTE: this should be joints count and not joint_anims_count?? idk
     mat4 *current_transforms = (mat4*)arena_alloc(&global_platform.frame_storage, sizeof(mat4) * animator->anim->joint_anims_count);
     /*
     for (u32 i = 0; i < animator->anim->joint_anims_count; ++i)
@@ -306,7 +310,6 @@ update_animator(Animator* animator)
     for (u32 i = 0; i < animator->anim->joint_anims_count; ++i)
     {
         JointKeyFrame current_pose = calc_current_animation_pose(animator, i); 
-        //calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
         //calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
         calc_pose_of_joints(animator,current_transforms, current_pose, &animator->model.root, m4d(1.f));
     }
@@ -370,7 +373,7 @@ render_animated_model(AnimatedModel* model, Shader* s, mat4 proj, mat4 view)
     setInt(s, "diffuse_map", 6); //we should really make the texture manager global or something(per Scene?)... sigh
     //for(i32 i = 0; i < model->joint_count; ++i)
     {
-        //these uniforms in the beginning are set as identities
+        //these uniforms in the beginning are set as identities, just for the testing (niv_bind_poses is an array)
         setMat4fv(s, "joint_transforms[0]", (GLfloat*)model->inv_bind_poses[0].elements);
         setMat4fv(s, "joint_transforms[1]", (GLfloat*)model->inv_bind_poses[1].elements);
         setMat4fv(s, "joint_transforms[2]", (GLfloat*)model->inv_bind_poses[2].elements);
@@ -408,6 +411,67 @@ init_animated_model(Texture* diff, Joint root,MeshData* data)
     initialize_joint_pos_array(&model.root,data->inv_bind_poses);
     return model;
 }
+
+/*
+typedef struct Joint
+{
+    u32 index;
+    String name;
+    String sid;
+    std::vector<Joint> children;
+    Joint *parent;
+    //Joint* children;
+    //u32 num_of_children;
+    mat4 animated_transform; //joint transform
+    mat4 local_bind_transform;
+    mat4 inv_bind_transform;
+} Joint;
+
+
+typedef struct vertex
+{
+   vec3 position; 
+   vec3 normal;
+   vec2 tex_coord;
+}vertex;
+
+static vertex vert(vec3 p, vec3 n, vec2 t)
+{
+    vertex res;
+    res.position = p;
+    res.normal = n;
+    res.tex_coord = t;
+    return res;
+}
+
+typedef struct AnimatedVertex
+{
+    vec3 position;
+    vec3 normal;
+    vec2 tex_coord;
+    ivec3 joint_ids;
+    vec3 weights;
+}AnimatedVertex;
+
+typedef struct MeshData{
+    vec3* positions; 
+    vec3* normals; 
+    vec2* tex_coords; 
+    vertex* verts; //just for rendering
+    i32 vertex_count;
+    i32* joint_ids; 
+    vec3* weights; 
+    u32 size;
+
+    mat4* inv_bind_poses;
+    i32 inv_bind_poses_count;
+
+    Joint root;
+    AnimatedVertex* vertices;
+
+}MeshData;
+*/
+
 
 
 

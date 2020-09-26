@@ -1,5 +1,7 @@
 #ifndef SHADOWMAP_H
 #define SHADOWMAP_H
+
+#include <gl/gl.h>
 #include "tools.h"
 #include "texture.h"
 #include "shader.h"
@@ -27,6 +29,7 @@ init_shadowmap_fbo(ShadowMapFBO* shadowmap)
     glGenTextures(1, &shadowmap->depth_attachment);
     glBindTexture(GL_TEXTURE_2D, shadowmap->depth_attachment);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, global_platform.window_width, global_platform.window_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
@@ -50,6 +53,7 @@ setup_shadowmap(ShadowMapFBO* shadowmap, mat4 view_matrix = {0})
     //maybe do it only if resolution has changed
     glBindTexture(GL_TEXTURE_2D, shadowmap->depth_attachment);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, global_platform.window_width, global_platform.window_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
@@ -60,11 +64,11 @@ setup_shadowmap(ShadowMapFBO* shadowmap, mat4 view_matrix = {0})
     glBindFramebuffer(GL_FRAMEBUFFER, shadowmap->fbo);
     glClear(GL_DEPTH_BUFFER_BIT);
     f32 near_plane = 0.1f;
-    f32 far_plane = 40.f;
+    f32 far_plane = 20.f;
     mat4 light_projection = orthographic_proj(-10.f,10.f,-10.f,10.f, near_plane, far_plane); //we use orthographic projection because we do direction lights..
 
     view_matrix = mul_mat4(translate_mat4({view_matrix.elements[3][0],view_matrix.elements[3][1], view_matrix.elements[3][2]}),rotate_mat4(90.f, v3(1.f,0.f,0.f)));
-    view_matrix = look_at({2,4,-3}, {0,1,0}, {0,1,0});
+    view_matrix = look_at({2,10,-5}, {5,1,0}, {0,1,0});
 
     mat4 lightSpaceMatrix = mul_mat4(light_projection,view_matrix); 
 
@@ -82,10 +86,6 @@ setup_shadowmap(ShadowMapFBO* shadowmap, mat4 view_matrix = {0})
     //RenderScene()
 }
 
-
-//      |||  (so smart wow)
-//THESE VVV ARE JUST FOR TESTING.. WHEN DONE I BETTER DELETE THEM....
-
 typedef struct ShadowmapDebugQuad
 {
 	Shader shader; //wow
@@ -99,7 +99,7 @@ setup_debug_quad(ShadowmapDebugQuad* debug_quad, ShadowMapFBO* shadowmap)
 {
 	shader_load (&debug_quad->shader, "../assets/shaders/shadowmap_to_quad.vert","../assets/shaders/shadowmap_to_quad.frag");
 	setFloat(&debug_quad->shader,"near_plane", 1.f);
-    setFloat(&debug_quad->shader,"far_plane", 9.f);
+    setFloat(&debug_quad->shader,"far_plane", 20.f);
     glActiveTexture(GL_TEXTURE10);
 	glBindTexture(GL_TEXTURE_2D, shadowmap->depth_attachment);
 }

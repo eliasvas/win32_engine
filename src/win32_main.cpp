@@ -1,12 +1,15 @@
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS
-char infoLog[512]; //errors are written in here!
 #include "platform.h"
-static Platform global_platform;
+Platform global_platform;
+char infoLog[512]; //errors are written here, the program will crash and produce an error
 static HDC global_device_context;
 static HWND WND;
 #include <windows.h>
-#include "win32_opengl.cpp"
+#include "win32_opengl.c"
+#include "texture.h"
+#include "entity.h"
+#include "sprite.h"
 #include "audio.h"
 #include "game.c"
 #include "skybox.h"
@@ -23,6 +26,7 @@ static HWND WND;
 static LARGE_INTEGER fr,st,ft;
 
 static LRESULT Win32WindowProc(HWND hWnd, UINT message, WPARAM w_param, LPARAM l_param) {
+
     LRESULT result = {0};
     if (message == WM_SIZE)
         {
@@ -145,7 +149,7 @@ WinMain(HINSTANCE Instance,
     WNDCLASS windowClass = {0};
     {
         windowClass.style = CS_HREDRAW | CS_VREDRAW;
-        windowClass.lpfnWndProc = Win32WindowProc;
+        windowClass.lpfnWndProc = (WNDPROC)Win32WindowProc;
         windowClass.hInstance = Instance;
         windowClass.lpszClassName = "WindowClass";
         windowClass.hCursor = LoadCursor(0, IDC_ARROW);
@@ -180,18 +184,18 @@ WinMain(HINSTANCE Instance,
     glDepthFunc(GL_LESS);
     glEnable(GL_BLEND); // <-- this fucker makes artifacts appear in animaiton
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
-    glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+    //glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
 
 
     //initializing arenas
     {
-        u8* permanent_memory = (u8*)malloc(1048576 * 16 * sizeof(u8));
-        u8* frame_memory = (u8*)malloc(32768 * 512 * sizeof(u8));
+        u8* permanent_memory = (u8*)malloc(megabytes(64));
+        u8* frame_memory = (u8*)malloc(megabytes(32));
         //mem = (void *)((u8*)arena->memory + arena->current_offset); 
         if (permanent_memory == NULL || frame_memory == NULL)memcpy(infoLog, "Not Enough Storage for Arenas", 29);
-        global_platform.permanent_storage = arena_init(permanent_memory, 1048576 * 8);
-        global_platform.frame_storage = arena_init(frame_memory, 32768 * 256);
+        global_platform.permanent_storage = arena_init(permanent_memory, megabytes(64));
+        global_platform.frame_storage = arena_init(frame_memory,megabytes(32));
      
     }
 

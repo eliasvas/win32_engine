@@ -3,5 +3,4 @@ build/*
 *.pdb
 *.exp
 *.lib
-*.obj
 *.dll

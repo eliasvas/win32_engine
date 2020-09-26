@@ -1,5 +1,11 @@
 #ifndef SHADER_H
 #define SHADER_H
+#include <windows.h>
+#include <gl/gl.h>
+#include "ext/glext.h"
+#include "ext/wglext.h"
+
+#include "platform.h"
 #include "tools.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,7 +25,7 @@ typedef struct Shader
     const char* fragment_str;
 }Shader;
 
-void use_shader(Shader* shader)
+static void use_shader(Shader* shader)
 {
     glUseProgram(shader->ID);
 }
@@ -80,8 +86,8 @@ static void shader_load (Shader* s, const char * vertex_path, const char * fragm
 {
     s->vertex_str = vertex_path;
     s->fragment_str = fragment_path;
-    const char* vs = read_file(vertex_path);
-    const char* fs = read_file(fragment_path); 
+    const char* vs = read_whole_file(vertex_path);
+    const char* fs = read_whole_file(fragment_path); 
     s->ID = load_shader_from_strings(vs,fs);
 
 }

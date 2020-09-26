@@ -9,9 +9,16 @@
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
-#include <string.h>
 #include <string>
-#include "ext/HandmadeMath.h"
+
+
+#if !defined(NO_CRT)
+#define NO_CRT 0
+#endif
+
+#ifndef TOOLS_PREFIX
+#define TOOLS_PREFIX(name) TL##name
+#endif
 
 typedef uint8_t   u8;
 typedef int8_t    i8;
@@ -26,11 +33,77 @@ typedef double    f64;
 typedef int32_t   b32;
 typedef char      b8;
 
-//#define global static
-//#define internal static
-//#define local_persist  static
 #define INLINE static inline
 #define INTERNAL static
+
+#define kilobytes(val) (val * 1024)
+#define megabytes(val) (kilobytes(val) * 1024)
+#define gigabytes(val) (megabytes(val) * 1024)
+
+#define PI 3.1415926535897f
+
+#ifdef NO_CRT
+#define offsetof(type, member) ((unsigned int)((unsigned char*)&((type*)0)->member - (unsigned char*)0)) 
+INLINE i32 TOOLS_PREFIX(abs)(i32 x)
+{
+  return x < 0 ? -x : x;
+}
+INLINE f32 TOOLS_PREFIX(fabs)(f32 x)
+{
+    return x < 0 ? -x : x;
+}
+
+INLINE i32 TOOLS_PREFIX(isnan)(f32 x) { return x != x; }
+INLINE i32 isinf(f32 x) { return !isnan(x) && isnan(x - x); }
+
+//cos_32 computes a cosine to about 3.2 decimal digits of accuracy
+INLINE f32 
+cos_32s(f32 x)
+{
+    const float c1= 0.99940307;
+    const float c2=-0.49558072;
+    const float c3= 0.03679168;
+    float x2; // The input argument squared
+    x2= x * x;
+    return (c1 + x2*(c2 + c3 * x2));
+}
+
+//this is a horrible implementation change pls
+INLINE f32 TOOLS_PREFIX(fmodf)(f32 a, f32 b)
+{
+    f32 div = a/b;
+    i32 mod = (i32)div;
+    return (f32)mod;
+}
+INLINE f32
+cos_32(f32 x){
+    i32 quad; // what quadrant are we in?
+    x= fmodf(x,(2.f*PI)); // Get rid of values > 2* pi
+    if(x<0)x=-x; // cos(-x) = cos(x)
+    quad=(i32)(x/(PI/2.f)); // Get quadrant # (0 to 3) switch (quad){
+    switch(quad){
+        case 0: return cos_32s(x);
+        case 1: return -cos_32s(PI-x);
+        case 2: return -cos_32s(x-PI);
+        case 3: return cos_32s((2.f*PI)-x);
+        default: return cos_32s(x);
+    }
+}
+
+INLINE f32 sin_32(f32 x)
+{
+    return cos_32(PI/2.f - x);
+}
+#define TOOLS_PREFIX(sinf) sin_32(x)
+#define TOOLS_PREFIX(cosf) cos_32(x)
+
+
+#endif
+
+#define align_pow2(val, align) (((val) + ((align) - 1)) & ~(((val) - (val)) + (align) - 1))
+#define align4(val) (((val) + 3) & ~3)
+#define align8(val) (((val) + 7) & ~7)
+#define align16(val) (((val) + 15) & ~15)
 
 #define equalf(a, b, epsilon) (fabs(b - a) <= epsilon)
 #define maximum(a, b) ((a) > (b) ? (a) : (b))
@@ -38,6 +111,11 @@ typedef char      b8;
 #define step(threshold, value) ((value) < (threshold) ? 0 : 1) 
 #define clamp(x, a, b)  (maximum(a, minimum(x, b)))
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
+
+//make an ifdef for each different platform
+#define ALLOC(x) malloc(x)
+#define REALLOC(x, y) realloc(x, y)
+#define FREE(x) free(x)
 
 #ifdef SIN_APPROX
 #define SINF sin_32
@@ -47,8 +125,13 @@ typedef char      b8;
 #define COSF cos_32
 #endif
 
-#define PI 3.1415926535897f
 
+
+INLINE b32 is_pow2(u32 val)
+{
+    b32 res = ((val & ~(val - 1)) == val);
+    return(res);
+}
 static b32
 char_is_alpha(i32 c)
 {
@@ -77,19 +160,52 @@ str_size(char* str)
 }
 
 static void
-seed_random_()
+seed_random()
 {
     srand((u32)time(0));
 }
 
+//random between [-1,1]
+INLINE f32
+random(void)
+{
+    //seed_random();
+    f32 r = (f32)rand();
+	r /= RAND_MAX;
+	r = 2.0f * r - 1.0f;
+	return r;
+}
+
+INLINE f32
+random01(void)
+{
+    //seed_random();
+    f32 r = (f32)rand();
+	r /= RAND_MAX;
+	return r;
+}
+
+INLINE f32 
+random(f32 lo, f32 hi)
+{
+    //seed_random();
+	f32 r = (f32)rand();
+	r /= RAND_MAX;
+	r = (hi - lo) * r + lo;
+	return r;
+}
+
+
 //NOTE(ilias): maybe make a free_file because our game leaks :(
-char * read_file(const char *filename){
+INLINE char * 
+read_whole_file(const char *filename)
+{
     FILE *f = fopen(filename, "rb");
     fseek(f, 0, SEEK_END);
     long fsize = ftell(f);
     fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
 
-    char *string = (char*)malloc(fsize + 1);
+    char *string = (char*)ALLOC(fsize + 1);
     fread(string, 1, fsize, f);
     fclose(f);
 
@@ -98,7 +214,8 @@ char * read_file(const char *filename){
     return (char*)string;
 }
 
-static b32 file_exists(const char* filename) {
+INLINE b32 
+file_exists(char* filename) {
   b32 ret;
   FILE* fp = fopen(filename, "rb");
   if (fp) {
@@ -111,6 +228,7 @@ static b32 file_exists(const char* filename) {
   return ret;
 }
 
+//TODO: delete this
 static std::string 
 getFileName(const std::string& s) {
 
@@ -158,6 +276,13 @@ typedef union vec2
         f32 r,g;
     };
     f32 elements[2];
+#ifdef __cplusplus
+    inline f32 &operator[](i32 &index)
+    {
+        return elements[index];
+    }
+#endif
+
 }vec2;
 
 
@@ -172,6 +297,12 @@ typedef union vec3
         f32 r,g,b;
     };
     f32 elements[3];
+#ifdef __cplusplus
+    inline f32 &operator[](i32 &index)
+    {
+        return elements[index];
+    }
+#endif
 }vec3;
 
 typedef vec3 color3;
@@ -191,6 +322,13 @@ typedef union vec4
 #ifdef TOOLS_SSE
     __m128 elements_sse; //because __m128 = 128 = 4 * float = 4*32 = 128 bits
 #endif
+#ifdef __cplusplus
+    inline f32 &operator[](i32 &index)
+    {
+        return elements[index];
+    }
+#endif
+
 }vec4;
 
 typedef vec4 color4;
@@ -205,7 +343,20 @@ typedef union mat4
 #ifdef TOOLS_SSE
     __m128 cols[4]; //same as elements (our matrices are column major)
 #endif
+#ifdef __cplusplus
+    inline vec4 operator[](i32 &Index)
+    {
+        f32* col = elements[Index];
 
+        vec4 res;
+        res.elements[0] = col[0];
+        res.elements[1] = col[1];
+        res.elements[2] = col[2];
+        res.elements[3] = col[3];
+
+        return res;
+    }
+#endif
 }mat4;
 
 
@@ -238,33 +389,6 @@ INLINE f32 lerp(f32 A, f32 B, f32 t)
 {
     f32 res = (1.0f - t)*A + t*B;
     return res;
-}
-f32 cos_32s(float x)
-{
-    const float c1= 0.99940307;
-    const float c2=-0.49558072;
-    const float c3= 0.03679168;
-    float x2; // The input argument squared
-    x2= x * x;
-    return (c1 + x2*(c2 + c3 * x2));
-}
-float cos_32(float x){
-    i32 quad; // what quadrant are we in?
-    x= fmod(x,(2.f*PI)); // Get rid of values > 2* pi
-    if(x<0)x=-x; // cos(-x) = cos(x)
-    quad=(int)(x/(PI/2.f)); // Get quadrant # (0 to 3) switch (quad){
-    switch(quad){
-        case 0: return cos_32s(x);
-        case 1: return -cos_32s(PI-x);
-        case 2: return -cos_32s(x-PI);
-        case 3: return cos_32s((2.f*PI)-x);
-        default: return cos_32s(x);
-    }
-}
-
-f32 sin_32(f32 x)
-{
-    return cos_32(PI/2.f - x);
 }
 
 INLINE vec2 v2(f32 x, f32 y)
@@ -1062,6 +1186,151 @@ blender_to_opengl_mat4(mat4 mat)
    return mat;
 }
 
+//some operator overloading
+#ifdef __cplusplus
+INLINE vec2 operator+(vec2 l, vec2 r)
+{
+    vec2 res = add_vec2(l, r);
+
+    return res;
+}
+INLINE vec2 operator-(vec2 l, vec2 r)
+{
+    vec2 res = sub_vec2(l, r);
+
+    return res;
+}
+INLINE vec2 operator*(vec2 l, vec2 r)
+{
+    vec2 res = mul_vec2(l, r);
+
+    return res;
+}
+INLINE vec2 operator*(vec2 l, f32 x)
+{
+    vec2 res = mul_vec2f(l, x);
+
+    return res;
+}
+
+INLINE vec2 operator/(vec2 l, vec2 r)
+{
+    vec2 res = div_vec2(l, r);
+
+    return res;
+}
+
+INLINE vec2 operator/(vec2 l,f32 r)
+{
+    vec2 res = div_vec2f(l, r);
+
+    return res;
+}
+
+INLINE vec3 operator+(vec3 l, vec3 r)
+{
+    vec3 res = add_vec3(l, r);
+
+    return res;
+}
+INLINE vec3 operator-(vec3 l, vec3 r)
+{
+    vec3 res = sub_vec3(l, r);
+
+    return res;
+}
+INLINE vec3 operator*(vec3 l, vec3 r)
+{
+    vec3 res = mul_vec3(l, r);
+
+    return res;
+}
+INLINE vec3 operator*(vec3 l, f32 r)
+{
+    vec3 res = mul_vec3f(l, r);
+
+    return res;
+}
+INLINE vec3 operator/(vec3 l, vec3 r)
+{
+    vec3 res = div_vec3(l, r);
+
+    return res;
+}
+INLINE vec3 operator/(vec3 l,f32 r)
+{
+    vec3 res = div_vec3f(l, r);
+
+    return res;
+}
+
+INLINE vec4 operator+(vec4 l, vec4 r)
+{
+    vec4 res = add_vec4(l, r);
+
+    return res;
+}
+INLINE vec4 operator-(vec4 l, vec4 r)
+{
+    vec4 res = sub_vec4(l, r);
+
+    return res;
+}
+INLINE vec4 operator*(vec4 l, vec4 r)
+{
+    vec4 res = mul_vec4(l, r);
+
+    return res;
+}
+INLINE vec4 operator*(vec4 l, f32 r)
+{
+    vec4 res = mul_vec4f(l, r);
+
+    return res;
+}
+INLINE vec4 operator/(vec4 l, vec4 r)
+{
+    vec4 res = div_vec4(l, r);
+
+    return res;
+}
+INLINE vec4 operator/(vec4 l,f32 r)
+{
+    vec4 res = div_vec4f(l, r);
+
+    return res;
+}
+
+
+INLINE mat4 operator+(mat4 l, mat4 r)
+{
+    mat4 res = add_mat4(l,r);
+
+    return res;
+}
+INLINE mat4 operator-(mat4 l, mat4 r)
+{
+    mat4 res = sub_mat4(l,r);
+
+    return res;
+}
+
+INLINE mat4 operator*(mat4 l, mat4 r)
+{
+    mat4 res = mul_mat4(l,r);
+
+    return res;
+}
+
+INLINE mat4 operator*(mat4 l,f32 r)
+{
+    mat4 res = mul_mat4f(l,r);
+
+    return res;
+}
+
+#endif
+
 //QUATERNION LIB 
 typedef union Quaternion
 {
@@ -1312,7 +1581,6 @@ mat4_to_quat(mat4 m)
         }
     } else {
         if (m.elements[0][0] < -m.elements[1][1]) {
-            ASSERT_COVERED(HMM_Mat4ToQuaternion);
 
             T = 1 - m.elements[0][0] - m.elements[1][1] + m.elements[2][2];
             Q = quat(
@@ -1356,16 +1624,16 @@ typedef struct TGAInfo
     u8 *image_data;
 }TGAInfo;
 
-TGAInfo* tga_init_image_RGB(i16 width, i16 height)
+static TGAInfo* tga_init_image_RGB(i16 width, i16 height)
 {
     TGAInfo* info;
-    info = (TGAInfo*)malloc(sizeof(TGAInfo));
+    info = (TGAInfo*)ALLOC(sizeof(TGAInfo));
     info->width = width;
     info->height = height;
     info->pixel_depth = 24;
     info->type = 2; 
     info->status = TGA_OK;
-    info->image_data = (u8*)malloc(sizeof(u8) * width * height * (info->pixel_depth / 8));
+    info->image_data = (u8*)ALLOC(sizeof(u8) * width * height * (info->pixel_depth / 8));
     return info;
 }
 
@@ -1393,7 +1661,7 @@ tga_load_header(FILE *file, TGAInfo *info) {
 
 	fread(&c_garbage, sizeof(u8), 1, file);
 }
-void tga_load_image_data(FILE *file, TGAInfo *info) {
+static void tga_load_image_data(FILE *file, TGAInfo *info) {
 
 	i32 mode,total,i;
 	u8 aux;
@@ -1423,7 +1691,7 @@ tga_load(const char * filename)
     i32 mode,total;
 
     //allocate memory for TGAInfo
-    info = (TGAInfo*)malloc(sizeof(TGAInfo));
+    info = (TGAInfo*)ALLOC(sizeof(TGAInfo));
     if(info == NULL)return(NULL);
 
     //open file for binary reading
@@ -1454,7 +1722,7 @@ tga_load(const char * filename)
 
     mode = info->pixel_depth / 8;
     total =info->height * info->width * mode;
-    info->image_data = (u8*)malloc(total * sizeof(u8));
+    info->image_data = (u8*)ALLOC(total * sizeof(u8));
 
     //check if memory is ok
     if (info->image_data == NULL)
@@ -1587,12 +1855,11 @@ ppm_set_pixel(i32 i, i32 j, PPMInfo* info, color3 col)
     return col;
 }
 
-
 static PPMInfo*
 ppm_init(i32 width, i32 height)
 {
     PPMInfo* info;
-    info = (PPMInfo*)malloc(sizeof(PPMInfo));
+    info = (PPMInfo*)ALLOC(sizeof(PPMInfo));
     if (info == NULL)return NULL;
     info->type[0] = 'P';
     info->type[1] = '3';
@@ -1600,7 +1867,7 @@ ppm_init(i32 width, i32 height)
     info->width = width;
     info->height = height;
     info->max_color = 255;
-    info->image_data = (f32*)malloc(sizeof(f32) * info->width * info->height * 3); 
+    info->image_data = (f32*)ALLOC(sizeof(f32) * info->width * info->height * 3); 
     if (info->image_data == NULL)return NULL;
     i32 i;
     for (i = 0; i < info->width * info->height*3; ++i)
@@ -1658,7 +1925,7 @@ ppm_read(const char *filename)
     FILE* file;
 
     //allocate memory for PPMInfo
-    info = (PPMInfo*)malloc(sizeof(PPMInfo));
+    info = (PPMInfo*)ALLOC(sizeof(PPMInfo));
     if(info == NULL)return(NULL);
 
     file = fopen(filename, "r");
@@ -1672,7 +1939,7 @@ ppm_read(const char *filename)
     //we load the header and fill out neccesary info
     ppm_load_header(file, info);
 
-    info->image_data = (f32*)malloc(sizeof(f32) * info->width * info->height * 3);
+    info->image_data = (f32*)ALLOC(sizeof(f32) * info->width * info->height * 3);
     if (info->image_data == NULL)
     {
         info->status = PPM_ERROR_MEMORY;
@@ -1739,6 +2006,69 @@ ppm_write(PPMInfo* info, const char *filename)
     }
     return PPM_OK;
 }
+
+static i32
+ppm_write01(PPMInfo* info, const char *filename)
+{
+    //flip_image_horizontally(info->width, info->height, info->image_data);
+    FILE* file;
+    file = fopen(filename, "w");
+    if (file == NULL)
+    {
+        fclose(file);
+        return PPM_ERROR_FILE_OPEN;
+    }
+    if (strcmp(info->type, "P3") != 0)
+    {
+       fclose(file);
+       return PPM_ERROR_UNSUPPORTED_FILE;
+    }
+    fputc(info->type[0], file);
+    fputc(info->type[1], file);
+    fputc('\n', file);
+    fprintf(file, "%d\n", info->width);
+    fprintf(file, "%d\n", info->height);
+    fprintf(file, "%d\n", info->max_color);
+    int j;
+    int i;
+    for (j = info->height-1; j >=0; --j)
+    {
+        for (i = 0; i < info->width; ++i)
+        {
+            int index = info->width * 3 *j + 3 * i;
+            i32 cmp[3];
+            cmp[0]= (i32)(info->image_data[index] * info->max_color);
+            cmp[1]= (i32)(info->image_data[index+1] * info->max_color);
+            cmp[2]= (i32)(info->image_data[index+2] * info->max_color);
+            fprintf(file, "%d ", cmp[0]);
+            fprintf(file, "%d ", cmp[1]);
+            fprintf(file, "%d", cmp[2]);
+            fputc('\n', file);
+
+        }
+    }
+
+    return PPM_OK;
+}
+
+//TODO: put this whole thing on a thread on its own
+static i32 ppm_save_current_framebuffer(i32 width, i32 height, f32* pixels)
+{
+    PPMInfo *info = ppm_init(width,height);
+    i32 i;
+    memcpy(info->image_data, pixels , sizeof(f32) * info->width * info->height * 3);
+    ppm_write01(info, "screenshot.ppm");
+    return 1;
+}
+/*  example usage of ppm_save_current_framebuffer
+ if (global_platform.key_pressed[KEY_K])
+    {
+        f32 *pixels = (f32*)ALLOC(sizeof(f32) * 3 * global_platform.window_width* global_platform.window_height); 
+        glReadPixels(0, 0, global_platform.window_width,global_platform.window_height,GL_RGB, GL_FLOAT, pixels);
+        ppm_save_current_framebuffer( global_platform.window_width, global_platform.window_height, pixels);
+        free(pixels);
+    }
+*/
 
 //TODO: make a ppm_write_FBO to write color attachments of a framebuffer as PPM images.. 
 
@@ -1833,6 +2163,7 @@ static String str(Arena* arena, char* characters)
     return s; 
 }
 
+//this has to go make it string_equals
 static u32
 strcmp(String l, String r)
 {
@@ -1842,8 +2173,198 @@ strcmp(String l, String r)
 }
 
 
+//SIMPLE INT TO INT HASHMAP NOTE: VERY SLOW TODO: FIX..
+
+typedef struct IntPair
+{
+   i32 key;
+   i32 value;
+   IntPair *next;
+}IntPair;
+
+typedef struct IntHashMap
+{
+    IntPair **data;
+    u32 size;
+}IntHashMap;
+
+static IntHashMap 
+create_hashmap(u32 size)
+{
+    IntHashMap res;
+    res.size = size;
+    //res.data = (IntPair**)arena_alloc(&global_platform.permanent_storage, sizeof(IntPair*) * size);
+    res.data = (IntPair**)ALLOC(sizeof(IntPair*) * size);
+    i32 i;
+    for (i = 0; i < size; ++i)
+        res.data[i] = NULL;
+    return res;
+}
+static i32
+hash_code(IntHashMap* table, i32 key)
+{
+    return abs((i32)(key % table->size));
+}
+
+static void
+insert_hashmap(IntHashMap* table, i32 key, i32 val)
+{
+   i32 pos = hash_code(table, key);
+   IntPair *list_to_insert_pair = table->data[pos];
+   IntPair* new_pair = (IntPair*)ALLOC(sizeof(IntPair));
+   IntPair* temp = list_to_insert_pair;
+   while (temp)
+   {
+        if (temp->key == key)
+        {
+            temp->value = val;
+            return;
+        }
+        temp = temp->next;
+   }
+   new_pair->key = key;
+   new_pair->value = val;
+   new_pair->next = list_to_insert_pair;
+   table->data[pos] = new_pair;
+}
+
+static i32 
+lookup_hashmap(IntHashMap* table, u32 key)
+{
+    u32 pos = hash_code(table, key);
+    IntPair* list_to_search = table->data[pos];
+    IntPair* iter = list_to_search;
+    while (iter)
+    {
+       if (iter->key == key)
+       {
+            return iter->value;
+       }
+       iter = iter->next;
+    }
+    return -1;
+}
+
+static i32 
+remove_hashmap(IntHashMap* table, u32 key)
+{
+    u32 pos = hash_code(table, key);
+    IntPair* list_to_search = table->data[pos];
+    IntPair* iter = list_to_search;
+    IntPair* prev = NULL;
+    while (iter)
+    {
+       if (iter->key == key)
+       {
+          if (prev == NULL)
+          {
+              table->data[pos] = iter->next;
+              free(iter);
+              return 1;
+          }else
+          {
+            prev->next = iter->next;
+            free(iter);
+            return 1;
+          }
+       }
+       prev = iter;
+       iter = iter->next;
+    }
+    return -1;
+}
+
+static void* free_next(IntPair *p)
+{
+    free_next(p->next);
+    free(p);
+}
+
+static void free_hashmap(IntHashMap* table)
+{
+    for (u32 i = 0; i < table->size; ++i)
+    {
+        IntPair* next = table->data[i];
+        free_next(next);
+    }
+}
+
+//A stretchy buffer implementation
+
+//HOW TO USE: declare your array of prefered type as TYPE *arr = NULL;
+//then every time you need to insert something, buf_push(arr, ELEMENT);
+//if you want to access a certain element you arr[i];
+//that's all, also you can buf_free(arr);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+typedef struct BufHdr
+{
+    u32 len;
+    u32 cap;
+    char buf[0];
+}BufHdr;
 
 
+
+#define buf__hdr(b) ((BufHdr*)((char*)b - offsetof(BufHdr, buf)))
+
+#define buf_len(b) ((b) ? buf__hdr(b)->len : 0)
+#define buf_cap(b) ((b) ? buf__hdr(b)->cap : 0)
+#define buf_end(b) ((b) + buf_len(b))
+
+#define buf_fit(b, n) ((n) <= buf_cap(b) ? 0 : (*((void**)&(b)) = buf__grow((b), (n), sizeof(*(b)))))
+#define buf_push(b, ...) (buf_fit((b), 1 + buf_len(b)), (b)[buf__hdr(b)->len++] = (__VA_ARGS__))
+#define buf_free(b) ((b) ? (free(buf__hdr(b)), (b) = NULL) : 0)
+
+
+
+
+
+static void *buf__grow(const void *buf, u32 new_len, u32 element_size)
+{
+   u32 new_cap = max(16, max(1 + 2*buf_cap(buf), new_len));
+   assert(new_len <= new_cap);
+   u32 new_size = offsetof(BufHdr, buf) + new_cap * element_size;
+   BufHdr *new_hdr; 
+   if(buf) 
+   { 
+       new_hdr = (BufHdr*)REALLOC(buf__hdr(buf), new_size); 
+   }
+   else
+   { 
+       new_hdr = (BufHdr*)ALLOC(new_size);
+       new_hdr->len = 0;
+   }
+   new_hdr->cap = new_cap;
+   return new_hdr->buf;// + offsetof(BufHdr, buf);
+}
+/* example usage of stretchy buffer
+{
+        int *testarr = NULL;
+        buf_push(testarr, 1);
+        buf_push(testarr, 2);
+        buf_push(testarr, 3);
+        buf_push(testarr, 4);
+        buf_push(testarr, 5);
+        buf_push(testarr, 6);
+        buf_push(testarr, 7);
+        buf_push(testarr, 8);
+        buf_push(testarr, 9);
+
+        for (int i = 0; i < 8; ++i)
+        {
+            int x = testarr[i];
+            assert(x == i+1);
+        }
+
+        buf_free(testarr);
+}
+*/
+#ifdef __cplusplus
+}
+#endif
 
 //SHOULDNT be here just a dependency issue
 #include "vector"
@@ -1904,7 +2425,6 @@ typedef struct MeshData{
     AnimatedVertex* vertices;
 
 }MeshData;
-
 
 
 

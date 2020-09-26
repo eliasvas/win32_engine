@@ -1,7 +1,10 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
+
 #include "tools.h"
 #include "ext/stb_image.h"
+
+
 
 typedef struct Texture 
 {
@@ -61,14 +64,14 @@ typedef struct TextureContainer
     Texture t;
     std::string filename;
     b32 has_mipmaps;
-};
+}TextureContainer;
 
 typedef struct TextureManager
 {
     TextureContainer textures[32];
     u32 size = 0;
     u32 max_size = 32;
-};
+}TextureManager;
 
 static Texture* 
 find_texture(TextureManager* manager, const char* filename)

@@ -8,7 +8,7 @@
 #include "model.h"
 #include "quad.h"
 #include "shadowmap.h"
-#include "ext/HandmadeMath.h"
+#include "physics.h"
 #define SHADER_MAX 32
 #define RECT_MAX 32
 #define TEXTURE_MAX 32
@@ -17,14 +17,16 @@
 #define MODEL_MAX 128
 #define DIAMOND_SIZE sizeof(float)
 
-GLfloat vertices[8] = {0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,1.0f,1.0f};
+static GLfloat vertices[8] = {0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,1.0f,1.0f};
 
-struct Rect 
+typedef struct Rect 
 {
     vec2 pos;
-    vec2 scale;
-    f32 color;
-};
+    f32 w,h;
+}Rect;
+
+typedef vec3 Point;
+
 #define RECT_SIZE sizeof(Rect)
 
 typedef struct OpenGLFBO
@@ -60,13 +62,13 @@ typedef struct ModelInfo
 
 #define SPRITE_SIZE sizeof(Quad2D)
 
-struct Renderer
+typedef struct Renderer
 {
-    GLuint rect_vao, vertex_vbo, rect_instance_vbo;
+    GLuint rect_vao, rect_vbo, vertex_vbo, rect_instance_vbo;
 
     GLuint renderable_vao, renderable_instance_vbo;//..
 
-    Rect rect_instance_data[RECT_MAX];
+    Point rect_instance_data[RECT_MAX * 4];
     u32 rect_alloc_pos;
 
     Quad2D renderable_instance_data[SPRITE_MAX];
@@ -103,22 +105,80 @@ struct Renderer
     mat4 orthographic_projection;
     mat4 perspective_projection;
     vec3 camera_pos;
-};
-static void 
-init_renderer(Renderer* r);
+}Renderer;
 
-static void
-renderer_begin(Renderer* rend);
+#include "physics.h"
 
-static void 
+
+void 
+init_renderer(Renderer* rend);
+void
+renderer_render_scene(Renderer* rend, Shader* shader_to_render_3d);
+void
 renderer_render(Renderer* rend);
 
-static void
-renderer_render_scene(Renderer* rend);
+void
+renderer_begin(Renderer* rend);
+
+void
+renderer_push(Renderer* rend, vec2 offset,vec2 scale, GLuint unit, GLuint flip = 0);
+
+
+void
+renderer_push(Renderer* rend, vec2 offset,vec2 scale, GLuint unit, vec2 bl, vec2 dim, GLuint flip = 0);
+
+void
+renderer_push(Renderer* rend, vec2 offset,vec2 scale, GLuint unit, vec2 bl, vec2 dim, GLuint flip, f32 opacity);
+
+void
+renderer_push_dir_light(Renderer* rend,DirLight* light);
+
+void
+renderer_push_dir_light_info(Renderer* rend,vec3 direction, vec3 ambient, vec3 diffuse, vec3 specular);
+
+void
+renderer_push_point_light(Renderer* rend,PointLight* light);
+
+void
+renderer_push_point_light_info(Renderer* rend,vec3 position, vec3 ambient, vec3 diffuse, vec3 specular);
+
+void 
+renderer_push_mesh(Renderer* rend,Model* model, i32 triangle_count, b32 indexed = 0);
+
+void 
+renderer_push_rect(Renderer* rend,Rect rect);
+
+
+//NOTE: this is incredibly slow, make a dedicated buffer? (dont render as quads)
+void
+renderer_push_AABB(Renderer* rend, AABB aabb);
+
+void 
+renderer_push_mesh_vao(Renderer* rend,GLuint vao, mat4 model, i32 triangle_count, b32 indexed = 0);
+
+void 
+renderer_set_projection_matrix(Renderer* rend, mat4 projection);
+void renderer_set_view_matrix(Renderer* rend, mat4 view);
+
+void 
+renderer_set_ortho_matrix(Renderer* rend, mat4 ortho);
+
+void
+renderer_set_camera_pos(Renderer* rend, vec3 pos);
+
+void
+render_colliders(Physics2DManager * manager, Renderer* rend);
 
 
 
-#include "renderer.c"
+
+
+
+
+
+
+
+
 
 
 #endif

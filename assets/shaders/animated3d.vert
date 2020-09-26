@@ -31,8 +31,9 @@ void main(){
 		vec4 world_normal = joint_transform * vec4(normal,1.0);
 		total_normal += world_normal * weights[i];
 	}
-	//total_local_pos = vec4(position, 1.0);
-	//total_normal = vec4(normal,1.0);
+	//these two lines are just for viewing the model without animation
+	total_local_pos = vec4(position, 1.0);
+	total_normal = vec4(normal,1.0);
 	gl_Position = projection_matrix * view_matrix * total_local_pos;
 	f_normal = total_normal.xyz;
 	f_tex_coords = tex_coords;
